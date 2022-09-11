@@ -1,11 +1,10 @@
 import {
     App, MarkdownView,
     Modal,
-    Notice,
     Plugin,
 } from "obsidian";
 
-import ImageTagProcessor, {ACTION_PUBLISH, ACTION_UPLOAD} from "./uploader/imageTagProcessor";
+import ImageTagProcessor, {ACTION_PUBLISH, ACTION_REPLACE} from "./uploader/imageTagProcessor";
 import ImageUploader from "./uploader/imageUploader";
 import {ImgurAnonymousSetting} from "./uploader/imgur/imgurAnonymousUploader";
 import {IMGUR_PLUGIN_CLIENT_ID} from "./uploader/imgur/constants";
@@ -21,7 +20,7 @@ export interface PublishSettings {
 }
 
 const DEFAULT_SETTINGS: PublishSettings = {
-    attachmentLocation: "images",
+    attachmentLocation: ".",
     imageStore: ImageStore.ANONYMOUS_IMGUR.id,
     imgurAnonymousSetting: {clientId: IMGUR_PLUGIN_CLIENT_ID}
 };
@@ -33,7 +32,6 @@ export default class ObsidianPublish extends Plugin {
     async onload() {
         await this.loadSettings();
         this.setupImageUploader()
-        this.imageTagProcessor = new ImageTagProcessor(this.app, this.settings.attachmentLocation, this.imageUploader);
         this.addStatusBarItem().setText("Status Bar Text");
         this.addCommand({
             id: "publish-page",
@@ -65,30 +63,15 @@ export default class ObsidianPublish extends Plugin {
     }
 
     private publish(): void {
-        this.imageTagProcessor.process(ACTION_PUBLISH).then(() => new Notice("Copied to clipboard"));
+        this.imageTagProcessor.process(ACTION_PUBLISH).then(() => {});
     }
 
     private upload(): void {
-        this.imageTagProcessor.process(ACTION_UPLOAD).then(() => new Notice("All images uploaded"));
+        this.imageTagProcessor.process(ACTION_REPLACE).then(() => {});
     }
 
     setupImageUploader(): void {
         this.imageUploader = buildUploader(this.settings);
-    }
-}
-
-class SampleModal extends Modal {
-    constructor(app: App) {
-        super(app);
-    }
-
-    onOpen() {
-        let {contentEl} = this;
-        contentEl.setText("Woah!");
-    }
-
-    onClose() {
-        let {contentEl} = this;
-        contentEl.empty();
+        this.imageTagProcessor = new ImageTagProcessor(this.app, this.settings.attachmentLocation, this.imageUploader);
     }
 }
