@@ -1,6 +1,6 @@
-import {App, Editor, FileSystemAdapter, MarkdownView,} from "obsidian";
+import {App, Editor, FileSystemAdapter, MarkdownView, Notice,} from "obsidian";
 import {join, parse} from "path";
-import {readFileSync} from "fs";
+import {existsSync, readFileSync} from "fs";
 import ImageUploader from "./imageUploader";
 
 const MD_REGEX = /\!\[(.*)\]\((.*?\.(png|jpg|jpeg|gif|svg))\)/g;
@@ -14,7 +14,7 @@ interface Image {
 }
 
 export const ACTION_PUBLISH: string = "PUBLISH";
-export const ACTION_UPLOAD: string = "PUBLISH";
+export const ACTION_REPLACE: string = "PUBLISH";
 
 export default class ImageTagProcessor {
     app: App;
@@ -33,7 +33,11 @@ export default class ImageTagProcessor {
         const images = this.getImageLists(value);
         const uploader = this.imageUploader;
         for (const image of images) {
-            // console.log(`path: ${image.path}, exist: ${existsSync(image.path)}`);
+            if (!existsSync(image.path)) {
+                new Notice(`Can NOT locate ${image.name} with ${image.path}, please check image path or attachment option in plugin setting`, 10000);
+                console.log(`path: ${image.path}, exist: ${existsSync(image.path)}`);
+                break;
+            }
             const buf = readFileSync(image.path);
             try {
                 promises.push(new Promise(function (resolve) {
@@ -44,19 +48,24 @@ export default class ImageTagProcessor {
                 }))
             } catch (e) {
                 console.log(e);
-                console.log(`Upload ${image.path} failed, remote server returned an error: ${e.message}`);
+                new Notice(`Upload ${image.path} failed, remote server returned an error: ${e.message}`, 10000);
                 //todo
             }
         }
 
-        return Promise.all(promises).then(images => {
+        return promises.length > 0 && Promise.all(promises).then(images => {
             for (const image of images) {
                 console.log(`replacing ${image.source} with ![${image.name}](${image.url})`)
                 value = value.replaceAll(image.source, `![${image.name}](${image.url})`)
             }
             switch (action) {
                 case ACTION_PUBLISH:
-                    navigator.clipboard.writeText(value)
+                    navigator.clipboard.writeText(value);
+                    new Notice("Copied to clipboard");
+                    break;
+                case ACTION_REPLACE:
+                    this.getEditor().setValue(value);
+                    new Notice("All images uploaded");
                     break;
                 default:
                     throw new Error("invalid action!")
