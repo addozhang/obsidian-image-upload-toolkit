@@ -9,7 +9,7 @@ It will be help for publishing to the static site such [GitHub pages](https://pa
 The idea of plugin comes from the powerful markdown editor [MWeb Pro](https://www.mweb.im) I have been 
 used for years. 
 
-During plugin development, I also referred to plugins [obsidian-image-uploader](https://github.com/Creling/obsidian-image-uploader)
+During plugin development, I also referred to plugins [obsidian-imgur-plugin](https://github.com/gavvvr/obsidian-imgur-plugin)
 (**the imgur uploading codes is from it**) and [obsidian-image-auto-upload-plugin](https://github.com/renmu123/obsidian-image-auto-upload-plugin). Thanks both for 
 providing such great plugins.
 
@@ -56,7 +56,7 @@ npm run build
 
 ## Thanks
 
-* [obsidian-image-uploader](https://github.com/Creling/obsidian-image-uploader)
+* [obsidian-imgur-plugin](https://github.com/gavvvr/obsidian-imgur-plugin)
 (**the imgur uploading codes is from it**) 
 * [obsidian-image-auto-upload-plugin](https://github.com/renmu123/obsidian-image-auto-upload-plugin)
 * [create-obsidian-plugin](https://www.npmjs.com/package/create-obsidian-plugin)
