@@ -3,7 +3,6 @@ import ObsidianPublish from "../publish";
 import ImageStore from "../imageStore";
 import {existsSync} from "fs";
 import {join} from "path";
-import {ImgurAnonymousSetting} from "../uploader/imgur/imgurAnonymousUploader";
 
 export default class PublishSettingTab extends PluginSettingTab {
     private plugin: ObsidianPublish;
@@ -35,7 +34,7 @@ export default class PublishSettingTab extends PluginSettingTab {
                             return
                         }
                         this.plugin.settings.attachmentLocation = value;
-                        await this.plugin.saveSettings();
+
                     })
             );
         new Setting(imageStoreTypeDiv)
@@ -55,6 +54,11 @@ export default class PublishSettingTab extends PluginSettingTab {
         this.drawImageStoreSettings(this.imageStoreDiv).then(() => {}).finally(() => {})
     }
 
+    async hide(): Promise<any> {
+        await this.plugin.saveSettings();
+        this.plugin.setupImageUploader();
+    }
+
     private async drawImageStoreSettings(partentEL: HTMLDivElement) {
         partentEL.empty();
         switch (this.plugin.settings.imageStore) {
@@ -72,7 +76,7 @@ export default class PublishSettingTab extends PluginSettingTab {
     private drawAnonymousSetting(partentEL: HTMLDivElement) {
         new Setting(partentEL)
             .setName("Client ID")
-            .setDesc("https://api.imgur.com/oauth2/addclient")
+            .setDesc(PublishSettingTab.clientIdSettingDescription())
             .addText(text =>
                 text
                     .setPlaceholder("Enter client_id")
@@ -84,8 +88,9 @@ export default class PublishSettingTab extends PluginSettingTab {
     private static clientIdSettingDescription() {
         const fragment = document.createDocumentFragment();
         const a = document.createElement("a");
-        a.textContent = "https://api.imgur.com/oauth2/addclient";
-        a.setAttribute("href", "https://api.imgur.com/oauth2/addclient");
+        const url = "https://api.imgur.com/oauth2/addclient";
+        a.textContent = url;
+        a.setAttribute("href", url);
         fragment.append("Generate your own Client ID at ");
         fragment.append(a);
         return fragment;
