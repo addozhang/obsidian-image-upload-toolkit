@@ -20,6 +20,8 @@ providing such great plugins.
 Open command and type "publish page", it will upload all local images to remote store 
 and copy markdown with replaced image syntax to clipboard with notification. 
 
+![screenshot](https://user-images.githubusercontent.com/2224492/189521107-b4d0604b-21f4-4c51-af8f-70083b3e6ec4.gif)
+
 ## TODO
 
 - [] support uploading images to more storages
