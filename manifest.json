@@ -1,0 +1,11 @@
+{
+  "id": "obsidian-publish",
+  "name": "Obsidian Publish",
+  "description": "",
+  "author": "Addo Zhang",
+
+  "authorUrl": "https://atbug.com",
+
+  "minAppVersion": "0.11.0",
+  "version": "0.0.1"
+}
