@@ -1,7 +1,7 @@
 {
   "id": "obsidian-publish-plugin",
   "name": "Publish",
-  "description": "",
+  "description": "An obsidian plugin for uploading local images embedded in markdown to remote store and export markdown for publishing to static site.",
   "author": "Addo Zhang",
 
   "authorUrl": "https://atbug.com",
