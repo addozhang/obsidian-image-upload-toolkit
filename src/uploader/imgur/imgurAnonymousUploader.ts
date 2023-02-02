@@ -3,6 +3,7 @@ import ImageUploader from "../imageUploader";
 import {IMGUR_API_BASE} from "./constants";
 import {handleImgurErrorResponse} from "./imgurClient";
 import {ImgurPostData} from "./imgurResponseTypes";
+import {requestUrl} from "obsidian";
 
 export default class ImgurAnonymousUploader implements ImageUploader {
     private readonly clientId!: string;
@@ -14,7 +15,6 @@ export default class ImgurAnonymousUploader implements ImageUploader {
     async upload(image: File): Promise<string> {
         const requestData = new FormData();
         requestData.append("image", image);
-
         const resp = await fetch(`${IMGUR_API_BASE}image`, {
             method: "POST",
             headers: new Headers({ Authorization: `Client-ID ${this.clientId}` }),

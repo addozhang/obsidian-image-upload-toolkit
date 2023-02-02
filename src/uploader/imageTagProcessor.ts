@@ -53,7 +53,7 @@ export default class ImageTagProcessor {
             }
         }
 
-        return promises.length > 0 && Promise.all(promises).then(images => {
+        return promises.length >= 0 && Promise.all(promises).then(images => {
             for (const image of images) {
                 console.log(`replacing ${image.source} with ![${image.name}](${image.url})`)
                 value = value.replaceAll(image.source, `![${image.name}](${image.url})`)
