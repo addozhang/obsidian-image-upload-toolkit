@@ -10,6 +10,7 @@ export default class OssUploader implements ImageUploader {
             accessKeyId: setting.accessKeyId,
             accessKeySecret: setting.accessKeySecret,
             bucket: setting.bucket,
+            secure: true,
         });
         this.client.agent = this.client.urllib.agent;
         this.client.httpsAgent = this.client.urllib.httpsAgent;
