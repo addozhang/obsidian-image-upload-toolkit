@@ -3,6 +3,7 @@ import ObsidianPublish from "../publish";
 import ImageStore from "../imageStore";
 import {existsSync} from "fs";
 import {join} from "path";
+import {RegionList} from "../uploader/oss/common";
 
 export default class PublishSettingTab extends PluginSettingTab {
     private plugin: ObsidianPublish;
@@ -21,6 +22,7 @@ export default class PublishSettingTab extends PluginSettingTab {
         const imageStoreTypeDiv = containerEl.createDiv();
         this.imageStoreDiv = containerEl.createDiv();
 
+        // Attachment location
         new Setting(imageStoreTypeDiv)
             .setName("Attachment location")
             .setDesc("The location storing images which will upload images from.")
@@ -37,6 +39,17 @@ export default class PublishSettingTab extends PluginSettingTab {
 
                     })
             );
+
+        new Setting((imageStoreTypeDiv))
+            .setName("Update original document.")
+            .setDesc("Whether to replace internal link with store link.")
+            .addToggle(toggle =>
+                toggle
+                    .setValue(this.plugin.settings.replaceOriginalDoc)
+                    .onChange( value => this.plugin.settings.replaceOriginalDoc = value)
+            );
+
+        // Image Store
         new Setting(imageStoreTypeDiv)
             .setName("Image store")
             .setDesc("Remote image store for upload images to.")
@@ -50,8 +63,10 @@ export default class PublishSettingTab extends PluginSettingTab {
                     this.plugin.setupImageUploader();
                     await this.drawImageStoreSettings(this.imageStoreDiv);
                 });
-            })
-        this.drawImageStoreSettings(this.imageStoreDiv).then(() => {}).finally(() => {})
+            });
+        this.drawImageStoreSettings(this.imageStoreDiv).then(() => {
+        }).finally(() => {
+        })
     }
 
     async hide(): Promise<any> {
@@ -65,7 +80,9 @@ export default class PublishSettingTab extends PluginSettingTab {
             case ImageStore.ANONYMOUS_IMGUR.id:
                 this.drawAnonymousSetting(partentEL);
                 break;
-            //todo more cases
+            case ImageStore.ALIYUN_OSS.id:
+                this.drawOSSSetting(partentEL);
+                break;
             default:
                 throw new Error(
                     "Should not reach here!"
@@ -73,6 +90,7 @@ export default class PublishSettingTab extends PluginSettingTab {
         }
     }
 
+    // Imgur Setting
     private drawAnonymousSetting(partentEL: HTMLDivElement) {
         new Setting(partentEL)
             .setName("Client ID")
@@ -94,5 +112,41 @@ export default class PublishSettingTab extends PluginSettingTab {
         fragment.append("Generate your own Client ID at ");
         fragment.append(a);
         return fragment;
+    }
+
+    // Aliyun OSS Setting
+    private drawOSSSetting(parentEL: HTMLDivElement) {
+        new Setting(parentEL)
+            .setName("Region")
+            .setDesc("OSS data center region.")
+            .addDropdown(dropdown =>
+                dropdown
+                    .addOptions(RegionList)
+                    .onChange(value => this.plugin.settings.ossSetting.region = value)
+            )
+        new Setting(parentEL)
+            .setName("Access Key Id")
+            .setDesc("The access key id of AliYun RAM.")
+            .addText(text =>
+                text
+                    .setPlaceholder("Enter access key id")
+                    .setValue(this.plugin.settings.ossSetting.accessKeyId)
+                    .onChange(value => this.plugin.settings.ossSetting.accessKeyId = value))
+        new Setting(parentEL)
+            .setName("Access Key Secret")
+            .setDesc("The access key secret of AliYun RAM.")
+            .addText(text =>
+                text
+                    .setPlaceholder("Enter access key secret")
+                    .setValue(this.plugin.settings.ossSetting.accessKeySecret)
+                    .onChange(value => this.plugin.settings.ossSetting.accessKeySecret = value))
+        new Setting(parentEL)
+            .setName("Access Bucket Name")
+            .setDesc("The name of bucket to store images.")
+            .addText(text =>
+                text
+                    .setPlaceholder("Enter bucket name")
+                    .setValue(this.plugin.settings.ossSetting.bucket)
+                    .onChange(value => this.plugin.settings.ossSetting.bucket = value))
     }
 }

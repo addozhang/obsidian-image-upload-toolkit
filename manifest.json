@@ -1,11 +1,9 @@
 {
-  "id": "obsidian-image-uploader",
-  "name": "Image Uploader",
-  "description": "An obsidian plugin for uploading local images embedded in markdown to remote store and export markdown for publishing to static site.",
+  "id": "obsidian-image-upload-toolkit",
+  "name": "Image Upload Toolkit",
+  "description": "An obsidian plugin for uploading local images embedded in markdown to remote store and export markdown for publishing to static site. Currently, it supports Imgur and Aliyun OSS.",
   "author": "Addo Zhang",
-
   "authorUrl": "https://atbug.com",
-
   "minAppVersion": "0.11.0",
-  "version": "0.1.0"
+  "version": "0.2.0"
 }

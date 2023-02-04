@@ -1,28 +1,38 @@
 import {
-    App, MarkdownView,
-    Modal,
+    MarkdownView, Notice,
     Plugin,
 } from "obsidian";
 
-import ImageTagProcessor, {ACTION_PUBLISH, ACTION_REPLACE} from "./uploader/imageTagProcessor";
+import ImageTagProcessor, {ACTION_PUBLISH} from "./uploader/imageTagProcessor";
 import ImageUploader from "./uploader/imageUploader";
 import {ImgurAnonymousSetting} from "./uploader/imgur/imgurAnonymousUploader";
 import {IMGUR_PLUGIN_CLIENT_ID} from "./uploader/imgur/constants";
 import ImageStore from "./imageStore";
 import buildUploader from "./uploader/imageUploaderBuilder";
 import PublishSettingTab from "./ui/publishSettingTab";
+import {OssSetting} from "./uploader/oss/ossUploader";
 
 export interface PublishSettings {
+    replaceOriginalDoc: boolean
     attachmentLocation: string;
     imageStore: string;
     //Imgur Anonymous setting
-    imgurAnonymousSetting: ImgurAnonymousSetting
+    imgurAnonymousSetting: ImgurAnonymousSetting;
+    ossSetting: OssSetting;
 }
 
 const DEFAULT_SETTINGS: PublishSettings = {
+    replaceOriginalDoc: false,
     attachmentLocation: ".",
     imageStore: ImageStore.ANONYMOUS_IMGUR.id,
-    imgurAnonymousSetting: {clientId: IMGUR_PLUGIN_CLIENT_ID}
+    imgurAnonymousSetting: {clientId: IMGUR_PLUGIN_CLIENT_ID},
+    ossSetting: {
+        region: "oss-cn-hangzhou",
+        accessKeyId: "",
+        accessKeySecret: "",
+        bucket: "",
+        endpoint: "https://oss-cn-hangzhou.aliyuncs.com/",
+    }
 };
 export default class ObsidianPublish extends Plugin {
     settings: PublishSettings;
@@ -63,15 +73,20 @@ export default class ObsidianPublish extends Plugin {
     }
 
     private publish(): void {
-        this.imageTagProcessor.process(ACTION_PUBLISH).then(() => {});
-    }
-
-    private upload(): void {
-        this.imageTagProcessor.process(ACTION_REPLACE).then(() => {});
+        if (!this.imageUploader) {
+            new Notice("Image uploader setup failed, please check setting.")
+        } else {
+            this.imageTagProcessor.process(ACTION_PUBLISH).then(() => {
+            });
+        }
     }
 
     setupImageUploader(): void {
-        this.imageUploader = buildUploader(this.settings);
-        this.imageTagProcessor = new ImageTagProcessor(this.app, this.settings.attachmentLocation, this.imageUploader);
+        try {
+            this.imageUploader = buildUploader(this.settings);
+            this.imageTagProcessor = new ImageTagProcessor(this.app, this.settings, this.imageUploader);
+        } catch (e) {
+            console.log(`Failed to setup image uploader: ${e}`)
+        }
     }
 }

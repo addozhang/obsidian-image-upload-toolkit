@@ -10,6 +10,11 @@ export default class ImageStore {
         "Anonymous Imgur upload"
     )
 
+    static readonly ALIYUN_OSS = new ImageStore(
+        "ALIYUN_OSS",
+        "AliYun OSS"
+    )
+
     private constructor(readonly id: string, readonly description: string) {
         ImageStore.values.push(this)
     }

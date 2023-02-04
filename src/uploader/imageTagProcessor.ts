@@ -2,6 +2,7 @@ import {App, Editor, FileSystemAdapter, MarkdownView, Notice,} from "obsidian";
 import {join, parse} from "path";
 import {existsSync, readFileSync} from "fs";
 import ImageUploader from "./imageUploader";
+import {PublishSettings} from "../publish";
 
 const MD_REGEX = /\!\[(.*)\]\((.*?\.(png|jpg|jpeg|gif|svg))\)/g;
 const WIKI_REGEX = /\!\[\[(.*?\.(png|jpg|jpeg|gif|svg))\]\]/g;
@@ -17,13 +18,13 @@ export const ACTION_PUBLISH: string = "PUBLISH";
 export const ACTION_REPLACE: string = "PUBLISH";
 
 export default class ImageTagProcessor {
-    app: App;
-    attachmentLocation: string;
-    imageUploader: ImageUploader;
+    private app: App;
+    private readonly imageUploader: ImageUploader;
+    private settings: PublishSettings;
 
-    constructor(app: App, attachmentLocation: string, imageUploader: ImageUploader) {
+    constructor(app: App, settings: PublishSettings, imageUploader: ImageUploader) {
         this.app = app;
-        this.attachmentLocation = attachmentLocation;
+        this.settings = settings;
         this.imageUploader = imageUploader;
     }
 
@@ -39,18 +40,12 @@ export default class ImageTagProcessor {
                 break;
             }
             const buf = readFileSync(image.path);
-            try {
-                promises.push(new Promise(function (resolve) {
-                    uploader.upload(new File([buf], image.name)).then(imgUrl => {
-                        image.url = imgUrl;
-                        resolve(image)
-                    })
-                }))
-            } catch (e) {
-                console.log(e);
-                new Notice(`Upload ${image.path} failed, remote server returned an error: ${e.message}`, 10000);
-                //todo
-            }
+            promises.push(new Promise(function (resolve) {
+                uploader.upload(new File([buf], image.name), image.path).then(imgUrl => {
+                    image.url = imgUrl;
+                    resolve(image)
+                }).catch(e => new Notice(`Upload ${image.path} failed, remote server returned an error: ${e.message}`, 10000))
+            }))
         }
 
         return promises.length >= 0 && Promise.all(promises).then(images => {
@@ -58,15 +53,15 @@ export default class ImageTagProcessor {
                 console.log(`replacing ${image.source} with ![${image.name}](${image.url})`)
                 value = value.replaceAll(image.source, `![${image.name}](${image.url})`)
             }
+            if (this.settings.replaceOriginalDoc) {
+                this.getEditor()?.setValue(value);
+            }
             switch (action) {
                 case ACTION_PUBLISH:
                     navigator.clipboard.writeText(value);
                     new Notice("Copied to clipboard");
                     break;
-                case ACTION_REPLACE:
-                    this.getEditor().setValue(value);
-                    new Notice("All images uploaded");
-                    break;
+                // more cases
                 default:
                     throw new Error("invalid action!")
             }
@@ -80,8 +75,8 @@ export default class ImageTagProcessor {
         const mdMatches = value.matchAll(MD_REGEX);
         for (const match of wikiMatches) {
             images.push({
-                name: parse(match[1]).name,
-                path: join(basePath, this.attachmentLocation, match[1]),
+                name: match[1],
+                path: join(basePath, this.settings.attachmentLocation, match[1]),
                 source: match[0],
                 url: '',
             })
@@ -93,7 +88,7 @@ export default class ImageTagProcessor {
             const decodedPath = decodeURI(match[2]);
             images.push({
                 name: match[1] || parse(decodedPath).name,
-                path: join(basePath, this.attachmentLocation, decodedPath),
+                path: join(basePath, this.settings.attachmentLocation, decodedPath),
                 source: match[0],
                 url: '',
             })
