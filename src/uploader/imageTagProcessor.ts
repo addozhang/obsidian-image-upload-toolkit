@@ -51,9 +51,11 @@ export default class ImageTagProcessor {
         }
 
         return promises.length >= 0 && Promise.all(promises).then(images => {
+            let altText;
             for (const image of images) {
-                console.log(`replacing ${image.source} with ![${image.name}](${image.url})`)
-                value = value.replaceAll(image.source, `![${image.name}](${image.url})`)
+                altText = this.settings.imageAltText ? path.parse(image.name)?.name?.replaceAll("-", " ")?.replaceAll("_", " ") : '';
+                console.log(`replacing ${image.source} with ![${altText}](${image.url})`);
+                value = value.replaceAll(image.source, `![${altText}](${image.url})`);
             }
             if (this.settings.replaceOriginalDoc) {
                 this.getEditor()?.setValue(value);

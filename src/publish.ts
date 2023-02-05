@@ -13,6 +13,7 @@ import PublishSettingTab from "./ui/publishSettingTab";
 import {OssSetting} from "./uploader/oss/ossUploader";
 
 export interface PublishSettings {
+    imageAltText: boolean;
     replaceOriginalDoc: boolean
     attachmentLocation: string;
     imageStore: string;
@@ -22,6 +23,7 @@ export interface PublishSettings {
 }
 
 const DEFAULT_SETTINGS: PublishSettings = {
+    imageAltText: true,
     replaceOriginalDoc: false,
     attachmentLocation: ".",
     imageStore: ImageStore.ANONYMOUS_IMGUR.id,

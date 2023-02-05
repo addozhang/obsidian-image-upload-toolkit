@@ -41,7 +41,16 @@ export default class PublishSettingTab extends PluginSettingTab {
             );
 
         new Setting((imageStoreTypeDiv))
-            .setName("Update original document.")
+            .setName("Use image name as Alt Text")
+            .setDesc("Whether to use image name as Alt Text with '-' and '_' replaced with space.")
+            .addToggle(toggle =>
+                toggle
+                    .setValue(this.plugin.settings.imageAltText)
+                    .onChange( value => this.plugin.settings.imageAltText = value)
+            );
+
+        new Setting((imageStoreTypeDiv))
+            .setName("Show original document.")
             .setDesc("Whether to replace internal link with store link.")
             .addToggle(toggle =>
                 toggle
