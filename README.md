@@ -24,10 +24,11 @@ and copy markdown with replaced image syntax to clipboard with notification.
 
 ## TODO
 
-- [] support uploading images to more storages
+- [ ] support uploading images to more storages
   - [x] Aliyun Oss
+  - [ ] Amazon S3
 - [x] setting for replacing images embedded in origin markdown directly
-- [] export rendered HTML with specified styles
+- [ ] export rendered HTML with specified styles
 
 ## Contributing
 
