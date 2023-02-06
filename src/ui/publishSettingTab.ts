@@ -50,7 +50,7 @@ export default class PublishSettingTab extends PluginSettingTab {
             );
 
         new Setting((imageStoreTypeDiv))
-            .setName("Show original document.")
+            .setName("Update original document")
             .setDesc("Whether to replace internal link with store link.")
             .addToggle(toggle =>
                 toggle
