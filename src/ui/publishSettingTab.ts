@@ -1,8 +1,6 @@
-import {App, FileSystemAdapter, Notice, PluginSettingTab, Setting} from "obsidian";
+import {App, Notice, PluginSettingTab, Setting} from "obsidian";
 import ObsidianPublish from "../publish";
 import ImageStore from "../imageStore";
-import {existsSync} from "fs";
-import {join} from "path";
 import {RegionList} from "../uploader/oss/common";
 
 export default class PublishSettingTab extends PluginSettingTab {
@@ -31,8 +29,8 @@ export default class PublishSettingTab extends PluginSettingTab {
                     .setPlaceholder("Enter folder name")
                     .setValue(this.plugin.settings.attachmentLocation)
                     .onChange(async (value) => {
-                        if (!existsSync(join((this.app.vault.adapter as FileSystemAdapter).getBasePath(), value))) {
-                            new Notice(`${value} doesn't exist`)
+                        if ((await this.app.vault.getAbstractFileByPath(value)) == null) {
+                            new Notice(`Attachment location "${value}" not exist!`)
                             return
                         }
                         this.plugin.settings.attachmentLocation = value;

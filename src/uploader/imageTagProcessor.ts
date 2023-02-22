@@ -14,7 +14,6 @@ interface Image {
 }
 
 export const ACTION_PUBLISH: string = "PUBLISH";
-export const ACTION_REPLACE: string = "PUBLISH";
 
 export default class ImageTagProcessor {
     private app: App;
@@ -36,9 +35,9 @@ export default class ImageTagProcessor {
         const images = this.getImageLists(value);
         const uploader = this.imageUploader;
         for (const image of images) {
-            if (!await this.adapter.exists(path.normalize(image.path))) {
-                new Notice(`Can NOT locate ${image.name} with ${image.path}, please check image path or attachment option in plugin setting`, 10000);
-                console.log(`path: ${path.normalize(image.path)}, exist: ${await this.adapter.exists(path.normalize(image.path))}`);
+            if((await this.app.vault.getAbstractFileByPath(path.normalize(image.path))) == null) {
+                new Notice(`Can NOT locate ${image.name} with ${image.path}, please check image path or attachment option in plugin setting!`, 10000);
+                console.log(`${path.normalize(image.path)} not exist`);
                 break;
             }
             const buf = await this.adapter.readBinary(image.path);
