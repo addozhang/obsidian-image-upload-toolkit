@@ -49,7 +49,7 @@ export default class ObsidianPublish extends Plugin {
             id: "publish-page",
             name: "Publish Page",
             checkCallback: (checking: boolean) => {
-                let activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
+                let activeView = this.app.workspace.activeEditor;
                 if (activeView) {
                     if (!checking) {
                         this.publish()

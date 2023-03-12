@@ -15,7 +15,7 @@ export default class PublishSettingTab extends PluginSettingTab {
     display(): any {
         const {containerEl} = this;
         containerEl.empty()
-        containerEl.createEl("h2", {text: "Publish Settings"});
+        containerEl.createEl("h2", {text: "Upload Settings"});
 
         const imageStoreTypeDiv = containerEl.createDiv();
         this.imageStoreDiv = containerEl.createDiv();

@@ -1,5 +1,5 @@
-import {App, Editor, FileSystemAdapter, MarkdownView, Notice,} from "obsidian";
-import path, {join, parse} from "path";
+import {App, Editor, FileSystemAdapter, MarkdownView, normalizePath, Notice,} from "obsidian";
+import path from "path";
 import ImageUploader from "./imageUploader";
 import {PublishSettings} from "../publish";
 
@@ -35,14 +35,14 @@ export default class ImageTagProcessor {
         const images = this.getImageLists(value);
         const uploader = this.imageUploader;
         for (const image of images) {
-            if((await this.app.vault.getAbstractFileByPath(path.normalize(image.path))) == null) {
+            if ((await this.app.vault.getAbstractFileByPath(normalizePath(image.path))) == null) {
                 new Notice(`Can NOT locate ${image.name} with ${image.path}, please check image path or attachment option in plugin setting!`, 10000);
-                console.log(`${path.normalize(image.path)} not exist`);
+                console.log(`${normalizePath(image.path)} not exist`);
                 break;
             }
             const buf = await this.adapter.readBinary(image.path);
             promises.push(new Promise(function (resolve) {
-                uploader.upload(new File([buf], image.name), path.join(basePath, image.path)).then(imgUrl => {
+                uploader.upload(new File([buf], image.name), basePath + '/' + image.path).then(imgUrl => {
                     image.url = imgUrl;
                     resolve(image)
                 }).catch(e => new Notice(`Upload ${image.path} failed, remote server returned an error: ${e.message}`, 10000))
@@ -78,7 +78,7 @@ export default class ImageTagProcessor {
         for (const match of wikiMatches) {
             images.push({
                 name: match[1],
-                path: join(this.settings.attachmentLocation, match[1]),
+                path: this.settings.attachmentLocation + '/' + match[1],
                 source: match[0],
                 url: '',
             })
@@ -89,8 +89,8 @@ export default class ImageTagProcessor {
             }
             const decodedPath = decodeURI(match[2]);
             images.push({
-                name: match[1] || parse(decodedPath).name,
-                path: join(this.settings.attachmentLocation, decodedPath),
+                name: match[1] || path.parse(decodedPath).name,
+                path: this.settings.attachmentLocation + '/' + decodedPath,
                 source: match[0],
                 url: '',
             })
@@ -109,7 +109,7 @@ export default class ImageTagProcessor {
     }
 
     private getEditor(): Editor {
-        const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
+        const activeView = this.app.workspace.activeEditor;
         if (activeView) {
             return activeView.editor
         } else {

@@ -5,3 +5,5 @@ package-lock.json
 yarn.lock
 .npmrc
 data.json
+dist
+.idea
