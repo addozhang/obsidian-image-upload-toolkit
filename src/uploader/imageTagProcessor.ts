@@ -3,8 +3,8 @@ import path from "path";
 import ImageUploader from "./imageUploader";
 import {PublishSettings} from "../publish";
 
-const MD_REGEX = /\!\[(.*)\]\((.*?\.(png|jpg|jpeg|gif|svg))\)/g;
-const WIKI_REGEX = /\!\[\[(.*?\.(png|jpg|jpeg|gif|svg))\]\]/g;
+const MD_REGEX = /\!\[(.*)\]\((.*?\.(png|jpg|jpeg|gif|svg|excalidraw))\)/g;
+const WIKI_REGEX = /\!\[\[(.*?\.(png|jpg|jpeg|gif|svg|excalidraw))\]\]/g;
 
 interface Image {
     name: string;
@@ -76,9 +76,14 @@ export default class ImageTagProcessor {
         const wikiMatches = value.matchAll(WIKI_REGEX);
         const mdMatches = value.matchAll(MD_REGEX);
         for (const match of wikiMatches) {
+            const name = match[1]
+            var path_name = name
+            if (name.endsWith('.excalidraw')) {
+                path_name = name + '.png'
+            }
             images.push({
-                name: match[1],
-                path: this.settings.attachmentLocation + '/' + match[1],
+                name: name,
+                path: this.settings.attachmentLocation + '/' + path_name,
                 source: match[0],
                 url: '',
             })
