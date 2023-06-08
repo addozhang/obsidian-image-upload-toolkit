@@ -155,5 +155,14 @@ export default class PublishSettingTab extends PluginSettingTab {
                     .setPlaceholder("Enter bucket name")
                     .setValue(this.plugin.settings.ossSetting.bucket)
                     .onChange(value => this.plugin.settings.ossSetting.bucket = value))
+
+        new Setting(parentEL)
+            .setName("Target Path")
+            .setDesc("The path to store image.\nSupport {year} {mon} {day} {random} {filename} vars. For example, /{year}/{mon}/{day}/{filename} with uploading pic.jpg, it will store as /2023/06/08/pic.jpg.")
+            .addText(text =>
+                text
+                    .setPlaceholder("Enter path")
+                    .setValue(this.plugin.settings.ossSetting.path)
+                    .onChange(value => this.plugin.settings.ossSetting.path = value))
     }
 }
