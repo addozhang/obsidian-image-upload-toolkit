@@ -6,7 +6,7 @@ import OssUploader from "./oss/ossUploader";
 
 export default function buildUploader(settings: PublishSettings): ImageUploader {
     switch (settings.imageStore) {
-        case ImageStore.ANONYMOUS_IMGUR.id:
+        case ImageStore.IMGUR.id:
             return new ImgurAnonymousUploader(settings.imgurAnonymousSetting.clientId);
         //todo more cases
         case ImageStore.ALIYUN_OSS.id:

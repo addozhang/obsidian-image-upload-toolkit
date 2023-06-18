@@ -5,9 +5,9 @@ export default class ImageStore {
         return this.values;
     }
 
-    static readonly ANONYMOUS_IMGUR = new ImageStore(
-        "ANONYMOUS_IMGUR",
-        "Anonymous Imgur upload"
+    static readonly IMGUR = new ImageStore(
+        "IMGUR",
+        "Imgur upload"
     )
 
     static readonly ALIYUN_OSS = new ImageStore(

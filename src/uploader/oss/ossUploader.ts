@@ -4,6 +4,7 @@ import OSS from "ali-oss"
 export default class OssUploader implements ImageUploader {
     private readonly client!: OSS;
     private readonly pathTmpl: String;
+    private readonly customDomainName: String;
 
     constructor(setting: OssSetting) {
         this.client = new OSS({
@@ -16,11 +17,12 @@ export default class OssUploader implements ImageUploader {
         this.client.agent = this.client.urllib.agent;
         this.client.httpsAgent = this.client.urllib.httpsAgent;
         this.pathTmpl = setting.path;
+        this.customDomainName = setting.customDomainName;
     }
 
     async upload(image: File, path: string): Promise<string> {
         const result = this.client.put(this.generateName(image.name), path);
-        return (await result).url;
+        return this.customizeDomainName((await result).url);
     }
 
     private generateName(imageName: string): string {
@@ -30,12 +32,12 @@ export default class OssUploader implements ImageUploader {
         const day = date.getDate().toString().padStart(2, '0');
         const random = this.generateRandomString(20);
 
-        return this.pathTmpl != undefined && this.pathTmpl.length > 0 ? this.pathTmpl
-            .replace('{year}', year)
-            .replace('{mon}', month)
-            .replace('{day}', day)
-            .replace('{random}', random)
-            .replace('{filename}', imageName)
+        return this.pathTmpl != undefined && this.pathTmpl.trim().length > 0 ? this.pathTmpl
+                .replace('{year}', year)
+                .replace('{mon}', month)
+                .replace('{day}', day)
+                .replace('{random}', random)
+                .replace('{filename}', imageName)
             : imageName
             ;
     }
@@ -52,6 +54,16 @@ export default class OssUploader implements ImageUploader {
         return result;
     }
 
+    private customizeDomainName(url) {
+        const regex = /https?:\/\/([^/]+)/;
+        if (this.customDomainName && this.customDomainName.trim() !== "") {
+            return url.replace(regex, (match, domain) => {
+                return match.replace(domain, this.customDomainName);
+            })
+        }
+        return url;
+    }
+
 }
 
 export interface OssSetting {
@@ -61,4 +73,5 @@ export interface OssSetting {
     bucket: string;
     endpoint: string;
     path: string;
+    customDomainName: string;
 }

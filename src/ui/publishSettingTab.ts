@@ -15,7 +15,7 @@ export default class PublishSettingTab extends PluginSettingTab {
     display(): any {
         const {containerEl} = this;
         containerEl.empty()
-        containerEl.createEl("h2", {text: "Upload Settings"});
+        containerEl.createEl("h1", {text: "Upload Settings"});
 
         const imageStoreTypeDiv = containerEl.createDiv();
         this.imageStoreDiv = containerEl.createDiv();
@@ -84,8 +84,8 @@ export default class PublishSettingTab extends PluginSettingTab {
     private async drawImageStoreSettings(partentEL: HTMLDivElement) {
         partentEL.empty();
         switch (this.plugin.settings.imageStore) {
-            case ImageStore.ANONYMOUS_IMGUR.id:
-                this.drawAnonymousSetting(partentEL);
+            case ImageStore.IMGUR.id:
+                this.drawImgurSetting(partentEL);
                 break;
             case ImageStore.ALIYUN_OSS.id:
                 this.drawOSSSetting(partentEL);
@@ -98,7 +98,7 @@ export default class PublishSettingTab extends PluginSettingTab {
     }
 
     // Imgur Setting
-    private drawAnonymousSetting(partentEL: HTMLDivElement) {
+    private drawImgurSetting(partentEL: HTMLDivElement) {
         new Setting(partentEL)
             .setName("Client ID")
             .setDesc(PublishSettingTab.clientIdSettingDescription())
@@ -164,5 +164,15 @@ export default class PublishSettingTab extends PluginSettingTab {
                     .setPlaceholder("Enter path")
                     .setValue(this.plugin.settings.ossSetting.path)
                     .onChange(value => this.plugin.settings.ossSetting.path = value))
+
+        //custom domain
+        new Setting(parentEL)
+            .setName("Custom Domain Name")
+            .setDesc("If the custom domain name is example.com, you can use https://example.com/pic.jpg to access pic.img.")
+            .addText(text =>
+                text
+                    .setPlaceholder("Enter path")
+                    .setValue(this.plugin.settings.ossSetting.customDomainName)
+                    .onChange(value => this.plugin.settings.ossSetting.customDomainName = value))
     }
 }

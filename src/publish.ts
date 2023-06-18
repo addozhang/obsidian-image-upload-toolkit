@@ -1,5 +1,5 @@
 import {
-    MarkdownView, Notice,
+    Notice,
     Plugin,
 } from "obsidian";
 
@@ -26,7 +26,7 @@ const DEFAULT_SETTINGS: PublishSettings = {
     imageAltText: true,
     replaceOriginalDoc: false,
     attachmentLocation: ".",
-    imageStore: ImageStore.ANONYMOUS_IMGUR.id,
+    imageStore: ImageStore.IMGUR.id,
     imgurAnonymousSetting: {clientId: IMGUR_PLUGIN_CLIENT_ID},
     ossSetting: {
         region: "oss-cn-hangzhou",
@@ -34,6 +34,8 @@ const DEFAULT_SETTINGS: PublishSettings = {
         accessKeySecret: "",
         bucket: "",
         endpoint: "https://oss-cn-hangzhou.aliyuncs.com/",
+        path: "",
+        customDomainName: "",
     }
 };
 export default class ObsidianPublish extends Plugin {
@@ -49,14 +51,10 @@ export default class ObsidianPublish extends Plugin {
             id: "publish-page",
             name: "Publish Page",
             checkCallback: (checking: boolean) => {
-                let activeView = this.app.workspace.activeEditor;
-                if (activeView) {
-                    if (!checking) {
-                        this.publish()
-                    }
-                    return true;
+                if (!checking) {
+                    this.publish()
                 }
-                return false;
+                return true;
             }
         });
         this.addSettingTab(new PublishSettingTab(this.app, this));
