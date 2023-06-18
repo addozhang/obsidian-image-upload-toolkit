@@ -114,7 +114,7 @@ export default class ImageTagProcessor {
     }
 
     private getEditor(): Editor {
-        const activeView = this.app.workspace.activeEditor;
+        const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
         if (activeView) {
             return activeView.editor
         } else {
