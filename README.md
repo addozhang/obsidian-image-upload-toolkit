@@ -13,7 +13,7 @@ During plugin development, I also referred to plugins [obsidian-imgur-plugin](ht
 (**the imgur uploading codes is from it**) and [obsidian-image-auto-upload-plugin](https://github.com/renmu123/obsidian-image-auto-upload-plugin). Thanks both for 
 providing such great plugins.
 
-**NOTE: This plugin is in progress of submission to official plugin list.**
+This plugin is listed in the [Obsidian community plugins](https://obsidian.md/plugins?id=image-upload-toolkit) now.
 
 ## Usage
 
