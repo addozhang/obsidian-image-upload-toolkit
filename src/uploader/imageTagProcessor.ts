@@ -3,8 +3,8 @@ import path from "path";
 import ImageUploader from "./imageUploader";
 import {PublishSettings} from "../publish";
 
-const MD_REGEX = /\!\[(.*)\]\((.*?\.(png|jpg|jpeg|gif|svg|excalidraw))\)/g;
-const WIKI_REGEX = /\!\[\[(.*?\.(png|jpg|jpeg|gif|svg|excalidraw))(|.*)?\]\]/g;
+const MD_REGEX = /\!\[(.*)\]\((.*?\.(png|jpg|jpeg|gif|svg|webp|excalidraw))\)/g;
+const WIKI_REGEX = /\!\[\[(.*?\.(png|jpg|jpeg|gif|svg|webp|excalidraw))(|.*)?\]\]/g;
 
 interface Image {
     name: string;
@@ -100,7 +100,6 @@ export default class ImageTagProcessor {
                 url: '',
             })
         }
-        console.log(images);
         return images;
     }
 
