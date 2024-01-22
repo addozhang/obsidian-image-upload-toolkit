@@ -129,7 +129,11 @@ export default class PublishSettingTab extends PluginSettingTab {
             .addDropdown(dropdown =>
                 dropdown
                     .addOptions(RegionList)
-                    .onChange(value => this.plugin.settings.ossSetting.region = value)
+                    .setValue(this.plugin.settings.ossSetting.region)
+                    .onChange(value => {
+                        this.plugin.settings.ossSetting.region = value;
+                        this.plugin.settings.ossSetting.endpoint = `https://${value}.aliyuncs.com/`;
+                    })
             )
         new Setting(parentEL)
             .setName("Access Key Id")
