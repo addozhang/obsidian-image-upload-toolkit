@@ -94,8 +94,8 @@ export default class ImageTagProcessor {
             }
             const decodedPath = decodeURI(match[2]);
             images.push({
-                name: match[1] || path.parse(decodedPath).name,
-                path: this.settings.attachmentLocation + '/' + decodedPath,
+                name: decodedPath,
+                path: decodedPath,
                 source: match[0],
                 url: '',
             })
