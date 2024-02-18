@@ -11,6 +11,7 @@ import ImageStore from "./imageStore";
 import buildUploader from "./uploader/imageUploaderBuilder";
 import PublishSettingTab from "./ui/publishSettingTab";
 import {OssSetting} from "./uploader/oss/ossUploader";
+import {ImagekitSetting} from "./uploader/imagekit/imagekitUploader";
 
 export interface PublishSettings {
     imageAltText: boolean;
@@ -20,6 +21,7 @@ export interface PublishSettings {
     //Imgur Anonymous setting
     imgurAnonymousSetting: ImgurAnonymousSetting;
     ossSetting: OssSetting;
+    imagekitSetting: ImagekitSetting;
 }
 
 const DEFAULT_SETTINGS: PublishSettings = {
@@ -36,6 +38,13 @@ const DEFAULT_SETTINGS: PublishSettings = {
         endpoint: "https://oss-cn-hangzhou.aliyuncs.com/",
         path: "",
         customDomainName: "",
+    },
+    imagekitSetting: {
+        endpoint: "",
+        imagekitID: "",
+        privateKey: "",
+        publicKey: ""
+
     }
 };
 export default class ObsidianPublish extends Plugin {

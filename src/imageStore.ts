@@ -15,6 +15,11 @@ export default class ImageStore {
         "AliYun OSS"
     )
 
+    static readonly ImageKit = new ImageStore(
+        "Imagekit",
+        "Imagekit upload"
+    );
+
     private constructor(readonly id: string, readonly description: string) {
         ImageStore.values.push(this)
     }

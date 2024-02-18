@@ -90,6 +90,9 @@ export default class PublishSettingTab extends PluginSettingTab {
             case ImageStore.ALIYUN_OSS.id:
                 this.drawOSSSetting(partentEL);
                 break;
+            case ImageStore.ImageKit.id:
+                this.drawImageKitSetting(partentEL)
+                break
             default:
                 throw new Error(
                     "Should not reach here!"
@@ -178,5 +181,46 @@ export default class PublishSettingTab extends PluginSettingTab {
                     .setPlaceholder("Enter path")
                     .setValue(this.plugin.settings.ossSetting.customDomainName)
                     .onChange(value => this.plugin.settings.ossSetting.customDomainName = value))
+    }
+
+    private drawImageKitSetting(parentEL: HTMLDivElement) {
+        new Setting(parentEL)
+            .setName("Imagekit ID")
+            .setDesc(PublishSettingTab.imagekitSettingDescription())
+            .addText(text =>
+                text
+                    .setPlaceholder("Enter your ImagekitID")
+                    .setValue(this.plugin.settings.imagekitSetting.imagekitID)
+                    .onChange(value => {
+                        this.plugin.settings.imagekitSetting.imagekitID = value
+                        this.plugin.settings.imagekitSetting.endpoint = `https://ik.imagekit.io/${value}/`
+                    }))
+
+        new Setting(parentEL)
+            .setName("Public Key")
+            .addText(text =>
+                text
+                    .setPlaceholder("Enter your Public Key")
+                    .setValue(this.plugin.settings.imagekitSetting.publicKey)
+                    .onChange(value => this.plugin.settings.imagekitSetting.publicKey = value))
+
+        new Setting(parentEL)
+            .setName("Private Key")
+            .addText(text =>
+                text
+                    .setPlaceholder("Enter your Private Key")
+                    .setValue(this.plugin.settings.imagekitSetting.privateKey)
+                    .onChange(value => this.plugin.settings.imagekitSetting.privateKey = value))
+    }
+
+    private static imagekitSettingDescription() {
+        const fragment = document.createDocumentFragment();
+        const a = document.createElement("a");
+        const url = "https://imagekit.io/dashboard/developer/api-keys";
+        a.textContent = url;
+        a.setAttribute("href", url);
+        fragment.append("Obtain id and keys from ");
+        fragment.append(a);
+        return fragment;
     }
 }
