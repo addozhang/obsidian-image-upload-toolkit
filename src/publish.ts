@@ -43,8 +43,8 @@ const DEFAULT_SETTINGS: PublishSettings = {
         endpoint: "",
         imagekitID: "",
         privateKey: "",
-        publicKey: ""
-
+        publicKey: "",
+        folder: "",
     }
 };
 export default class ObsidianPublish extends Plugin {

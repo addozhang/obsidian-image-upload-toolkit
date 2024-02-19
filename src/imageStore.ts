@@ -17,7 +17,7 @@ export default class ImageStore {
 
     static readonly ImageKit = new ImageStore(
         "Imagekit",
-        "Imagekit upload"
+        "Imagekit"
     );
 
     private constructor(readonly id: string, readonly description: string) {

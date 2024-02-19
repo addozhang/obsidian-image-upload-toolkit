@@ -197,6 +197,15 @@ export default class PublishSettingTab extends PluginSettingTab {
                     }))
 
         new Setting(parentEL)
+            .setName("Folder name")
+            .setDesc("Please enter the directory name, otherwise leave it blank")
+            .addText(text =>
+                text
+                    .setPlaceholder("Enter the folder name")
+                    .setValue(this.plugin.settings.imagekitSetting.folder)
+                    .onChange(value => this.plugin.settings.imagekitSetting.folder = value))
+
+        new Setting(parentEL)
             .setName("Public Key")
             .addText(text =>
                 text
