@@ -15,7 +15,8 @@ import {ImagekitSetting} from "./uploader/imagekit/imagekitUploader";
 
 export interface PublishSettings {
     imageAltText: boolean;
-    replaceOriginalDoc: boolean
+    replaceOriginalDoc: boolean;
+    ignoreProperties: boolean;
     attachmentLocation: string;
     imageStore: string;
     //Imgur Anonymous setting
@@ -27,6 +28,7 @@ export interface PublishSettings {
 const DEFAULT_SETTINGS: PublishSettings = {
     imageAltText: true,
     replaceOriginalDoc: false,
+    ignoreProperties: true,
     attachmentLocation: ".",
     imageStore: ImageStore.IMGUR.id,
     imgurAnonymousSetting: {clientId: IMGUR_PLUGIN_CLIENT_ID},

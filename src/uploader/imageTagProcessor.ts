@@ -5,6 +5,7 @@ import {PublishSettings} from "../publish";
 
 const MD_REGEX = /\!\[(.*)\]\((.*?\.(png|jpg|jpeg|gif|svg|webp|excalidraw))\)/g;
 const WIKI_REGEX = /\!\[\[(.*?\.(png|jpg|jpeg|gif|svg|webp|excalidraw))(|.*)?\]\]/g;
+const PROPERTIES_REGEX = /^---[\s\S]+?---\n/;
 
 interface Image {
     name: string;
@@ -58,6 +59,9 @@ export default class ImageTagProcessor {
             }
             if (this.settings.replaceOriginalDoc) {
                 this.getEditor()?.setValue(value);
+            }
+            if (this.settings.ignoreProperties) {
+                value = value.replace(PROPERTIES_REGEX, '');
             }
             switch (action) {
                 case ACTION_PUBLISH:
