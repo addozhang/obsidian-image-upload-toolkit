@@ -55,6 +55,7 @@ To start a release build run the following command:
 ```
 npm run build
 ```
+
 ---
 
 ## Thanks
@@ -63,3 +64,19 @@ npm run build
 (**reference to the imgur uploading codes in it**) 
 * [obsidian-image-auto-upload-plugin](https://github.com/renmu123/obsidian-image-auto-upload-plugin)
 * [create-obsidian-plugin](https://www.npmjs.com/package/create-obsidian-plugin)
+
+---
+
+## (Misc) Imgur Users: Obtaining your own Imgur Client ID
+
+Imgur service usually has a daily [upload limits](https://apidocs.imgur.com/#rate-limits). To overcome this, create and use your own Client ID. This is generally easy, by following the steps below :
+
+1. If you do not have an imgur.com account, [create one](https://imgur.com/register) first.
+
+2. Visit [https://api.imgur.com/oauth2/addclient](https://api.imgur.com/oauth2/addclient) and generate **Client ID** for Obsidian with following settings:
+	- provide any application name, i.e. "Obsidian"
+	- choose "OAuth 2 authorization without a callback URL" (**important**)
+	- Add your E-Mail
+
+3. Copy the Client ID. (Note: You only need **Client ID**. The Client secret is a private info that is not required by this plugin. Keep it safe with you)
+4. Paste this Client ID in plugin settings 
