@@ -67,7 +67,9 @@ npm run build
 
 ---
 
-## (Misc) Imgur Users: Obtaining your own Imgur Client ID
+## Appendix
+
+### Imgur Users: Obtaining your own Imgur Client ID
 
 Imgur service usually has a daily [upload limits](https://apidocs.imgur.com/#rate-limits). To overcome this, create and use your own Client ID. This is generally easy, by following the steps below :
 
