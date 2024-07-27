@@ -27,7 +27,8 @@ and copy markdown with replaced image syntax to clipboard with notification.
 - [ ] support uploading images to more storages
   - [x] Aliyun Oss
   - [x] ImageKit
-  - [ ] Amazon S3
+  - [x] Amazon S3
+  - [ ]
 - [x] setting for replacing images embedded in origin markdown directly
 
 ## Contributing

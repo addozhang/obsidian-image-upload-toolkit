@@ -100,8 +100,11 @@ export default class PublishSettingTab extends PluginSettingTab {
                 this.drawOSSSetting(partentEL);
                 break;
             case ImageStore.ImageKit.id:
-                this.drawImageKitSetting(partentEL)
-                break
+                this.drawImageKitSetting(partentEL);
+                break;
+            case ImageStore.AWS_S3.id:
+                this.drawAwsS3Setting(partentEL);
+                break;
             default:
                 throw new Error(
                     "Should not reach here!"
@@ -240,5 +243,59 @@ export default class PublishSettingTab extends PluginSettingTab {
         fragment.append("Obtain id and keys from ");
         fragment.append(a);
         return fragment;
+    }
+
+    private drawAwsS3Setting(parentEL: HTMLDivElement) {
+        // Add AWS S3 configuration section
+        new Setting(parentEL)
+            .setName('AWS S3 Access Key ID')
+            .setDesc('Your AWS S3 access key ID')
+            .addText(text => text
+                .setPlaceholder('Enter your access key ID')
+                .setValue(this.plugin.settings.awsS3Setting?.accessKeyId || '')
+                .onChange(value => this.plugin.settings.awsS3Setting.accessKeyId = value
+                ));
+
+        new Setting(parentEL)
+            .setName('AWS S3 Secret Access Key')
+            .setDesc('Your AWS S3 secret access key')
+            .addText(text => text
+                .setPlaceholder('Enter your secret access key')
+                .setValue(this.plugin.settings.awsS3Setting?.secretAccessKey || '')
+                .onChange(value => this.plugin.settings.awsS3Setting.secretAccessKey = value));
+
+        new Setting(parentEL)
+            .setName('AWS S3 Region')
+            .setDesc('Your AWS S3 region')
+            .addText(text => text
+                .setPlaceholder('Enter your region')
+                .setValue(this.plugin.settings.awsS3Setting?.region || '')
+                .onChange(value => this.plugin.settings.awsS3Setting.region = value));
+
+        new Setting(parentEL)
+            .setName('AWS S3 Bucket Name')
+            .setDesc('Your AWS S3 bucket name')
+            .addText(text => text
+                .setPlaceholder('Enter your bucket name')
+                .setValue(this.plugin.settings.awsS3Setting?.bucketName || '')
+                .onChange(value => this.plugin.settings.awsS3Setting.bucketName = value));
+        new Setting(parentEL)
+            .setName("Target Path")
+            .setDesc("The path to store image.\nSupport {year} {mon} {day} {random} {filename} vars. For example, /{year}/{mon}/{day}/{filename} with uploading pic.jpg, it will store as /2023/06/08/pic.jpg.")
+            .addText(text =>
+                text
+                    .setPlaceholder("Enter path")
+                    .setValue(this.plugin.settings.ossSetting.path)
+                    .onChange(value => this.plugin.settings.awsS3Setting.path = value))
+
+        //custom domain
+        new Setting(parentEL)
+            .setName("Custom Domain Name")
+            .setDesc("If the custom domain name is example.com, you can use https://example.com/pic.jpg to access pic.img.")
+            .addText(text =>
+                text
+                    .setPlaceholder("Enter path")
+                    .setValue(this.plugin.settings.ossSetting.customDomainName)
+                    .onChange(value => this.plugin.settings.awsS3Setting.customDomainName = value))
     }
 }

@@ -20,6 +20,11 @@ export default class ImageStore {
         "Imagekit"
     );
 
+    static readonly AWS_S3 = new ImageStore(
+        "AWS_S3",
+        "AWS S3"
+    )
+
     private constructor(readonly id: string, readonly description: string) {
         ImageStore.values.push(this)
     }

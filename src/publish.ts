@@ -12,6 +12,7 @@ import buildUploader from "./uploader/imageUploaderBuilder";
 import PublishSettingTab from "./ui/publishSettingTab";
 import {OssSetting} from "./uploader/oss/ossUploader";
 import {ImagekitSetting} from "./uploader/imagekit/imagekitUploader";
+import {AwsS3Setting} from "./uploader/s3/awsS3Uploader";
 
 export interface PublishSettings {
     imageAltText: boolean;
@@ -23,6 +24,7 @@ export interface PublishSettings {
     imgurAnonymousSetting: ImgurAnonymousSetting;
     ossSetting: OssSetting;
     imagekitSetting: ImagekitSetting;
+    awsS3Setting: AwsS3Setting;
 }
 
 const DEFAULT_SETTINGS: PublishSettings = {
@@ -47,6 +49,14 @@ const DEFAULT_SETTINGS: PublishSettings = {
         privateKey: "",
         publicKey: "",
         folder: "",
+    },
+    awsS3Setting: {
+        accessKeyId: "",
+        secretAccessKey: "",
+        region: "",
+        bucketName: "",
+        path: "",
+        customDomainName: "",
     }
 };
 export default class ObsidianPublish extends Plugin {
