@@ -1,7 +1,7 @@
 # Obsidian Image Upload Toolkit
 
 This plugin cloud upload all local images embedded in markdown to specified remote image store
-(support [imgur](https://imgur.com),[AliYun OSS](https://www.alibabacloud.com/product/object-storage-service) and [Imagekit](https://imagekit.io), currently) and export markdown with image urls to clipboard directly.
+(support [imgur](https://imgur.com),[AliYun OSS](https://www.alibabacloud.com/product/object-storage-service), [Imagekit](https://imagekit.io) and [AWS S3](https://aws.amazon.com/s3/) currently) and export markdown with image urls to clipboard directly.
 The origin markdown in vault is still using local images.
 
 It will be help for publishing to the static site such [GitHub pages](https://pages.github.com).
@@ -28,7 +28,7 @@ and copy markdown with replaced image syntax to clipboard with notification.
   - [x] Aliyun Oss
   - [x] ImageKit
   - [x] Amazon S3
-  - [ ]
+  - [ ] more...
 - [x] setting for replacing images embedded in origin markdown directly
 
 ## Contributing
