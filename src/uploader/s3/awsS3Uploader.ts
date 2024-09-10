@@ -33,7 +33,6 @@ export default class AwsS3Uploader implements ImageUploader {
     return new Promise((resolve, reject) => {
       this.s3.upload(params, (err, data) => {
         if (err) {
-          console.log(err)
           reject(err);
         } else {
           resolve(UploaderUtils.customizeDomainName(data.Location, this.customDomainName));

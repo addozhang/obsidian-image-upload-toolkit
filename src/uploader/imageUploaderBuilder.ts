@@ -5,6 +5,7 @@ import ImgurAnonymousUploader from "./imgur/imgurAnonymousUploader";
 import OssUploader from "./oss/ossUploader";
 import ImagekitUploader from "./imagekit/imagekitUploader";
 import AwsS3Uploader from "./s3/awsS3Uploader";
+import CosUploader from "./cos/cosUploader";
 
 export default function buildUploader(settings: PublishSettings): ImageUploader {
     switch (settings.imageStore) {
@@ -16,6 +17,8 @@ export default function buildUploader(settings: PublishSettings): ImageUploader 
             return new ImagekitUploader(settings.imagekitSetting);
         case ImageStore.AWS_S3.id:
             return new AwsS3Uploader(settings.awsS3Setting);
+        case ImageStore.TENCENTCLOUD_COS.id:
+            return new CosUploader(settings.cosSetting);
         //todo more cases
         default:
             throw new Error('should not reach here!')

@@ -25,6 +25,11 @@ export default class ImageStore {
         "AWS S3"
     )
 
+    static readonly TENCENTCLOUD_COS = new ImageStore(
+        "TENCENTCLOUD_COS",
+        "TencentCloud COS"
+    )
+
     private constructor(readonly id: string, readonly description: string) {
         ImageStore.values.push(this)
     }

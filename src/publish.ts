@@ -13,6 +13,7 @@ import PublishSettingTab from "./ui/publishSettingTab";
 import {OssSetting} from "./uploader/oss/ossUploader";
 import {ImagekitSetting} from "./uploader/imagekit/imagekitUploader";
 import {AwsS3Setting} from "./uploader/s3/awsS3Uploader";
+import {CosSetting} from "./uploader/cos/cosUploader";
 
 export interface PublishSettings {
     imageAltText: boolean;
@@ -25,6 +26,7 @@ export interface PublishSettings {
     ossSetting: OssSetting;
     imagekitSetting: ImagekitSetting;
     awsS3Setting: AwsS3Setting;
+    cosSetting: CosSetting;
 }
 
 const DEFAULT_SETTINGS: PublishSettings = {
@@ -55,6 +57,14 @@ const DEFAULT_SETTINGS: PublishSettings = {
         secretAccessKey: "",
         region: "",
         bucketName: "",
+        path: "",
+        customDomainName: "",
+    },
+    cosSetting: {
+        region: "",
+        bucket: "",
+        secretId: "",
+        secretKey: "",
         path: "",
         customDomainName: "",
     }

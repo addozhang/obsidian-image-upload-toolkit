@@ -1,4 +1,4 @@
-export const RegionList: Record<string, string> = {
+export const AliYunRegionList: Record<string, string> = {
     "oss-cn-hangzhou": "China (Hangzhou)",
     "oss-cn-shanghai": "China (Shanghai)",
     "oss-cn-nanjing": "China (Nanjing - Local Region)",

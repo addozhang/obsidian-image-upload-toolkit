@@ -1,7 +1,8 @@
 import {App, Notice, PluginSettingTab, Setting} from "obsidian";
 import ObsidianPublish from "../publish";
 import ImageStore from "../imageStore";
-import {RegionList} from "../uploader/oss/common";
+import {AliYunRegionList} from "../uploader/oss/common";
+import {TencentCloudRegionList} from "../uploader/cos/common";
 
 export default class PublishSettingTab extends PluginSettingTab {
     private plugin: ObsidianPublish;
@@ -90,20 +91,23 @@ export default class PublishSettingTab extends PluginSettingTab {
         this.plugin.setupImageUploader();
     }
 
-    private async drawImageStoreSettings(partentEL: HTMLDivElement) {
-        partentEL.empty();
+    private async drawImageStoreSettings(parentEL: HTMLDivElement) {
+        parentEL.empty();
         switch (this.plugin.settings.imageStore) {
             case ImageStore.IMGUR.id:
-                this.drawImgurSetting(partentEL);
+                this.drawImgurSetting(parentEL);
                 break;
             case ImageStore.ALIYUN_OSS.id:
-                this.drawOSSSetting(partentEL);
+                this.drawOSSSetting(parentEL);
                 break;
             case ImageStore.ImageKit.id:
-                this.drawImageKitSetting(partentEL);
+                this.drawImageKitSetting(parentEL);
                 break;
             case ImageStore.AWS_S3.id:
-                this.drawAwsS3Setting(partentEL);
+                this.drawAwsS3Setting(parentEL);
+                break;
+            case ImageStore.TENCENTCLOUD_COS.id:
+                this.drawTencentCloudCosSetting(parentEL);
                 break;
             default:
                 throw new Error(
@@ -113,8 +117,8 @@ export default class PublishSettingTab extends PluginSettingTab {
     }
 
     // Imgur Setting
-    private drawImgurSetting(partentEL: HTMLDivElement) {
-        new Setting(partentEL)
+    private drawImgurSetting(parentEL: HTMLDivElement) {
+        new Setting(parentEL)
             .setName("Client ID")
             .setDesc(PublishSettingTab.clientIdSettingDescription())
             .addText(text =>
@@ -143,7 +147,7 @@ export default class PublishSettingTab extends PluginSettingTab {
             .setDesc("OSS data center region.")
             .addDropdown(dropdown =>
                 dropdown
-                    .addOptions(RegionList)
+                    .addOptions(AliYunRegionList)
                     .setValue(this.plugin.settings.ossSetting.region)
                     .onChange(value => {
                         this.plugin.settings.ossSetting.region = value;
@@ -285,7 +289,7 @@ export default class PublishSettingTab extends PluginSettingTab {
             .addText(text =>
                 text
                     .setPlaceholder("Enter path")
-                    .setValue(this.plugin.settings.ossSetting.path)
+                    .setValue(this.plugin.settings.awsS3Setting.path)
                     .onChange(value => this.plugin.settings.awsS3Setting.path = value))
 
         //custom domain
@@ -295,7 +299,64 @@ export default class PublishSettingTab extends PluginSettingTab {
             .addText(text =>
                 text
                     .setPlaceholder("Enter path")
-                    .setValue(this.plugin.settings.ossSetting.customDomainName)
+                    .setValue(this.plugin.settings.awsS3Setting.customDomainName)
                     .onChange(value => this.plugin.settings.awsS3Setting.customDomainName = value))
+    }
+
+    private drawTencentCloudCosSetting(parentEL: HTMLDivElement) {
+        new Setting(parentEL)
+            .setName("Region")
+            .setDesc("COS data center region.")
+            .addDropdown(dropdown =>
+                dropdown
+                    .addOptions(TencentCloudRegionList)
+                    .setValue(this.plugin.settings.cosSetting.region)
+                    .onChange(value => {
+                        this.plugin.settings.cosSetting.region = value;
+                    })
+            )
+        new Setting(parentEL)
+            .setName("Secret Id")
+            .setDesc("The secret id of TencentCloud.")
+            .addText(text =>
+                text
+                    .setPlaceholder("Enter access key id")
+                    .setValue(this.plugin.settings.cosSetting.secretId)
+                    .onChange(value => this.plugin.settings.cosSetting.secretId = value))
+        new Setting(parentEL)
+            .setName("Secret Key")
+            .setDesc("The secret key of TencentCloud.")
+            .addText(text =>
+                text
+                    .setPlaceholder("Enter access key secret")
+                    .setValue(this.plugin.settings.cosSetting.secretKey)
+                    .onChange(value => this.plugin.settings.cosSetting.secretKey = value))
+        new Setting(parentEL)
+            .setName("Access Bucket Name")
+            .setDesc("The name of bucket to store images.")
+            .addText(text =>
+                text
+                    .setPlaceholder("Enter bucket name")
+                    .setValue(this.plugin.settings.cosSetting.bucket)
+                    .onChange(value => this.plugin.settings.cosSetting.bucket = value))
+
+        new Setting(parentEL)
+            .setName("Target Path")
+            .setDesc("The path to store image.\nSupport {year} {mon} {day} {random} {filename} vars. For example, /{year}/{mon}/{day}/{filename} with uploading pic.jpg, it will store as /2023/06/08/pic.jpg.")
+            .addText(text =>
+                text
+                    .setPlaceholder("Enter path")
+                    .setValue(this.plugin.settings.cosSetting.path)
+                    .onChange(value => this.plugin.settings.cosSetting.path = value))
+
+        //custom domain
+        new Setting(parentEL)
+            .setName("Custom Domain Name")
+            .setDesc("If the custom domain name is example.com, you can use https://example.com/pic.jpg to access pic.img.")
+            .addText(text =>
+                text
+                    .setPlaceholder("Enter path")
+                    .setValue(this.plugin.settings.cosSetting.customDomainName)
+                    .onChange(value => this.plugin.settings.cosSetting.customDomainName = value))
     }
 }
