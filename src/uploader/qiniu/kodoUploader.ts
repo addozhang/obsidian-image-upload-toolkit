@@ -19,7 +19,6 @@ export default class KodoUploader implements ImageUploader {
         }
         this.updateToken();
         const config = new qiniu.conf.Config();
-        config.zone = qiniu.zone.Zone_z0;
         const formUploader = new qiniu.form_up.FormUploader(config);
         const putExtra = new qiniu.form_up.PutExtra();
         let key = UploaderUtils.generateName(this.setting.path, image.name.replaceAll(' ', '_')); //replace space with _ in file name
