@@ -109,6 +109,9 @@ export default class PublishSettingTab extends PluginSettingTab {
             case ImageStore.TENCENTCLOUD_COS.id:
                 this.drawTencentCloudCosSetting(parentEL);
                 break;
+            case ImageStore.QINIU_OSS.id:
+                this.drawQiniuOSSSetting(parentEL);
+                break;
             default:
                 throw new Error(
                     "Should not reach here!"
@@ -358,5 +361,40 @@ export default class PublishSettingTab extends PluginSettingTab {
                     .setPlaceholder("Enter path")
                     .setValue(this.plugin.settings.cosSetting.customDomainName)
                     .onChange(value => this.plugin.settings.cosSetting.customDomainName = value))
+    }
+    // Qiniuyun OSS Setting
+    private drawQiniuOSSSetting(parentEL: HTMLDivElement) {
+        new Setting(parentEL)
+            .setName("Access Key")
+            .setDesc("The access key of Qiniuyun.")
+            .addText(text =>
+                text
+                    .setPlaceholder("Enter access key")
+                    .setValue(this.plugin.settings.qiniuSetting.accessKey)
+                    .onChange(value => this.plugin.settings.qiniuSetting.accessKey = value))
+        new Setting(parentEL)
+            .setName("Secret Key")
+            .setDesc("The secret key of Qiniuyun.")
+            .addText(text =>
+                text
+                    .setPlaceholder("Enter secret key")
+                    .setValue(this.plugin.settings.qiniuSetting.secretKey)
+                    .onChange(value => this.plugin.settings.qiniuSetting.secretKey = value))
+        new Setting(parentEL)
+            .setName("Bucket")
+            .setDesc("The name of bucket to store images.")
+            .addText(text =>
+                text
+                    .setPlaceholder("Enter bucket name")
+                    .setValue(this.plugin.settings.qiniuSetting.bucket)
+                    .onChange(value => this.plugin.settings.qiniuSetting.bucket = value))
+        new Setting(parentEL)
+            .setName("Domain")
+            .setDesc("The domain of bucket to access images.")
+            .addText(text =>
+                text
+                    .setPlaceholder("Enter domain")
+                    .setValue(this.plugin.settings.qiniuSetting.customDomainName)
+                    .onChange(value => this.plugin.settings.qiniuSetting.customDomainName = value))
     }
 }

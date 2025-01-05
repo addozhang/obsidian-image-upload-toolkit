@@ -30,6 +30,11 @@ export default class ImageStore {
         "TencentCloud COS"
     )
 
+    static readonly QINIU_OSS = new ImageStore(
+        "QINIU_OSS",
+        "Qiniu_OSS"
+    )
+
     private constructor(readonly id: string, readonly description: string) {
         ImageStore.values.push(this)
     }

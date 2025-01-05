@@ -14,6 +14,7 @@ import {OssSetting} from "./uploader/oss/ossUploader";
 import {ImagekitSetting} from "./uploader/imagekit/imagekitUploader";
 import {AwsS3Setting} from "./uploader/s3/awsS3Uploader";
 import {CosSetting} from "./uploader/cos/cosUploader";
+import { QiniuSetting } from "./uploader/qiniu/qiniuUploader";
 
 export interface PublishSettings {
     imageAltText: boolean;
@@ -27,6 +28,7 @@ export interface PublishSettings {
     imagekitSetting: ImagekitSetting;
     awsS3Setting: AwsS3Setting;
     cosSetting: CosSetting;
+    qiniuSetting: QiniuSetting;
 }
 
 const DEFAULT_SETTINGS: PublishSettings = {
@@ -65,6 +67,13 @@ const DEFAULT_SETTINGS: PublishSettings = {
         bucket: "",
         secretId: "",
         secretKey: "",
+        path: "",
+        customDomainName: "",
+    },
+    qiniuSetting: {
+        accessKey: "",
+        secretKey: "",
+        bucket: "",
         path: "",
         customDomainName: "",
     }

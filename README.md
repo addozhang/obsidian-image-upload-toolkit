@@ -30,6 +30,7 @@ and copy markdown with replaced image syntax to clipboard with notification.
   - [x] ImageKit
   - [x] Amazon S3
   - [x] TencentCloud COS
+  - [x] QiniuCloud Oss
   - [ ] more...
 - [x] setting for replacing images embedded in origin markdown directly
 
