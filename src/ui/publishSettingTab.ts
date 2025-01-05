@@ -81,9 +81,7 @@ export default class PublishSettingTab extends PluginSettingTab {
                     await this.drawImageStoreSettings(this.imageStoreDiv);
                 });
             });
-        this.drawImageStoreSettings(this.imageStoreDiv).then(() => {
-        }).finally(() => {
-        })
+        this.drawImageStoreSettings(this.imageStoreDiv);
     }
 
     async hide(): Promise<any> {
@@ -109,6 +107,9 @@ export default class PublishSettingTab extends PluginSettingTab {
             case ImageStore.TENCENTCLOUD_COS.id:
                 this.drawTencentCloudCosSetting(parentEL);
                 break;
+            case ImageStore.QINIU_KUDO.id:
+                this.drawQiniuSetting(parentEL);
+                break
             default:
                 throw new Error(
                     "Should not reach here!"
@@ -358,5 +359,51 @@ export default class PublishSettingTab extends PluginSettingTab {
                     .setPlaceholder("Enter path")
                     .setValue(this.plugin.settings.cosSetting.customDomainName)
                     .onChange(value => this.plugin.settings.cosSetting.customDomainName = value))
+    }
+
+    private drawQiniuSetting(parentEL: HTMLDivElement) {
+        new Setting(parentEL)
+            .setName("Access Key")
+            .setDesc("The access key of Qiniu.")
+            .addText(text =>
+                text
+                    .setPlaceholder("Enter access key")
+                    .setValue(this.plugin.settings.kodoSetting.accessKey)
+                    .onChange(value => this.plugin.settings.kodoSetting.accessKey = value))
+        new Setting(parentEL)
+            .setName("Secret Key")
+            .setDesc("The secret key of Qiniu.")
+            .addText(text =>
+                text
+                    .setPlaceholder("Enter secret key")
+                    .setValue(this.plugin.settings.kodoSetting.secretKey)
+                    .onChange(value => this.plugin.settings.kodoSetting.secretKey = value))
+        new Setting(parentEL)
+            .setName("Bucket Name")
+            .setDesc("The name of bucket to store images.")
+            .addText(text =>
+                text
+                    .setPlaceholder("Enter bucket name")
+                    .setValue(this.plugin.settings.kodoSetting.bucket)
+                    .onChange(value => this.plugin.settings.kodoSetting.bucket = value))
+
+        // new Setting(parentEL)
+        //     .setName("Target Path")
+        //     .setDesc("The path to store image.\nSupport {year} {mon} {day} {random} {filename} vars. For example, /{year}/{mon}/{day}/{filename} with uploading pic.jpg, it will store as /2023/06/08/pic.jpg.")
+        //     .addText(text =>
+        //         text
+        //             .setPlaceholder("Enter path")
+        //             .setValue(this.plugin.settings.kodoSetting.path)
+        //             .onChange(value => this.plugin.settings.kodoSetting.path = value))
+
+        //custom domain
+        new Setting(parentEL)
+            .setName("Custom Domain Name")
+            .setDesc("If the custom domain name is example.com, you can use https://example.com/pic.jpg to access pic.img.")
+            .addText(text =>
+                text
+                    .setPlaceholder("Enter path")
+                    .setValue(this.plugin.settings.kodoSetting.customDomainName)
+                    .onChange(value => this.plugin.settings.kodoSetting.customDomainName = value))
     }
 }

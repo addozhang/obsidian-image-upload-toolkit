@@ -6,6 +6,7 @@ import OssUploader from "./oss/ossUploader";
 import ImagekitUploader from "./imagekit/imagekitUploader";
 import AwsS3Uploader from "./s3/awsS3Uploader";
 import CosUploader from "./cos/cosUploader";
+import KodoUploader from "./qiniu/kodoUploader";
 
 export default function buildUploader(settings: PublishSettings): ImageUploader {
     switch (settings.imageStore) {
@@ -19,6 +20,8 @@ export default function buildUploader(settings: PublishSettings): ImageUploader 
             return new AwsS3Uploader(settings.awsS3Setting);
         case ImageStore.TENCENTCLOUD_COS.id:
             return new CosUploader(settings.cosSetting);
+        case ImageStore.QINIU_KUDO.id:
+            return new KodoUploader(settings.kodoSetting);
         //todo more cases
         default:
             throw new Error('should not reach here!')

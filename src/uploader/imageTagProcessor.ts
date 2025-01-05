@@ -46,7 +46,9 @@ export default class ImageTagProcessor {
                 uploader.upload(new File([buf], image.name), basePath + '/' + image.path).then(imgUrl => {
                     image.url = imgUrl;
                     resolve(image)
-                }).catch(e => new Notice(`Upload ${image.path} failed, remote server returned an error: ${e.message}`, 10000))
+                }).catch(e => {
+                    new Notice(`Upload ${image.path} failed, remote server returned an error: ${e.error || e.message || e}`, 10000)
+                })
             }));
         }
 
@@ -54,7 +56,6 @@ export default class ImageTagProcessor {
             let altText;
             for (const image of images) {
                 altText = this.settings.imageAltText ? path.parse(image.name)?.name?.replaceAll("-", " ")?.replaceAll("_", " ") : '';
-                // console.log(`replacing ${image.source} with ![${altText}](${image.url})`);
                 value = value.replaceAll(image.source, `![${altText}](${image.url})`);
             }
             if (this.settings.replaceOriginalDoc) {

@@ -27,3 +27,7 @@ export const AliYunRegionList: Record<string, string> = {
     "oss-eu-west-1": "UK (London)",
     "oss-me-east-1": "UAE (Dubai) *"
 }
+
+export const QiniuZoneList: Record<string, string> = {
+
+}

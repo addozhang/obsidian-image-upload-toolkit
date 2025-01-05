@@ -1,6 +1,6 @@
 {
   "name": "obsidian-image-upload-toolkit",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "",
   "author": "addozhang",
   "main": "main.js",
@@ -21,6 +21,7 @@
     "aws-sdk": "^2.1664.0",
     "cos-nodejs-sdk-v5": "^2.14.6",
     "imagekit": "^5.0.0",
-    "proxy-agent": "^5.0.0"
+    "proxy-agent": "^5.0.0",
+    "qiniu": "^7.14.0"
   }
 }
