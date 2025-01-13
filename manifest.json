@@ -1,10 +1,10 @@
 {
   "id": "image-upload-toolkit",
   "name": "Image Upload Toolkit",
-  "description": "An obsidian plugin for uploading local images embedded in markdown to remote store and export markdown for publishing to static site. Currently, it supports Imgur and Aliyun OSS.",
+  "description": "Upload local images to remote store (Imgur, AliYun OSS, Imagekit, Amazon S3, TencentCloud COS and Qiniu Kodo).",
   "author": "Addo Zhang",
   "authorUrl": "https://atbug.com",
   "isDesktopOnly": true,
   "minAppVersion": "0.11.0",
-  "version": "0.8.0"
+  "version": "0.8.2"
 }

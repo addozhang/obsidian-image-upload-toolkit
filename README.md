@@ -1,13 +1,13 @@
 # Obsidian Image Upload Toolkit
 
 This plugin cloud upload all local images embedded in markdown to specified remote image store
-(support [imgur](https://imgur.com),[AliYun OSS](https://www.alibabacloud.com/product/object-storage-service), 
-[Imagekit](https://imagekit.io), 
+(support [Imgur](https://imgur.com), [AliYun OSS](https://www.alibabacloud.com/product/object-storage-service), 
+[Imagekit](https://imagekit.io), [Amazon S3](https://aws.amazon.com/s3/), 
 [TencentCloud COS](https://cloud.tencent.com/product/cos) 
-and [Qiniu Kodo](https://www.qiniu.com/products/kodo), currently) and export markdown with image urls to clipboard directly.
+and [Qiniu Kodo](https://www.qiniu.com/products/kodo), till now) and export markdown with image urls to clipboard directly.
 The origin markdown in vault is still using local images.
 
-It will be help for publishing to the static site such [GitHub pages](https://pages.github.com).
+It will be helpful for publishing to the static site such [GitHub pages](https://pages.github.com).
 
 The idea of plugin comes from the powerful markdown editor [MWeb Pro](https://www.mweb.im) I have been 
 used for years. 
@@ -53,7 +53,8 @@ To start building the plugin with what mode enabled run the following command:
 npm run dev
 ```
 
-_Note: If you haven't already installed the hot-reload-plugin you'll be prompted to. You need to enable that plugin in your obsidian vault before hot-reloading will start. You might need to refresh your plugin list for it to show up._
+_Note: If you haven't already installed the hot-reload-plugin you'll be prompted to. You need to enable that plugin in your obsidian vault 
+before hot-reloading will start. You might need to refresh your plugin list for it to show up._
 
 ### Releasing
 
