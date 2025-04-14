@@ -36,7 +36,7 @@ export default class ImageTagProcessor {
         const images = this.getImageLists(value);
         const uploader = this.imageUploader;
         for (const image of images) {
-            if ((await this.app.vault.getAbstractFileByPath(normalizePath(image.path))) == null) {
+            if (this.app.vault.getAbstractFileByPath(normalizePath(image.path)) == null) {
                 new Notice(`Can NOT locate ${image.name} with ${image.path}, please check image path or attachment option in plugin setting!`, 10000);
                 console.log(`${normalizePath(image.path)} not exist`);
                 break;
@@ -82,13 +82,13 @@ export default class ImageTagProcessor {
         const mdMatches = value.matchAll(MD_REGEX);
         for (const match of wikiMatches) {
             const name = match[1]
-            var path_name = name
+            let path_name = name
             if (name.endsWith('.excalidraw')) {
                 path_name = name + '.png'
             }
             images.push({
                 name: name,
-                path: this.settings.attachmentLocation + '/' + path_name,
+                path: path.join(this.settings.attachmentLocation, path_name),
                 source: match[0],
                 url: '',
             })
@@ -97,10 +97,14 @@ export default class ImageTagProcessor {
             if (match[2].startsWith('http://') || match[2].startsWith('https://')) {
                 continue
             }
-            const decodedPath = decodeURI(match[2]);
+            let decodedPath = decodeURI(match[2]);
+            const parentPath = this.app.workspace.getActiveFile().parent.path;
+            if (decodedPath.startsWith('./')) {
+                decodedPath = decodedPath.substring(2);
+            }
             images.push({
                 name: decodedPath,
-                path: decodedPath,
+                path: path.join(parentPath, decodedPath),
                 source: match[0],
                 url: '',
             })
