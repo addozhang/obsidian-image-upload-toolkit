@@ -7,6 +7,7 @@ import ImagekitUploader from "./imagekit/imagekitUploader";
 import AwsS3Uploader from "./s3/awsS3Uploader";
 import CosUploader from "./cos/cosUploader";
 import KodoUploader from "./qiniu/kodoUploader";
+import GitHubUploader from "./github/gitHubUploader";
 
 export default function buildUploader(settings: PublishSettings): ImageUploader {
     switch (settings.imageStore) {
@@ -22,6 +23,8 @@ export default function buildUploader(settings: PublishSettings): ImageUploader 
             return new CosUploader(settings.cosSetting);
         case ImageStore.QINIU_KUDO.id:
             return new KodoUploader(settings.kodoSetting);
+        case ImageStore.GITHUB.id:
+            return new GitHubUploader(settings.githubSetting);
         //todo more cases
         default:
             throw new Error('should not reach here!')

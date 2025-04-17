@@ -56,7 +56,7 @@ export default class ImageTagProcessor {
             let altText;
             for (const image of images) {
                 altText = this.settings.imageAltText ? path.parse(image.name)?.name?.replaceAll("-", " ")?.replaceAll("_", " ") : '';
-                value = value.replaceAll(image.source, `![${altText}](${image.url})`);
+                value = value.replaceAll(image.source, `![altText](${image.url})`);
             }
             if (this.settings.replaceOriginalDoc) {
                 this.getEditor()?.setValue(value);
@@ -81,14 +81,10 @@ export default class ImageTagProcessor {
         const wikiMatches = value.matchAll(WIKI_REGEX);
         const mdMatches = value.matchAll(MD_REGEX);
         for (const match of wikiMatches) {
-            const name = match[1]
-            let path_name = name
-            if (name.endsWith('.excalidraw')) {
-                path_name = name + '.png'
-            }
+            let {resolvedPath, name} = this.resolveImagePath(match[1])
             images.push({
                 name: name,
-                path: path.join(this.settings.attachmentLocation, path_name),
+                path: resolvedPath,
                 source: match[0],
                 url: '',
             })
@@ -97,19 +93,32 @@ export default class ImageTagProcessor {
             if (match[2].startsWith('http://') || match[2].startsWith('https://')) {
                 continue
             }
-            let decodedPath = decodeURI(match[2]);
-            const parentPath = this.app.workspace.getActiveFile().parent.path;
-            if (decodedPath.startsWith('./')) {
-                decodedPath = decodedPath.substring(2);
-            }
+            let decodedName = decodeURI(match[2]);
+            let {resolvedPath, name} = this.resolveImagePath(decodedName)
             images.push({
-                name: decodedPath,
-                path: path.join(parentPath, decodedPath),
+                name: name,
+                path: resolvedPath,
                 source: match[0],
                 url: '',
             })
         }
         return images;
+    }
+
+    private resolveImagePath(imageName: string): {resolvedPath, name: string} {
+        var pathName = imageName
+        if (imageName.endsWith('.excalidraw')) {
+            pathName = imageName + '.png'
+        }
+        var imagePath = path.join(this.settings.attachmentLocation, pathName);
+        if (this.app.vault.getAbstractFileByPath(normalizePath(imagePath)) != null) {
+            return {resolvedPath: imagePath, name: pathName}
+        }
+        if (pathName.startsWith('./')) {
+            pathName = pathName.substring(2);
+        }
+        const parentPath = this.app.workspace.getActiveFile().parent.path;
+        return {resolvedPath: path.join(parentPath, pathName), name: pathName};
     }
 
 

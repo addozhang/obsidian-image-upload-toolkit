@@ -34,6 +34,11 @@ export default class ImageStore {
         "QINIU_KUDO",
         "Qiniu KuDo"
     )
+    
+    static readonly GITHUB = new ImageStore(
+        "GITHUB",
+        "GitHub Repository"
+    )
 
     private constructor(readonly id: string, readonly description: string) {
         ImageStore.values.push(this)

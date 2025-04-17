@@ -110,6 +110,9 @@ export default class PublishSettingTab extends PluginSettingTab {
             case ImageStore.QINIU_KUDO.id:
                 this.drawQiniuSetting(parentEL);
                 break
+            case ImageStore.GITHUB.id:
+                this.drawGitHubSetting(parentEL);
+                break;
             default:
                 throw new Error(
                     "Should not reach here!"
@@ -405,5 +408,58 @@ export default class PublishSettingTab extends PluginSettingTab {
                     .setPlaceholder("Enter path")
                     .setValue(this.plugin.settings.kodoSetting.customDomainName)
                     .onChange(value => this.plugin.settings.kodoSetting.customDomainName = value))
+    }
+
+    private drawGitHubSetting(parentEL: HTMLDivElement) {
+        new Setting(parentEL)
+            .setName("Repository Name")
+            .setDesc("The name of the GitHub repository to store images (format: owner/repo).")
+            .addText(text =>
+                text
+                    .setPlaceholder("Enter repository name (e.g., username/repo)")
+                    .setValue(this.plugin.settings.githubSetting.repositoryName)
+                    .onChange(value => this.plugin.settings.githubSetting.repositoryName = value)
+            );
+
+        new Setting(parentEL)
+            .setName("Branch Name")
+            .setDesc("The branch to store images in (defaults to 'main').")
+            .addText(text =>
+                text
+                    .setPlaceholder("Enter branch name")
+                    .setValue(this.plugin.settings.githubSetting.branchName)
+                    .onChange(value => this.plugin.settings.githubSetting.branchName = value)
+            );
+
+        new Setting(parentEL)
+            .setName("Personal Access Token")
+            .setDesc(PublishSettingTab.githubTokenDescription())
+            .addText(text =>
+                text
+                    .setPlaceholder("Enter your GitHub personal access token")
+                    .setValue(this.plugin.settings.githubSetting.token)
+                    .onChange(value => this.plugin.settings.githubSetting.token = value)
+            );
+
+        /*new Setting(parentEL)
+            .setName("Target Path")
+            .setDesc("The path to store images within the repository.\nSupport {year} {mon} {day} {random} {filename} vars. For example, images/{year}/{mon}/{day}/{filename} with uploading pic.jpg, it will store as images/2023/06/08/pic.jpg.")
+            .addText(text =>
+                text
+                    .setPlaceholder("Enter path")
+                    .setValue(this.plugin.settings.githubSetting.path)
+                    .onChange(value => this.plugin.settings.githubSetting.path = value)
+            );*/
+    }
+
+    private static githubTokenDescription() {
+        const fragment = document.createDocumentFragment();
+        const a = document.createElement("a");
+        const url = "https://github.com/settings/tokens";
+        a.textContent = url;
+        a.setAttribute("href", url);
+        fragment.append("Generate a personal access token with 'repo' scope at ");
+        fragment.append(a);
+        return fragment;
     }
 }

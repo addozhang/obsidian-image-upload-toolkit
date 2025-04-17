@@ -15,6 +15,7 @@ import {ImagekitSetting} from "./uploader/imagekit/imagekitUploader";
 import {AwsS3Setting} from "./uploader/s3/awsS3Uploader";
 import {CosSetting} from "./uploader/cos/cosUploader";
 import {KodoSetting} from "./uploader/qiniu/kodoUploader";
+import {GitHubSetting} from "./uploader/github/gitHubUploader";
 
 export interface PublishSettings {
     imageAltText: boolean;
@@ -28,7 +29,8 @@ export interface PublishSettings {
     imagekitSetting: ImagekitSetting;
     awsS3Setting: AwsS3Setting;
     cosSetting: CosSetting;
-    kodoSetting: KodoSetting
+    kodoSetting: KodoSetting;
+    githubSetting: GitHubSetting;
 }
 
 const DEFAULT_SETTINGS: PublishSettings = {
@@ -76,6 +78,12 @@ const DEFAULT_SETTINGS: PublishSettings = {
         bucket: "",
         customDomainName: "",
         path: ""
+    },
+    githubSetting: {
+        repositoryName: "",
+        branchName: "main",
+        token: "",
+        path: "images"
     },
 };
 export default class ObsidianPublish extends Plugin {
