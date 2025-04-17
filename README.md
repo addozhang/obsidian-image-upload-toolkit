@@ -5,7 +5,8 @@ This plugin cloud upload all local images embedded in markdown to specified remo
 [Imagekit](https://imagekit.io), [Amazon S3](https://aws.amazon.com/s3/),
 [TencentCloud COS](https://cloud.tencent.com/product/cos),
 [Qiniu Kodo](https://www.qiniu.com/products/kodo),
-and [GitHub Repository](https://github.com), till now) and export markdown with image urls to clipboard directly.
+[GitHub Repository](https://github.com), 
+and [Cloudflare R2](https://www.cloudflare.com/products/r2/), till now) and export markdown with image urls to clipboard directly.
 The origin markdown in vault is still using local images.
 
 It will be helpful for publishing to the static site such [GitHub pages](https://pages.github.com).
@@ -34,6 +35,7 @@ and copy markdown with replaced image syntax to clipboard with notification.
   - [x] TencentCloud COS
   - [x] Qiniu Kodo
   - [x] GitHub Repository
+  - [x] Cloudflare R2
   - [ ] more...
 - [x] setting for replacing images embedded in origin markdown directly
 
@@ -91,3 +93,23 @@ Imgur service usually has a daily [upload limits](https://apidocs.imgur.com/#rat
 
 3. Copy the Client ID. (Note: You only need **Client ID**. The Client secret is a private info that is not required by this plugin. Keep it safe with you)
 4. Paste this Client ID in plugin settings
+
+### Cloudflare R2 Setup
+
+To use Cloudflare R2 for image uploads:
+
+1. Sign up for a [Cloudflare account](https://dash.cloudflare.com/sign-up) if you don't have one.
+2. Enable R2 storage in your Cloudflare dashboard.
+3. Create an R2 bucket to store your images.
+4. Create an API token with permission to access your R2 bucket:
+   - Navigate to R2 > Overview > Manage R2 API Tokens
+   - Create a new API token with read and write permissions
+   - Copy your Access Key ID and Secret Access Key
+5. In the plugin settings, select "Cloudflare R2" as your image store and fill in:
+   - Access Key ID and Secret Access Key from step 4
+   - Endpoint: Your R2 endpoint URL (typically `https://<account-id>.r2.cloudflarestorage.com`)
+   - Bucket Name: The name of your bucket from step 3
+   - Target Path: Optional path template for organizing your images
+   - Custom Domain Name: You can use either:
+     - Your own custom domain if you've configured one for your bucket
+     - The free R2.dev URL (like `https://<random-id>.<account-id>.r2.dev`) that Cloudflare provides for public assets
