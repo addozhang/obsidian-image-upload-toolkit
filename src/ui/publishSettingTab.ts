@@ -113,6 +113,9 @@ export default class PublishSettingTab extends PluginSettingTab {
             case ImageStore.GITHUB.id:
                 this.drawGitHubSetting(parentEL);
                 break;
+            case ImageStore.CLOUDFLARE_R2.id:
+                this.drawR2Setting(parentEL);
+                break;
             default:
                 throw new Error(
                     "Should not reach here!"
@@ -461,5 +464,59 @@ export default class PublishSettingTab extends PluginSettingTab {
         fragment.append("Generate a personal access token with 'repo' scope at ");
         fragment.append(a);
         return fragment;
+    }
+
+    private drawR2Setting(parentEL: HTMLDivElement) {
+        new Setting(parentEL)
+            .setName('Cloudflare R2 Access Key ID')
+            .setDesc('Your Cloudflare R2 access key ID')
+            .addText(text => text
+                .setPlaceholder('Enter your access key ID')
+                .setValue(this.plugin.settings.r2Setting?.accessKeyId || '')
+                .onChange(value => this.plugin.settings.r2Setting.accessKeyId = value
+                ));
+
+        new Setting(parentEL)
+            .setName('Cloudflare R2 Secret Access Key')
+            .setDesc('Your Cloudflare R2 secret access key')
+            .addText(text => text
+                .setPlaceholder('Enter your secret access key')
+                .setValue(this.plugin.settings.r2Setting?.secretAccessKey || '')
+                .onChange(value => this.plugin.settings.r2Setting.secretAccessKey = value));
+
+        new Setting(parentEL)
+            .setName('Cloudflare R2 Endpoint')
+            .setDesc('Your Cloudflare R2 endpoint URL (e.g., https://account-id.r2.cloudflarestorage.com)')
+            .addText(text => text
+                .setPlaceholder('Enter your R2 endpoint')
+                .setValue(this.plugin.settings.r2Setting?.endpoint || '')
+                .onChange(value => this.plugin.settings.r2Setting.endpoint = value));
+
+        new Setting(parentEL)
+            .setName('Cloudflare R2 Bucket Name')
+            .setDesc('Your Cloudflare R2 bucket name')
+            .addText(text => text
+                .setPlaceholder('Enter your bucket name')
+                .setValue(this.plugin.settings.r2Setting?.bucketName || '')
+                .onChange(value => this.plugin.settings.r2Setting.bucketName = value));
+
+        new Setting(parentEL)
+            .setName("Target Path")
+            .setDesc("The path to store image.\nSupport {year} {mon} {day} {random} {filename} vars. For example, /{year}/{mon}/{day}/{filename} with uploading pic.jpg, it will store as /2023/06/08/pic.jpg.")
+            .addText(text =>
+                text
+                    .setPlaceholder("Enter path")
+                    .setValue(this.plugin.settings.r2Setting.path)
+                    .onChange(value => this.plugin.settings.r2Setting.path = value));
+
+        //custom domain
+        new Setting(parentEL)
+            .setName("R2.dev URL, Custom Domain Name")
+            .setDesc("You can use the R2.dev URL such as https://pub-xxxx.r2.dev here, or custom domain. If the custom domain name is example.com, you can use https://example.com/pic.jpg to access pic.img.")
+            .addText(text =>
+                text
+                    .setPlaceholder("Enter domain name")
+                    .setValue(this.plugin.settings.r2Setting.customDomainName)
+                    .onChange(value => this.plugin.settings.r2Setting.customDomainName = value));
     }
 }

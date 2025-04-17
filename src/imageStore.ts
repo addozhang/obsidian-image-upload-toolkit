@@ -39,6 +39,11 @@ export default class ImageStore {
         "GITHUB",
         "GitHub Repository"
     )
+    
+    static readonly CLOUDFLARE_R2 = new ImageStore(
+        "CLOUDFLARE_R2",
+        "Cloudflare R2"
+    )
 
     private constructor(readonly id: string, readonly description: string) {
         ImageStore.values.push(this)

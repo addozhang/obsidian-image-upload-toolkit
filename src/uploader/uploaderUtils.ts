@@ -1,3 +1,5 @@
+import path from "path";
+
 export class UploaderUtils {
     static generateName(pathTmpl,imageName: string): string {
         const date = new Date();
@@ -30,10 +32,15 @@ export class UploaderUtils {
 
     static customizeDomainName(url, customDomainName) {
         const regex = /https?:\/\/([^/]+)/;
+        customDomainName = customDomainName.replaceAll('https://', '')
         if (customDomainName && customDomainName.trim() !== "") {
-            return url.replace(regex, (match, domain) => {
-                return match.replace(domain, customDomainName);
-            })
+            if (url.match(regex) != null) {
+                return url.replace(regex, (match, domain) => {
+                    return match.replace(domain, customDomainName);
+                })
+            } else {
+                return `https://${customDomainName}/${url}`;
+            }
         }
         return url;
     }
