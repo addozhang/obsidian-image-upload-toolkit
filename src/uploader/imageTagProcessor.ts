@@ -56,7 +56,7 @@ export default class ImageTagProcessor {
             let altText;
             for (const image of images) {
                 altText = this.settings.imageAltText ? path.parse(image.name)?.name?.replaceAll("-", " ")?.replaceAll("_", " ") : '';
-                value = value.replaceAll(image.source, `![altText](${image.url})`);
+                value = value.replaceAll(image.source, `![${altText}](${image.url})`);
             }
             if (this.settings.replaceOriginalDoc) {
                 this.getEditor()?.setValue(value);
