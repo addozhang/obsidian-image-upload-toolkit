@@ -31,13 +31,15 @@ export default class R2Uploader implements ImageUploader {
       Bucket: this.bucket,
       Key: path,
       Body: uint8Array,
+      ContentType: `image/${image.name.split('.').pop()}`,
     };
     return new Promise((resolve, reject) => {
       this.r2.upload(params, (err, data) => {
         if (err) {
           reject(err);
         } else {
-          resolve(UploaderUtils.customizeDomainName(data.Key, this.customDomainName));
+          const dst = data.Location.split(`/${this.bucket}/`).pop();
+          resolve(UploaderUtils.customizeDomainName(dst, this.customDomainName));
         }
       });
     });
