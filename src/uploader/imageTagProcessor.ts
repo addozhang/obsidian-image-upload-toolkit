@@ -1,7 +1,8 @@
-import {App, Editor, FileSystemAdapter, MarkdownView, normalizePath, Notice,} from "obsidian";
+import {App, Editor, FileSystemAdapter, MarkdownView, normalizePath, Notice, setIcon} from "obsidian";
 import path from "path";
 import ImageUploader from "./imageUploader";
 import {PublishSettings} from "../publish";
+import UploadProgressModal from "../ui/uploadProgressModal";
 
 const MD_REGEX = /\!\[(.*)\]\((.*?\.(png|jpg|jpeg|gif|svg|webp|excalidraw))\)/g;
 const WIKI_REGEX = /\!\[\[(.*?\.(png|jpg|jpeg|gif|svg|webp|excalidraw))(|.*)?\]\]/g;
@@ -27,12 +28,15 @@ export default class ImageTagProcessor {
     private readonly imageUploader: ImageUploader;
     private settings: PublishSettings;
     private adapter: FileSystemAdapter;
+    private progressModal: UploadProgressModal | null = null;
+    private useModal: boolean = true; // Set to true to use modal, false to use status bar
 
-    constructor(app: App, settings: PublishSettings, imageUploader: ImageUploader) {
+    constructor(app: App, settings: PublishSettings, imageUploader: ImageUploader, useModal: boolean = true) {
         this.app = app;
         this.adapter = this.app.vault.adapter as FileSystemAdapter;
         this.settings = settings;
         this.imageUploader = imageUploader;
+        this.useModal = useModal;
     }
 
     public async process(action: string): Promise<void> {
@@ -42,12 +46,22 @@ export default class ImageTagProcessor {
         const images = this.getImageLists(value);
         const uploader = this.imageUploader;
         
+        // Initialize progress display
+        if (this.useModal && images.length > 0) {
+            this.progressModal = new UploadProgressModal(this.app);
+            this.progressModal.open();
+            this.progressModal.initialize(images);
+        }
+        
         for (const image of images) {
             if (this.app.vault.getAbstractFileByPath(normalizePath(image.path)) == null) {
                 new Notice(`Can NOT locate ${image.name} with ${image.path}, please check image path or attachment option in plugin setting!`, 10000);
                 console.log(`${normalizePath(image.path)} not exist`);
-                // Continue processing other images instead of breaking
-                continue;
+                // Update the progress modal with the failure
+                if (this.progressModal) {
+                    this.progressModal.updateProgress(image.name, false);
+                }
+                continue; // Skip to the next image
             }
             
             try {
@@ -56,9 +70,17 @@ export default class ImageTagProcessor {
                     uploader.upload(new File([buf], image.name), basePath + '/' + image.path)
                         .then(imgUrl => {
                             image.url = imgUrl;
+                            // Update progress on successful upload
+                            if (this.progressModal) {
+                                this.progressModal.updateProgress(image.name, true);
+                            }
                             resolve(image);
                         })
                         .catch(e => {
+                            // Also update progress on failed upload
+                            if (this.progressModal) {
+                                this.progressModal.updateProgress(image.name, false);
+                            }
                             const errorMessage = `Upload ${image.path} failed, remote server returned an error: ${e.error || e.message || e}`;
                             new Notice(errorMessage, 10000);
                             reject(new Error(errorMessage));
@@ -71,6 +93,9 @@ export default class ImageTagProcessor {
         }
 
         if (promises.length === 0) {
+            if (this.progressModal) {
+                this.progressModal.close();
+            }
             new Notice("No images found or all images failed to process", 3000);
             return;
         }
@@ -79,6 +104,7 @@ export default class ImageTagProcessor {
             console.error(e);
             return null; // Return null for failed promises to continue processing
         }))).then(results => {
+            // Modal will auto-close when all uploads complete
             // Filter out null results from failed promises
             const successfulImages = results.filter(img => img !== null) as Image[];
             
@@ -116,17 +142,7 @@ export default class ImageTagProcessor {
         try {
             const wikiMatches = value.matchAll(WIKI_REGEX);
             for (const match of wikiMatches) {
-                try {
-                    const {resolvedPath, name} = this.resolveImagePath(match[1]);
-                    images.push({
-                        name,
-                        path: resolvedPath,
-                        source: match[0],
-                        url: '',
-                    });
-                } catch (error) {
-                    console.error(`Failed to process wiki image: ${match[0]}`, error);
-                }
+                this.processMatched(match[1], match[0], images);
             }
             
             const mdMatches = value.matchAll(MD_REGEX);
@@ -135,25 +151,33 @@ export default class ImageTagProcessor {
                 if (match[2].startsWith('http://') || match[2].startsWith('https://')) {
                     continue;
                 }
-                
-                try {
-                    const decodedName = decodeURI(match[2]);
-                    const {resolvedPath, name} = this.resolveImagePath(decodedName);
-                    images.push({
-                        name,
-                        path: resolvedPath,
-                        source: match[0],
-                        url: '',
-                    });
-                } catch (error) {
-                    console.error(`Failed to process markdown image: ${match[0]}`, error);
-                }
+                const decodedName = decodeURI(match[2]);
+                this.processMatched(decodedName, match[0], images);
+
             }
         } catch (error) {
             console.error("Error processing image lists:", error);
         }
         
         return images;
+    }
+
+    private processMatched(path: string, src: string, images: Image[]){    
+        try {
+            const {resolvedPath, name} = this.resolveImagePath(path);
+            // check the item with same resolvedPath 
+            const existingImage = images.find(image => image.path === resolvedPath);
+            if (!existingImage) {
+                images.push({
+                    name,
+                    path: resolvedPath,
+                    source: src,
+                    url: '',
+                });
+            }
+        }catch (error) {
+            console.error(`Failed to process image: ${src}`, error);
+        }
     }
 
     private resolveImagePath(imageName: string): ResolvedImagePath {

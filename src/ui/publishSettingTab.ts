@@ -66,6 +66,16 @@ export default class PublishSettingTab extends PluginSettingTab {
                     .onChange(value => this.plugin.settings.ignoreProperties = value)
             );
 
+        // Add new setting for controlling progress modal display
+        new Setting(imageStoreTypeDiv)
+            .setName("Show progress modal")
+            .setDesc("Show a modal dialog with detailed progress when uploading images (auto close in 3s). If disabled, a simpler status indicator will be used.")
+            .addToggle(toggle =>
+                toggle
+                    .setValue(this.plugin.settings.showProgressModal)
+                    .onChange(value => this.plugin.settings.showProgressModal = value)
+            );
+
         // Image Store
         new Setting(imageStoreTypeDiv)
             .setName("Image store")

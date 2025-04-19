@@ -24,6 +24,7 @@ export interface PublishSettings {
     ignoreProperties: boolean;
     attachmentLocation: string;
     imageStore: string;
+    showProgressModal: boolean; // New setting to control progress modal display
     //Imgur Anonymous setting
     imgurAnonymousSetting: ImgurAnonymousSetting;
     ossSetting: OssSetting;
@@ -41,6 +42,7 @@ const DEFAULT_SETTINGS: PublishSettings = {
     ignoreProperties: true,
     attachmentLocation: ".",
     imageStore: ImageStore.IMGUR.id,
+    showProgressModal: true, // Default to showing the modal
     imgurAnonymousSetting: {clientId: IMGUR_PLUGIN_CLIENT_ID},
     ossSetting: {
         region: "oss-cn-hangzhou",
@@ -100,11 +102,14 @@ export default class ObsidianPublish extends Plugin {
     settings: PublishSettings;
     imageTagProcessor: ImageTagProcessor;
     imageUploader: ImageUploader;
+    statusBarItem: HTMLElement;
 
     async onload() {
         await this.loadSettings();
-        this.setupImageUploader()
-        this.addStatusBarItem().setText("Status Bar Text");
+        // Create status bar item that will be used if modal is disabled
+        this.statusBarItem = this.addStatusBarItem();
+        this.setupImageUploader();
+        
         this.addCommand({
             id: "publish-page",
             name: "Publish Page",
@@ -142,7 +147,14 @@ export default class ObsidianPublish extends Plugin {
     setupImageUploader(): void {
         try {
             this.imageUploader = buildUploader(this.settings);
-            this.imageTagProcessor = new ImageTagProcessor(this.app, this.settings, this.imageUploader);
+            // Create ImageTagProcessor with the user's preference for modal vs status bar
+            this.imageTagProcessor = new ImageTagProcessor(
+                this.app, 
+                this.settings, 
+                this.imageUploader, 
+                this.settings.showProgressModal, // Use modal based on setting
+                this.statusBarItem // Pass status bar for when modal is disabled
+            );
         } catch (e) {
             console.log(`Failed to setup image uploader: ${e}`)
         }
