@@ -35,7 +35,7 @@ Perfect for publishing to static sites like [GitHub Pages](https://pages.github.
 3. All local images will be uploaded to your configured remote storage
 4. The markdown with updated image URLs will be copied to your clipboard with a notification
 
-![screenshot](https://github.com/addozhang/obsidian-image-upload-toolkit/assets/2224492/e190f65e-4f19-44e7-af40-a3f9f13e0e1d)
+![screenshot](https://github.com/user-attachments/assets/d20abcac-78a3-4275-b391-818ad781c219)
 
 ## 🛠️ Configuration
 
