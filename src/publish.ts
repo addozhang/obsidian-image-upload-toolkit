@@ -153,7 +153,6 @@ export default class ObsidianPublish extends Plugin {
                 this.settings, 
                 this.imageUploader, 
                 this.settings.showProgressModal, // Use modal based on setting
-                this.statusBarItem // Pass status bar for when modal is disabled
             );
         } catch (e) {
             console.log(`Failed to setup image uploader: ${e}`)
