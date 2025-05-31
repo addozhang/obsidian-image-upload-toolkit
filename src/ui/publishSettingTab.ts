@@ -30,7 +30,9 @@ export default class PublishSettingTab extends PluginSettingTab {
                     .setPlaceholder("Enter folder name")
                     .setValue(this.plugin.settings.attachmentLocation)
                     .onChange(async (value) => {
-                        if ((await this.app.vault.getAbstractFileByPath(value)) == null) {
+                        const isRelativePath = value.match(/^\./)
+                        const pathExist = this.app.vault.getAbstractFileByPath(value)
+                        if (!isRelativePath && !pathExist) {
                             new Notice(`Attachment location "${value}" not exist!`)
                             return
                         }
