@@ -190,18 +190,25 @@ export default class ImageTagProcessor {
             return {resolvedPath: imagePath, name: pathName};
         }
         
-        let finalPathName = pathName;
-        if (pathName.startsWith('./')) {
-            finalPathName = pathName.substring(2);
-        }
-        
+        // If not found at the attachment location, try relative to the current file
         const activeFile = this.app.workspace.getActiveFile();
         if (!activeFile || !activeFile.parent) {
             throw new Error("No active file found");
         }
         
         const parentPath = activeFile.parent.path;
-        return {resolvedPath: path.join(parentPath, finalPathName), name: finalPathName};
+        let finalImagePath: string;
+        
+        // If attachment location starts with './', resolve it relative to the current file's directory
+        if (this.settings.attachmentLocation.startsWith('./')) {
+            const relativeAttachmentPath = this.settings.attachmentLocation.substring(2);
+            finalImagePath = path.join(parentPath, relativeAttachmentPath, pathName);
+        } else {
+            // Fallback: just join with parent path
+            finalImagePath = path.join(parentPath, pathName);
+        }
+        
+        return {resolvedPath: finalImagePath, name: pathName};
     }
 
     private getValue(): string {
