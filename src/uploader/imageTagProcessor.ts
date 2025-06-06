@@ -181,27 +181,28 @@ export default class ImageTagProcessor {
     }
 
     private resolveImagePath(imageName: string): ResolvedImagePath {
-        const pathName = imageName.endsWith('.excalidraw') ? 
+        let pathName = imageName.endsWith('.excalidraw') ?
             imageName + '.png' : 
             imageName;
-            
-        const imagePath = path.join(this.settings.attachmentLocation, pathName);
-        if (this.app.vault.getAbstractFileByPath(normalizePath(imagePath)) != null) {
-            return {resolvedPath: imagePath, name: pathName};
+
+        if(imageName.indexOf('/') < 0) {
+            pathName = path.join(this.app.vault.config.attachmentFolderPath, pathName);
+            if (this.app.vault.config.attachmentFolderPath.startsWith('.')) {
+                pathName = './' + pathName;
+            }
         }
-        
-        let finalPathName = pathName;
+
         if (pathName.startsWith('./')) {
-            finalPathName = pathName.substring(2);
+            pathName = pathName.substring(2);
+            const activeFile = this.app.workspace.getActiveFile();
+            if (!activeFile || !activeFile.parent) {
+                throw new Error("No active file found");
+            }
+            const parentPath = activeFile.parent.path;
+            return {resolvedPath: path.join(parentPath, pathName), name: pathName};
+        } else {
+            return {resolvedPath: pathName, name: pathName};
         }
-        
-        const activeFile = this.app.workspace.getActiveFile();
-        if (!activeFile || !activeFile.parent) {
-            throw new Error("No active file found");
-        }
-        
-        const parentPath = activeFile.parent.path;
-        return {resolvedPath: path.join(parentPath, finalPathName), name: finalPathName};
     }
 
     private getValue(): string {
