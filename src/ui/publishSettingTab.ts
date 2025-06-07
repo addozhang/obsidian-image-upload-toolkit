@@ -1,4 +1,4 @@
-import {App, Notice, PluginSettingTab, Setting} from "obsidian";
+import {App, PluginSettingTab, Setting} from "obsidian";
 import ObsidianPublish from "../publish";
 import ImageStore from "../imageStore";
 import {AliYunRegionList} from "../uploader/oss/common";
@@ -20,24 +20,6 @@ export default class PublishSettingTab extends PluginSettingTab {
 
         const imageStoreTypeDiv = containerEl.createDiv();
         this.imageStoreDiv = containerEl.createDiv();
-
-        // Attachment location
-        new Setting(imageStoreTypeDiv)
-            .setName("Attachment location")
-            .setDesc("The location storing images which will upload images from.")
-            .addText(text =>
-                text
-                    .setPlaceholder("Enter folder name")
-                    .setValue(this.plugin.settings.attachmentLocation)
-                    .onChange(async (value) => {
-                        if ((await this.app.vault.getAbstractFileByPath(value)) == null) {
-                            new Notice(`Attachment location "${value}" not exist!`)
-                            return
-                        }
-                        this.plugin.settings.attachmentLocation = value;
-
-                    })
-            );
 
         new Setting(imageStoreTypeDiv)
             .setName("Use image name as Alt Text")

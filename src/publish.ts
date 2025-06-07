@@ -22,7 +22,6 @@ export interface PublishSettings {
     imageAltText: boolean;
     replaceOriginalDoc: boolean;
     ignoreProperties: boolean;
-    attachmentLocation: string;
     imageStore: string;
     showProgressModal: boolean; // New setting to control progress modal display
     //Imgur Anonymous setting
@@ -40,7 +39,6 @@ const DEFAULT_SETTINGS: PublishSettings = {
     imageAltText: true,
     replaceOriginalDoc: false,
     ignoreProperties: true,
-    attachmentLocation: ".",
     imageStore: ImageStore.IMGUR.id,
     showProgressModal: true, // Default to showing the modal
     imgurAnonymousSetting: {clientId: IMGUR_PLUGIN_CLIENT_ID},

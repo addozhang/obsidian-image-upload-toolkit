@@ -1,4 +1,4 @@
-import {App, Editor, FileSystemAdapter, MarkdownView, normalizePath, Notice, setIcon} from "obsidian";
+import {App, Editor, FileSystemAdapter, MarkdownView, normalizePath, Notice} from "obsidian";
 import path from "path";
 import ImageUploader from "./imageUploader";
 import {PublishSettings} from "../publish";
@@ -24,12 +24,12 @@ interface ResolvedImagePath {
 export const ACTION_PUBLISH: string = "PUBLISH";
 
 export default class ImageTagProcessor {
-    private app: App;
+    private readonly app: App;
     private readonly imageUploader: ImageUploader;
     private settings: PublishSettings;
     private adapter: FileSystemAdapter;
     private progressModal: UploadProgressModal | null = null;
-    private useModal: boolean = true; // Set to true to use modal, false to use status bar
+    private readonly useModal: boolean = true; // Set to true to use modal, false to use status bar
 
     constructor(app: App, settings: PublishSettings, imageUploader: ImageUploader, useModal: boolean = true) {
         this.app = app;
@@ -186,8 +186,10 @@ export default class ImageTagProcessor {
             imageName;
 
         if(imageName.indexOf('/') < 0) {
-            pathName = path.join(this.app.vault.config.attachmentFolderPath, pathName);
-            if (this.app.vault.config.attachmentFolderPath.startsWith('.')) {
+            // @ts-ignore: config is not defined in vault api, but available
+            const attachmentFolderPath = this.app.vault.config.attachmentFolderPath;
+            pathName = path.join(attachmentFolderPath, pathName);
+            if (attachmentFolderPath.startsWith('.')) {
                 pathName = './' + pathName;
             }
         }

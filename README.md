@@ -27,6 +27,11 @@ Perfect for publishing to static sites like [GitHub Pages](https://pages.github.
 - **Preservation** - Keep your original notes unchanged in your vault
 - **Customizable Paths** - Configure target paths for your uploaded images
 - **Optional In-Place Replacement** - Option to update original files directly if preferred
+- **Flexible Attachment Locations** – Choose where attachments are saved:
+  - Vault folder: Adds the attachment to the root of your vault.
+  - In the folder specified below: Adds the attachment to a specified folder.
+  - Same folder as current file: Adds the attachment to the same folder as the note you added it to.
+  - In subfolder under current folder: Adds attachments to a specified folder next to the note you added the attachment to. If it doesn't exist, Obsidian creates it when you add an attachment.
 
 ## 🔍 Usage
 
