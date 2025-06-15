@@ -185,13 +185,15 @@ export default class ImageTagProcessor {
             imageName + '.png' : 
             imageName;
 
-        if(imageName.indexOf('/') < 0) {
+        if(pathName.indexOf('/') < 0) {
             // @ts-ignore: config is not defined in vault api, but available
             const attachmentFolderPath = this.app.vault.config.attachmentFolderPath;
             pathName = path.join(attachmentFolderPath, pathName);
             if (attachmentFolderPath.startsWith('.')) {
                 pathName = './' + pathName;
             }
+        } else {
+            imageName = imageName.substring(pathName.lastIndexOf('/') + 1);
         }
 
         if (pathName.startsWith('./')) {
@@ -201,9 +203,9 @@ export default class ImageTagProcessor {
                 throw new Error("No active file found");
             }
             const parentPath = activeFile.parent.path;
-            return {resolvedPath: path.join(parentPath, pathName), name: pathName};
+            return {resolvedPath: path.join(parentPath, pathName), name: imageName};
         } else {
-            return {resolvedPath: pathName, name: pathName};
+            return {resolvedPath: pathName, name: imageName};
         }
     }
 
