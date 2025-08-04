@@ -182,10 +182,10 @@ export default class ImageTagProcessor {
 
     private resolveImagePath(imageName: string): ResolvedImagePath {
         let pathName = imageName.endsWith('.excalidraw') ?
-            imageName + '.png' : 
+            imageName + '.png' :
             imageName;
 
-        if(pathName.indexOf('/') < 0) {
+        if (pathName.indexOf('/') < 0) {
             // @ts-ignore: config is not defined in vault api, but available
             const attachmentFolderPath = this.app.vault.config.attachmentFolderPath;
             pathName = path.join(attachmentFolderPath, pathName);
@@ -196,14 +196,16 @@ export default class ImageTagProcessor {
             imageName = imageName.substring(pathName.lastIndexOf('/') + 1);
         }
 
-        if (pathName.startsWith('./')) {
-            pathName = pathName.substring(2);
+        // Handle relative paths: ./ and ../
+        if (pathName.startsWith('./') || pathName.startsWith('../')) {
             const activeFile = this.app.workspace.getActiveFile();
             if (!activeFile || !activeFile.parent) {
                 throw new Error("No active file found");
             }
             const parentPath = activeFile.parent.path;
-            return {resolvedPath: path.join(parentPath, pathName), name: imageName};
+            // Normalize the path to resolve ../ and ./
+            const normalizedPath = path.normalize(path.join(parentPath, pathName));
+            return {resolvedPath: normalizedPath, name: imageName};
         } else {
             return {resolvedPath: pathName, name: imageName};
         }
