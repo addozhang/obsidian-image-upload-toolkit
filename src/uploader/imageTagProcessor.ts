@@ -196,8 +196,8 @@ export default class ImageTagProcessor {
             imageName = imageName.substring(pathName.lastIndexOf('/') + 1);
         }
 
-        // Handle relative paths: ./, ../, or any path containing /
-        if (pathName.startsWith('./') || pathName.startsWith('../') || pathName.indexOf('/') >= 0) {
+        // Handle relative paths: ./, ../, or any path containing / but not starting with /
+        if (pathName.startsWith('./') || pathName.startsWith('../') || (pathName.includes('/') && !pathName.startsWith('/'))) {
             const activeFile = this.app.workspace.getActiveFile();
             if (!activeFile || !activeFile.parent) {
                 throw new Error("No active file found");
