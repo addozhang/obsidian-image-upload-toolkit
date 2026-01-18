@@ -28,6 +28,7 @@ src/
     ├── imageUploader.ts            # Base uploader interface
     ├── imageUploaderBuilder.ts     # Factory for uploader instances
     ├── imageTagProcessor.ts        # Markdown image parser & processor
+    ├── webImageDownloader.ts       # Web image download utility (v1.2.0)
     ├── uploaderUtils.ts            # Shared utilities
     ├── apiError.ts                 # Error handling
     ├── imgur/                      # Imgur implementation
@@ -69,10 +70,17 @@ New providers are registered in [`ImageStore`](src/imageStore.ts) and instantiat
 
 ### Image Processing Flow
 
-1. **Detection**: [`ImageTagProcessor`](src/uploader/imageTagProcessor.ts) parses markdown for local images
-2. **Upload**: Images are uploaded via the configured provider's `upload()` method
-3. **Replace**: Local paths are replaced with remote URLs
-4. **Output**: Updated markdown is copied to clipboard
+1. **Detection**: [`ImageTagProcessor`](src/uploader/imageTagProcessor.ts) parses markdown for local and web images
+2. **Web Image Handling** (v1.2.0): [`WebImageDownloader`](src/uploader/webImageDownloader.ts) downloads external images if `uploadWebImages` is enabled
+3. **Upload**: Images are uploaded via the configured provider's `upload()` method
+4. **Replace**: Local/web paths are replaced with remote URLs
+5. **Output**: Updated markdown is copied to clipboard
+
+#### Web Image Upload Feature (v1.2.0)
+- Automatically downloads web images (http/https URLs) when enabled
+- Skips images already hosted on configured storage (via `isAlreadyHosted()`)
+- Prevents link rot from external sources
+- Configurable via `uploadWebImages` setting (default: disabled)
 
 ### Path Variables
 
@@ -278,6 +286,7 @@ Settings are stored in `.obsidian/plugins/image-upload-toolkit/data.json`:
   "ignoreProperties": true,
   "imageStore": "imgur",
   "showProgressModal": true,
+  "uploadWebImages": false,
   "imgurAnonymousSetting": { "clientId": "..." },
   // ... provider-specific settings
 }
@@ -304,6 +313,7 @@ Settings are stored in `.obsidian/plugins/image-upload-toolkit/data.json`:
 - Individual provider implementations in `src/uploader/*/`
 - UI components in `src/ui/`
 - Utility functions in `src/uploader/uploaderUtils.ts`
+- Web image downloader in `src/uploader/webImageDownloader.ts`
 
 ## Resources
 
@@ -313,4 +323,4 @@ Settings are stored in `.obsidian/plugins/image-upload-toolkit/data.json`:
 
 ## Current Version
 
-v1.1.3 - Latest features include Cloudflare R2 support and improved relative path handling.
+v1.2.0 - Latest features include web image upload support (automatically download and re-upload external images to prevent link rot), Cloudflare R2 support, and improved relative path handling.
