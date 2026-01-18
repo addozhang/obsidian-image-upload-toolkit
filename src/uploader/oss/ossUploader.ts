@@ -22,7 +22,10 @@ export default class OssUploader implements ImageUploader {
     }
 
     async upload(image: File, path: string): Promise<string> {
-        const result = this.client.put(UploaderUtils.generateName(this.pathTmpl, image.name), path);
+        // Use the File object's buffer instead of reading from filesystem
+        // This allows uploading web images and local images uniformly
+        const buffer = await image.arrayBuffer();
+        const result = this.client.put(UploaderUtils.generateName(this.pathTmpl, image.name), Buffer.from(buffer));
         return UploaderUtils.customizeDomainName((await result).url, this.customDomainName);
     }
 

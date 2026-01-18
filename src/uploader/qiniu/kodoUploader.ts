@@ -22,8 +22,12 @@ export default class KodoUploader implements ImageUploader {
         const formUploader = new qiniu.form_up.FormUploader(config);
         const putExtra = new qiniu.form_up.PutExtra();
         let key = UploaderUtils.generateName(this.setting.path, image.name.replaceAll(' ', '_')); //replace space with _ in file name
+        
+        // Read file buffer instead of using filesystem path for better web image support
+        const buffer = Buffer.from(await image.arrayBuffer());
+        
         return formUploader
-            .putFile(this.uploadToken, key, path, putExtra)
+            .put(this.uploadToken, key, buffer, putExtra)
             .then(({data, resp}) => {
                 if (resp.statusCode === 200) {
                     return this.setting.customDomainName + '/' + data.key;

@@ -58,6 +58,16 @@ export default class PublishSettingTab extends PluginSettingTab {
                     .onChange(value => this.plugin.settings.showProgressModal = value)
             );
 
+        // Add new setting for uploading web images
+        new Setting(imageStoreTypeDiv)
+            .setName("Upload web images")
+            .setDesc("When enabled, web images (http/https URLs) will be downloaded and re-uploaded to your configured storage. Images already hosted on your storage service will be skipped. This is useful for preserving web-clipped content that might become unavailable.")
+            .addToggle(toggle =>
+                toggle
+                    .setValue(this.plugin.settings.uploadWebImages)
+                    .onChange(value => this.plugin.settings.uploadWebImages = value)
+            );
+
         // Image Store
         new Setting(imageStoreTypeDiv)
             .setName("Image store")

@@ -35,6 +35,7 @@
 - ✅ **Batch Processing** - Upload multiple images simultaneously
 - ✅ **Real-Time Progress** - Optional progress modal with detailed feedback
 - ✅ **Flexible Paths** - Support for relative paths and dynamic path variables
+- ✅ **Web Image Upload** - Download and re-upload web images to your storage (optional)
 
 ### Supported Storage Services (8 providers)
 | Service | Free Tier | Rating | Best For |
@@ -62,6 +63,7 @@ Perfect for publishing to static sites like [GitHub Pages](https://pages.github.
 - **Update original document**: ❌ Suggested disabled (preserves original notes)
 - **Ignore note properties**: ✅ Recommended (removes frontmatter when publishing)
 - **Show progress modal**: ✅ Recommended (better user experience)
+- **Upload web images**: ❌ Optional (downloads and re-uploads web images to prevent link rot)
 
 ### Step 3: Choose Storage Service
 Select your preferred storage service from the dropdown. See [Storage Service Configuration](#-storage-service-configuration) for detailed setup instructions.
@@ -81,6 +83,7 @@ Select your preferred storage service from the dropdown. See [Storage Service Co
 - **Custom Paths**: Use variables like `{year}/{mon}/{day}/{filename}` in path settings
 - **Relative Paths**: Support for `./` and `../` relative path formats
 - **Dynamic Attachments**: Works with Obsidian's attachment folder settings
+- **Web Image Upload**: Enable in settings to automatically download and re-upload web images (http/https URLs) to your storage service. Images already hosted on your configured storage are automatically skipped.
 
 ## 🔧 Storage Service Configuration
 
@@ -220,6 +223,14 @@ Note: Images are committed as regular files to the repository
 2. Use only alphanumeric characters, hyphens, and underscores
 3. Check filename encoding in your file system
 
+#### Web Image Download Failures
+**Cause**: Network issues, CORS restrictions, or authentication requirements
+**Solution**:
+1. Check your internet connection
+2. Verify the web image URL is accessible
+3. Some images may require authentication and cannot be downloaded
+4. Disable "Upload web images" if you only want to process local images
+
 ## 📈 Best Practices
 
 ### Workflow Recommendations
@@ -273,7 +284,12 @@ npm run dev
 
 ## 📝 Changelog
 
-### v1.1.3 (Latest)
+### v1.2.0 (Latest)
+- ✨ Added web image upload feature (addresses #37)
+- ✨ Smart detection to skip images already hosted on your storage
+- 📝 Improved documentation and error messages
+
+### v1.1.3
 - ✨ Added Cloudflare R2 support
 - 🐛 Fixed relative path handling issues
 - 📝 Improved error messages

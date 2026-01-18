@@ -24,6 +24,7 @@ export interface PublishSettings {
     ignoreProperties: boolean;
     imageStore: string;
     showProgressModal: boolean; // New setting to control progress modal display
+    uploadWebImages: boolean; // New setting to enable web image upload
     //Imgur Anonymous setting
     imgurAnonymousSetting: ImgurAnonymousSetting;
     ossSetting: OssSetting;
@@ -41,6 +42,7 @@ const DEFAULT_SETTINGS: PublishSettings = {
     ignoreProperties: true,
     imageStore: ImageStore.IMGUR.id,
     showProgressModal: true, // Default to showing the modal
+    uploadWebImages: false, // Default to disabled for backward compatibility
     imgurAnonymousSetting: {clientId: IMGUR_PLUGIN_CLIENT_ID},
     ossSetting: {
         region: "oss-cn-hangzhou",

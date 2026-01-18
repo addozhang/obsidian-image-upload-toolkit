@@ -3,6 +3,7 @@ import path from "path";
 import ImageUploader from "./imageUploader";
 import {PublishSettings} from "../publish";
 import UploadProgressModal from "../ui/uploadProgressModal";
+import {WebImageDownloader} from "./webImageDownloader";
 
 const MD_REGEX = /\!\[(.*)\]\((.*?\.(png|jpg|jpeg|gif|svg|webp|excalidraw))\)/g;
 const WIKI_REGEX = /\!\[\[(.*?\.(png|jpg|jpeg|gif|svg|webp|excalidraw))(|.*)?\]\]/g;
@@ -13,6 +14,7 @@ interface Image {
     path: string;
     url: string;
     source: string;
+    isWebImage?: boolean; // Flag to indicate if this is a web image
 }
 
 // Return type for resolveImagePath method
@@ -54,6 +56,39 @@ export default class ImageTagProcessor {
         }
         
         for (const image of images) {
+            // Handle web images differently
+            if (image.isWebImage) {
+                promises.push(new Promise<Image>(async (resolve, reject) => {
+                    try {
+                        // Download the web image
+                        const downloadResult = await WebImageDownloader.download(image.path);
+                        const file = new File([downloadResult.buffer], downloadResult.filename);
+                        
+                        // Upload to cloud storage - use just the filename as fullPath for web images
+                        // since they don't have a real file system path
+                        const imgUrl = await uploader.upload(file, downloadResult.filename);
+                        image.url = imgUrl;
+                        
+                        // Update progress on successful upload
+                        if (this.progressModal) {
+                            this.progressModal.updateProgress(image.name, true);
+                        }
+                        resolve(image);
+                    } catch (e) {
+                        // Update progress on failed upload
+                        if (this.progressModal) {
+                            this.progressModal.updateProgress(image.name, false);
+                        }
+                        const errorMessage = `Upload web image ${image.path} failed: ${e.error || e.message || e}`;
+                        new Notice(errorMessage, 10000);
+                        console.error('Web image upload error:', e);
+                        reject(new Error(errorMessage));
+                    }
+                }));
+                continue;
+            }
+            
+            // Handle local images
             if (this.app.vault.getAbstractFileByPath(normalizePath(image.path)) == null) {
                 new Notice(`Can NOT locate ${image.name} with ${image.path}, please check image path or attachment option in plugin setting!`, 10000);
                 console.log(`${normalizePath(image.path)} not exist`);
@@ -110,14 +145,33 @@ export default class ImageTagProcessor {
             
             let altText;
             for (const image of successfulImages) {
-                altText = this.settings.imageAltText ? 
-                    path.parse(image.name)?.name?.replaceAll("-", " ")?.replaceAll("_", " ") : 
+                altText = this.settings.imageAltText ?
+                    path.parse(image.name)?.name?.replaceAll("-", " ")?.replaceAll("_", " ") :
                     '';
                 value = value.replaceAll(image.source, `![${altText}](${image.url})`);
             }
             
-            if (this.settings.replaceOriginalDoc && this.getEditor()) {
-                this.getEditor()?.setValue(value);
+            // Update original document behavior:
+            // - If replaceOriginalDoc is enabled: update everything (web + local images)
+            // - If replaceOriginalDoc is disabled: only update web images (to prevent link rot)
+            if (this.settings.replaceOriginalDoc) {
+                // Replace all images (web + local)
+                if (this.getEditor()) {
+                    this.getEditor()?.setValue(value);
+                }
+            } else {
+                // Only replace web images in the original document
+                const webImages = successfulImages.filter(img => img.isWebImage);
+                if (webImages.length > 0 && this.getEditor()) {
+                    let docValue = this.getValue();
+                    for (const image of webImages) {
+                        altText = this.settings.imageAltText ?
+                            path.parse(image.name)?.name?.replaceAll("-", " ")?.replaceAll("_", " ") :
+                            '';
+                        docValue = docValue.replaceAll(image.source, `![${altText}](${image.url})`);
+                    }
+                    this.getEditor()?.setValue(docValue);
+                }
             }
             
             if (this.settings.ignoreProperties) {
@@ -147,13 +201,20 @@ export default class ImageTagProcessor {
             
             const mdMatches = value.matchAll(MD_REGEX);
             for (const match of mdMatches) {
-                // Skip external images
-                if (match[2].startsWith('http://') || match[2].startsWith('https://')) {
+                const imageUrl = match[2];
+                
+                // Check if it's a web image and if upload web images is enabled
+                if (WebImageDownloader.isWebImage(imageUrl)) {
+                    if (this.settings.uploadWebImages && !this.isAlreadyHosted(imageUrl)) {
+                        // Add as web image to be downloaded and uploaded
+                        this.processWebImage(imageUrl, match[0], images);
+                    }
+                    // Skip if setting is disabled or already hosted
                     continue;
                 }
-                const decodedName = decodeURI(match[2]);
+                
+                const decodedName = decodeURI(imageUrl);
                 this.processMatched(decodedName, match[0], images);
-
             }
         } catch (error) {
             console.error("Error processing image lists:", error);
@@ -175,8 +236,90 @@ export default class ImageTagProcessor {
                     url: '',
                 });
             }
-        }catch (error) {
+        } catch (error) {
             console.error(`Failed to process image: ${src}`, error);
+        }
+    }
+
+    /**
+     * Process web image URL
+     */
+    private processWebImage(url: string, src: string, images: Image[]) {
+        try {
+            // Extract a friendly name from URL
+            const urlObj = new URL(url);
+            const pathname = urlObj.pathname;
+            const segments = pathname.split('/').filter(s => s.length > 0);
+            const name = segments.length > 0 ? segments[segments.length - 1] : `web-image-${Date.now()}`;
+            
+            // Check if already in list
+            const existingImage = images.find(image => image.path === url);
+            if (!existingImage) {
+                images.push({
+                    name: decodeURIComponent(name),
+                    path: url, // Store the URL as path for web images
+                    source: src,
+                    url: '',
+                    isWebImage: true
+                });
+            }
+        } catch (error) {
+            console.error(`Failed to process web image: ${url}`, error);
+        }
+    }
+
+    /**
+     * Check if URL is already hosted on the configured storage service
+     */
+    private isAlreadyHosted(url: string): boolean {
+        try {
+            const urlObj = new URL(url);
+            const hostname = urlObj.hostname;
+            
+            // Check against common patterns for each storage service
+            switch (this.settings.imageStore) {
+                case 'imgur':
+                    return hostname.includes('imgur.com') || hostname.includes('i.imgur.com');
+                case 'github':
+                    if (this.settings.githubSetting?.repositoryName) {
+                        // Check if it's from the configured GitHub repo
+                        return url.includes('github.com') &&
+                               url.includes(this.settings.githubSetting.repositoryName);
+                    }
+                    return hostname.includes('github.com') || hostname.includes('githubusercontent.com');
+                case 'oss':
+                    if (this.settings.ossSetting?.customDomainName) {
+                        return hostname.includes(this.settings.ossSetting.customDomainName);
+                    }
+                    return hostname.includes('aliyuncs.com');
+                case 's3':
+                    if (this.settings.awsS3Setting?.customDomainName) {
+                        return hostname.includes(this.settings.awsS3Setting.customDomainName);
+                    }
+                    return hostname.includes('amazonaws.com') || hostname.includes('s3');
+                case 'cos':
+                    if (this.settings.cosSetting?.customDomainName) {
+                        return hostname.includes(this.settings.cosSetting.customDomainName);
+                    }
+                    return hostname.includes('myqcloud.com');
+                case 'qiniu':
+                    if (this.settings.kodoSetting?.customDomainName) {
+                        return hostname.includes(this.settings.kodoSetting.customDomainName);
+                    }
+                    return hostname.includes('qiniudn.com') || hostname.includes('clouddn.com');
+                case 'imagekit':
+                    return hostname.includes('imagekit.io');
+                case 'r2':
+                    if (this.settings.r2Setting?.customDomainName) {
+                        return hostname.includes(this.settings.r2Setting.customDomainName);
+                    }
+                    return hostname.includes('r2.dev') || hostname.includes('r2.cloudflarestorage.com');
+                default:
+                    return false;
+            }
+        } catch (error) {
+            // If URL parsing fails, assume not hosted
+            return false;
         }
     }
 
