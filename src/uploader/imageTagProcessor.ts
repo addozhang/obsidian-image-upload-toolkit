@@ -327,31 +327,18 @@ export default class ImageTagProcessor {
         let pathName = imageName.endsWith('.excalidraw') ?
             imageName + '.png' :
             imageName;
-
-        if (pathName.indexOf('/') < 0) {
-            // @ts-ignore: config is not defined in vault api, but available
-            const attachmentFolderPath = this.app.vault.config.attachmentFolderPath;
-            pathName = path.join(attachmentFolderPath, pathName);
-            if (attachmentFolderPath.startsWith('.')) {
-                pathName = './' + pathName;
-            }
-        } else {
-            imageName = imageName.substring(pathName.lastIndexOf('/') + 1);
+        // Obsidian attachment folder options:
+        // 1. Vault folder: "/image.png"
+        // 2. In the folder specified below: such as "Attachments", then "Attachments/image.png"
+        // 3. Same folder as current file: "./image.png"
+        // 4. In subfolder under current folder: such as "attachments", then "attachments/image.png"
+        const sourcePath = this.app.workspace.getActiveFile()?.path || "";
+        const targetFile = this.app.metadataCache.getFirstLinkpathDest(imageName, sourcePath);
+        if (targetFile) {
+            return {resolvedPath: targetFile.path, name: imageName};
         }
+        return {resolvedPath: imageName, name: imageName};
 
-        // Handle relative paths: ./, ../, or any path containing / but not starting with /
-        if (pathName.startsWith('./') || pathName.startsWith('../') || (pathName.includes('/') && !pathName.startsWith('/'))) {
-            const activeFile = this.app.workspace.getActiveFile();
-            if (!activeFile || !activeFile.parent) {
-                throw new Error("No active file found");
-            }
-            const parentPath = activeFile.parent.path;
-            // Normalize the path to resolve ../ and ./
-            const normalizedPath = path.normalize(path.join(parentPath, pathName));
-            return {resolvedPath: normalizedPath, name: imageName};
-        } else {
-            return {resolvedPath: pathName, name: imageName};
-        }
     }
 
     private getValue(): string {
