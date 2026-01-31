@@ -17,6 +17,7 @@ import {CosSetting} from "./uploader/cos/cosUploader";
 import {KodoSetting} from "./uploader/qiniu/kodoUploader";
 import {GitHubSetting} from "./uploader/github/gitHubUploader";
 import {R2Setting} from "./uploader/r2/r2Uploader";
+import {B2Setting} from "./uploader/b2/b2Uploader";
 
 export interface PublishSettings {
     imageAltText: boolean;
@@ -34,6 +35,7 @@ export interface PublishSettings {
     kodoSetting: KodoSetting;
     githubSetting: GitHubSetting;
     r2Setting: R2Setting;
+    b2Setting: B2Setting;
 }
 
 const DEFAULT_SETTINGS: PublishSettings = {
@@ -93,6 +95,14 @@ const DEFAULT_SETTINGS: PublishSettings = {
         accessKeyId: "",
         secretAccessKey: "",
         endpoint: "",
+        bucketName: "",
+        path: "",
+        customDomainName: "",
+    },
+    b2Setting: {
+        accessKeyId: "",
+        secretAccessKey: "",
+        region: "",
         bucketName: "",
         path: "",
         customDomainName: "",

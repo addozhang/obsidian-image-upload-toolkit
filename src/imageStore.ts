@@ -44,6 +44,11 @@ export default class ImageStore {
         "CLOUDFLARE_R2",
         "Cloudflare R2"
     )
+    
+    static readonly BACKBLAZE_B2 = new ImageStore(
+        "BACKBLAZE_B2",
+        "Backblaze B2"
+    )
 
     private constructor(readonly id: string, readonly description: string) {
         ImageStore.values.push(this)

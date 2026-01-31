@@ -9,6 +9,7 @@ import CosUploader from "./cos/cosUploader";
 import KodoUploader from "./qiniu/kodoUploader";
 import GitHubUploader from "./github/gitHubUploader";
 import R2Uploader from "./r2/r2Uploader";
+import B2Uploader from "./b2/b2Uploader";
 
 export default function buildUploader(settings: PublishSettings): ImageUploader {
     switch (settings.imageStore) {
@@ -28,6 +29,8 @@ export default function buildUploader(settings: PublishSettings): ImageUploader 
             return new GitHubUploader(settings.githubSetting);
         case ImageStore.CLOUDFLARE_R2.id:
             return new R2Uploader(settings.r2Setting);
+        case ImageStore.BACKBLAZE_B2.id:
+            return new B2Uploader(settings.b2Setting);
         //todo more cases
         default:
             throw new Error('should not reach here!')
