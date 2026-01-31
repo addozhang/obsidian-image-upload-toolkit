@@ -118,6 +118,9 @@ export default class PublishSettingTab extends PluginSettingTab {
             case ImageStore.CLOUDFLARE_R2.id:
                 this.drawR2Setting(parentEL);
                 break;
+            case ImageStore.BACKBLAZE_B2.id:
+                this.drawB2Setting(parentEL);
+                break;
             default:
                 throw new Error(
                     "Should not reach here!"
@@ -520,5 +523,59 @@ export default class PublishSettingTab extends PluginSettingTab {
                     .setPlaceholder("Enter domain name")
                     .setValue(this.plugin.settings.r2Setting.customDomainName)
                     .onChange(value => this.plugin.settings.r2Setting.customDomainName = value));
+    }
+
+    private drawB2Setting(parentEL: HTMLDivElement) {
+        new Setting(parentEL)
+            .setName('Backblaze B2 Access Key ID')
+            .setDesc('Your Backblaze B2 application key ID')
+            .addText(text => text
+                .setPlaceholder('Enter your application key ID')
+                .setValue(this.plugin.settings.b2Setting?.accessKeyId || '')
+                .onChange(value => this.plugin.settings.b2Setting.accessKeyId = value
+                ));
+
+        new Setting(parentEL)
+            .setName('Backblaze B2 Secret Access Key')
+            .setDesc('Your Backblaze B2 application key')
+            .addText(text => text
+                .setPlaceholder('Enter your application key')
+                .setValue(this.plugin.settings.b2Setting?.secretAccessKey || '')
+                .onChange(value => this.plugin.settings.b2Setting.secretAccessKey = value));
+
+        new Setting(parentEL)
+            .setName('Backblaze B2 Region')
+            .setDesc('Your Backblaze B2 region (e.g., us-west-004)')
+            .addText(text => text
+                .setPlaceholder('Enter your region')
+                .setValue(this.plugin.settings.b2Setting?.region || '')
+                .onChange(value => this.plugin.settings.b2Setting.region = value));
+
+        new Setting(parentEL)
+            .setName('Backblaze B2 Bucket Name')
+            .setDesc('Your Backblaze B2 bucket name')
+            .addText(text => text
+                .setPlaceholder('Enter your bucket name')
+                .setValue(this.plugin.settings.b2Setting?.bucketName || '')
+                .onChange(value => this.plugin.settings.b2Setting.bucketName = value));
+
+        new Setting(parentEL)
+            .setName("Target Path")
+            .setDesc("The path to store image.\nSupport {year} {mon} {day} {random} {filename} vars. For example, /{year}/{mon}/{day}/{filename} with uploading pic.jpg, it will store as /2023/06/08/pic.jpg.")
+            .addText(text =>
+                text
+                    .setPlaceholder("Enter path")
+                    .setValue(this.plugin.settings.b2Setting.path)
+                    .onChange(value => this.plugin.settings.b2Setting.path = value));
+
+        //custom domain
+        new Setting(parentEL)
+            .setName("Custom Domain Name")
+            .setDesc("If you have configured a custom domain, you can use https://example.com/pic.jpg to access pic.img. Otherwise, leave it empty to use the default B2 URL.")
+            .addText(text =>
+                text
+                    .setPlaceholder("Enter custom domain (optional)")
+                    .setValue(this.plugin.settings.b2Setting.customDomainName)
+                    .onChange(value => this.plugin.settings.b2Setting.customDomainName = value));
     }
 }
