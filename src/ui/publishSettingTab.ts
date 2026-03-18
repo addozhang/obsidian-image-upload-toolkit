@@ -68,6 +68,16 @@ export default class PublishSettingTab extends PluginSettingTab {
                     .onChange(value => this.plugin.settings.uploadWebImages = value)
             );
 
+        // Add new setting for converting mermaid diagrams to images
+        new Setting(imageStoreTypeDiv)
+            .setName("Convert Mermaid diagrams to images")
+            .setDesc("Render mermaid code blocks as PNG images and upload them during publish.")
+            .addToggle(toggle =>
+                toggle
+                    .setValue(this.plugin.settings.convertMermaid)
+                    .onChange(value => this.plugin.settings.convertMermaid = value)
+            );
+
         // Image Store
         new Setting(imageStoreTypeDiv)
             .setName("Image store")

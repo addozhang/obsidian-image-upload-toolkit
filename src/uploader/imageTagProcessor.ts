@@ -4,6 +4,7 @@ import ImageUploader from "./imageUploader";
 import {PublishSettings} from "../publish";
 import UploadProgressModal from "../ui/uploadProgressModal";
 import {WebImageDownloader} from "./webImageDownloader";
+import MermaidProcessor from "./mermaidProcessor";
 
 const MD_REGEX = /\!\[(.*)\]\((.*?\.(png|jpg|jpeg|gif|svg|webp|excalidraw))\)/g;
 const WIKI_REGEX = /\!\[\[(.*?\.(png|jpg|jpeg|gif|svg|webp|excalidraw))(|.*)?\]\]/g;
@@ -45,6 +46,12 @@ export default class ImageTagProcessor {
         let value = this.getValue();
         const basePath = this.adapter.getBasePath();
         const promises: Promise<Image>[] = [];
+        // Convert mermaid code blocks to images if enabled
+        if (this.settings.convertMermaid) {
+            const mermaidProcessor = new MermaidProcessor(this.imageUploader);
+            value = await mermaidProcessor.process(value);
+        }
+
         const images = this.getImageLists(value);
         const uploader = this.imageUploader;
         
