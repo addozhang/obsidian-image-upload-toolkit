@@ -47,12 +47,15 @@ export default class ImageTagProcessor {
         const basePath = this.adapter.getBasePath();
         const promises: Promise<Image>[] = [];
         // Convert mermaid code blocks to images if enabled
+        let mermaidUrls = new Set<string>();
         if (this.settings.convertMermaid) {
-            const mermaidProcessor = new MermaidProcessor(this.imageUploader);
-            value = await mermaidProcessor.process(value);
+            const mermaidProcessor = new MermaidProcessor(this.imageUploader, this.settings.mermaidScale, this.settings.mermaidTheme);
+            const result = await mermaidProcessor.process(value);
+            value = result.value;
+            mermaidUrls = result.generatedUrls;
         }
 
-        const images = this.getImageLists(value);
+        const images = this.getImageLists(value, mermaidUrls);
         const uploader = this.imageUploader;
         
         // Initialize progress display
@@ -138,18 +141,18 @@ export default class ImageTagProcessor {
             if (this.progressModal) {
                 this.progressModal.close();
             }
-            new Notice("No images found or all images failed to process", 3000);
-            return;
+            // Still proceed to output — mermaid conversion may have transformed the value
+            // even though no local/web images need uploading
         }
 
-        return Promise.all(promises.map(p => p.catch(e => {
-            console.error(e);
-            return null; // Return null for failed promises to continue processing
-        }))).then(results => {
-            // Modal will auto-close when all uploads complete
-            // Filter out null results from failed promises
-            const successfulImages = results.filter(img => img !== null) as Image[];
-            
+        let successfulImages: Image[] = [];
+        if (promises.length > 0) {
+            const results = await Promise.all(promises.map(p => p.catch(e => {
+                console.error(e);
+                return null;
+            })));
+            successfulImages = results.filter(img => img !== null) as Image[];
+
             let altText;
             for (const image of successfulImages) {
                 altText = this.settings.imageAltText ?
@@ -157,47 +160,50 @@ export default class ImageTagProcessor {
                     '';
                 value = value.replaceAll(image.source, `![${altText}](${image.url})`);
             }
-            
-            // Update original document behavior:
-            // - If replaceOriginalDoc is enabled: update everything (web + local images)
-            // - If replaceOriginalDoc is disabled: only update web images (to prevent link rot)
-            if (this.settings.replaceOriginalDoc) {
-                // Replace all images (web + local)
-                if (this.getEditor()) {
-                    this.getEditor()?.setValue(value);
+        }
+
+        if (this.settings.replaceOriginalDoc) {
+            if (successfulImages.length > 0 && this.getEditor()) {
+                let docValue = this.getValue();
+                let altText;
+                for (const image of successfulImages) {
+                    altText = this.settings.imageAltText ?
+                        path.parse(image.name)?.name?.replaceAll("-", " ")?.replaceAll("_", " ") :
+                        '';
+                    docValue = docValue.replaceAll(image.source, `![${altText}](${image.url})`);
                 }
-            } else {
-                // Only replace web images in the original document
-                const webImages = successfulImages.filter(img => img.isWebImage);
-                if (webImages.length > 0 && this.getEditor()) {
-                    let docValue = this.getValue();
-                    for (const image of webImages) {
-                        altText = this.settings.imageAltText ?
-                            path.parse(image.name)?.name?.replaceAll("-", " ")?.replaceAll("_", " ") :
-                            '';
-                        docValue = docValue.replaceAll(image.source, `![${altText}](${image.url})`);
-                    }
-                    this.getEditor()?.setValue(docValue);
+                this.getEditor()?.setValue(docValue);
+            }
+        } else {
+            const webImages = successfulImages.filter(img => img.isWebImage);
+            if (webImages.length > 0 && this.getEditor()) {
+                let docValue = this.getValue();
+                let altText;
+                for (const image of webImages) {
+                    altText = this.settings.imageAltText ?
+                        path.parse(image.name)?.name?.replaceAll("-", " ")?.replaceAll("_", " ") :
+                        '';
+                    docValue = docValue.replaceAll(image.source, `![${altText}](${image.url})`);
                 }
+                this.getEditor()?.setValue(docValue);
             }
-            
-            if (this.settings.ignoreProperties) {
-                value = value.replace(PROPERTIES_REGEX, '');
-            }
-            
-            switch (action) {
-                case ACTION_PUBLISH:
-                    navigator.clipboard.writeText(value);
-                    new Notice("Copied to clipboard");
-                    break;
-                // more cases
-                default:
-                    throw new Error("invalid action!");
-            }
-        });
+        }
+
+        if (this.settings.ignoreProperties) {
+            value = value.replace(PROPERTIES_REGEX, '');
+        }
+
+        switch (action) {
+            case ACTION_PUBLISH:
+                navigator.clipboard.writeText(value);
+                new Notice("Copied to clipboard");
+                break;
+            default:
+                throw new Error("invalid action!");
+        }
     }
 
-    private getImageLists(value: string): Image[] {
+    private getImageLists(value: string, mermaidUrls: Set<string> = new Set()): Image[] {
         const images: Image[] = [];
         
         try {
@@ -212,7 +218,7 @@ export default class ImageTagProcessor {
                 
                 // Check if it's a web image and if upload web images is enabled
                 if (WebImageDownloader.isWebImage(imageUrl)) {
-                    if (this.settings.uploadWebImages && !this.isAlreadyHosted(imageUrl)) {
+                    if (this.settings.uploadWebImages && !this.isAlreadyHosted(imageUrl) && !mermaidUrls.has(imageUrl)) {
                         // Add as web image to be downloaded and uploaded
                         this.processWebImage(imageUrl, match[0], images);
                     }
@@ -275,9 +281,6 @@ export default class ImageTagProcessor {
         }
     }
 
-    /**
-     * Check if URL is already hosted on the configured storage service
-     */
     private isAlreadyHosted(url: string): boolean {
         try {
             const urlObj = new URL(url);

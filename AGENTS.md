@@ -1,10 +1,10 @@
 # Obsidian Image Upload Toolkit
 
-An Obsidian plugin for uploading local images to multiple cloud storage providers (Imgur, GitHub, AWS S3, Aliyun OSS, TencentCloud COS, Qiniu Kodo, ImageKit, Cloudflare R2).
+An Obsidian plugin for uploading local images to multiple cloud storage providers (Imgur, GitHub, AWS S3, Aliyun OSS, TencentCloud COS, Qiniu Kodo, ImageKit, Cloudflare R2, Backblaze B2). Also supports automatic mermaid diagram conversion to images during publish.
 
 ## Project Overview
 
-This is a TypeScript-based Obsidian plugin that processes markdown documents, detects local images, uploads them to configured cloud storage, and replaces image references with remote URLs. The plugin supports multiple storage backends with a unified uploader interface.
+This is a TypeScript-based Obsidian plugin that processes markdown documents, detects local images, uploads them to configured cloud storage, and replaces image references with remote URLs. The plugin supports multiple storage backends with a unified uploader interface. It also converts mermaid code blocks to PNG images during publish.
 
 ## Tech Stack
 
@@ -28,6 +28,7 @@ src/
     ├── imageUploader.ts            # Base uploader interface
     ├── imageUploaderBuilder.ts     # Factory for uploader instances
     ├── imageTagProcessor.ts        # Markdown image parser & processor
+    ├── mermaidProcessor.ts         # Mermaid-to-PNG conversion (v1.3.0)
     ├── webImageDownloader.ts       # Web image download utility (v1.2.0)
     ├── uploaderUtils.ts            # Shared utilities
     ├── apiError.ts                 # Error handling
@@ -38,7 +39,8 @@ src/
     ├── oss/                        # Aliyun OSS implementation
     ├── cos/                        # TencentCloud COS implementation
     ├── qiniu/                      # Qiniu Kodo implementation
-    └── imagekit/                   # ImageKit implementation
+    ├── imagekit/                   # ImageKit implementation
+    └── b2/                         # Backblaze B2 implementation
 ```
 
 ## Build & Commands
@@ -71,10 +73,19 @@ New providers are registered in [`ImageStore`](src/imageStore.ts) and instantiat
 ### Image Processing Flow
 
 1. **Detection**: [`ImageTagProcessor`](src/uploader/imageTagProcessor.ts) parses markdown for local and web images
-2. **Web Image Handling** (v1.2.0): [`WebImageDownloader`](src/uploader/webImageDownloader.ts) downloads external images if `uploadWebImages` is enabled
-3. **Upload**: Images are uploaded via the configured provider's `upload()` method
-4. **Replace**: Local/web paths are replaced with remote URLs
-5. **Output**: Updated markdown is copied to clipboard
+2. **Mermaid Conversion** (v1.3.0): [`MermaidProcessor`](src/uploader/mermaidProcessor.ts) renders mermaid code blocks to PNG images and uploads them, replacing code blocks with image references in the clipboard output
+3. **Web Image Handling** (v1.2.0): [`WebImageDownloader`](src/uploader/webImageDownloader.ts) downloads external images if `uploadWebImages` is enabled
+4. **Upload**: Images are uploaded via the configured provider's `upload()` method
+5. **Replace**: Local/web paths are replaced with remote URLs
+6. **Output**: Updated markdown is copied to clipboard
+
+#### Mermaid Diagram Conversion (v1.3.0)
+- Converts mermaid code blocks (``` ```mermaid ``` ```) to PNG images during publish
+- Uses Obsidian's built-in `loadMermaid()` API (no bundled mermaid dependency)
+- Configurable scale factor (1-4x, default 2) for image quality
+- Configurable theme (default/dark/forest/neutral/base)
+- Mermaid source blocks are preserved in the original document — only the clipboard output gets image replacements
+- Generated images are tracked via a `Set<string>` to prevent double-upload when "Upload web images" is enabled
 
 #### Web Image Upload Feature (v1.2.0)
 - Automatically downloads web images (http/https URLs) when enabled
@@ -175,6 +186,11 @@ Currently no automated test suite. Manual testing checklist:
 5. Test with relative paths (`./`, `../`)
 6. Check error handling for invalid credentials
 7. Verify clipboard copy functionality
+8. Test mermaid conversion with various diagram types (flowchart, sequence, class, etc.)
+9. Verify mermaid scale factor produces correct image resolution (1x-4x)
+10. Verify mermaid theme setting applies correctly (default/dark/forest/neutral/base)
+11. Confirm mermaid source blocks are preserved when "Update original document" is enabled
+12. Verify mermaid-generated images are not double-uploaded when "Upload web images" is enabled
 
 ## Common Issues & Solutions
 
@@ -262,18 +278,20 @@ Follow conventional commit format:
 ## Dependencies
 
 ### Runtime
-- `obsidian` - Obsidian Plugin API
+- `obsidian` - Obsidian Plugin API (also provides `loadMermaid()` for mermaid rendering)
 - `@octokit/rest` - GitHub API client
 - `ali-oss` - Aliyun OSS SDK
-- `aws-sdk` - AWS S3 SDK
+- `aws-sdk` - AWS S3 SDK (also used by Cloudflare R2 and Backblaze B2)
 - `cos-nodejs-sdk-v5` - TencentCloud COS SDK
-- `imagekit` - ImageKit SDK
 - `qiniu` - Qiniu Kodo SDK
 - `proxy-agent` - HTTP/HTTPS proxy support
+
+> **Note**: ImageKit uses Obsidian's built-in `requestUrl` API directly instead of the `imagekit` SDK. Mermaid rendering uses Obsidian's built-in `loadMermaid()` API — no bundled mermaid dependency.
 
 ### Development
 - `typescript` - TypeScript compiler
 - `obsidian-plugin-cli` - Build tooling
+- `esbuild` - JavaScript bundler
 - `@types/node` - Node.js type definitions
 
 ## Plugin Configuration
@@ -287,8 +305,18 @@ Settings are stored in `.obsidian/plugins/image-upload-toolkit/data.json`:
   "imageStore": "imgur",
   "showProgressModal": true,
   "uploadWebImages": false,
+  "convertMermaid": false,
+  "mermaidScale": 2,
+  "mermaidTheme": "default",
   "imgurAnonymousSetting": { "clientId": "..." },
-  // ... provider-specific settings
+  "b2Setting": {
+    "keyId": "...",
+    "applicationKey": "...",
+    "bucketId": "...",
+    "bucketName": "...",
+    "customDomain": ""
+  },
+  // ... other provider-specific settings
 }
 ```
 
@@ -314,6 +342,7 @@ Settings are stored in `.obsidian/plugins/image-upload-toolkit/data.json`:
 - UI components in `src/ui/`
 - Utility functions in `src/uploader/uploaderUtils.ts`
 - Web image downloader in `src/uploader/webImageDownloader.ts`
+- Mermaid processor in `src/uploader/mermaidProcessor.ts`
 
 ## Resources
 
@@ -323,4 +352,4 @@ Settings are stored in `.obsidian/plugins/image-upload-toolkit/data.json`:
 
 ## Current Version
 
-v1.2.0 - Latest features include web image upload support (automatically download and re-upload external images to prevent link rot), Cloudflare R2 support, and improved relative path handling.
+v1.3.0 - Latest features include mermaid diagram conversion to images during publish (with configurable scale and theme), Backblaze B2 storage support, and various robustness improvements (state-based double-upload prevention, ImageKit API migration, B2 MIME detection fixes).

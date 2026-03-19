@@ -53,7 +53,11 @@ export default class ImagekitUploader implements ImageUploader {
             throw new ApiError(`ImageKit upload failed (${response.status}): ${errMsg}`);
         }
 
-        return response.json.url;
+        const url = response.json?.url;
+        if (!url) {
+            throw new ApiError("ImageKit upload succeeded but response missing 'url' field");
+        }
+        return url;
     }
 }
 
