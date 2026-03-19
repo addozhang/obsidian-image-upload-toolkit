@@ -16,12 +16,11 @@ export default class PublishSettingTab extends PluginSettingTab {
     display(): any {
         const {containerEl} = this;
         containerEl.empty()
-        containerEl.createEl("h1", {text: "Upload Settings"});
 
-        const imageStoreTypeDiv = containerEl.createDiv();
-        this.imageStoreDiv = containerEl.createDiv();
+        // ── General ──
+        containerEl.createEl("h2", {text: "General"});
 
-        new Setting(imageStoreTypeDiv)
+        new Setting(containerEl)
             .setName("Use image name as Alt Text")
             .setDesc("Whether to use image name as Alt Text with '-' and '_' replaced with space.")
             .addToggle(toggle =>
@@ -30,7 +29,7 @@ export default class PublishSettingTab extends PluginSettingTab {
                     .onChange(value => this.plugin.settings.imageAltText = value)
             );
 
-        new Setting(imageStoreTypeDiv)
+        new Setting(containerEl)
             .setName("Update original document")
             .setDesc("Whether to replace internal link with store link.")
             .addToggle(toggle =>
@@ -39,7 +38,7 @@ export default class PublishSettingTab extends PluginSettingTab {
                     .onChange(value => this.plugin.settings.replaceOriginalDoc = value)
             );
 
-        new Setting(imageStoreTypeDiv)
+        new Setting(containerEl)
             .setName("Ignore note properties")
             .setDesc("Where to ignore note properties when copying to clipboard. This won't affect original note.")
             .addToggle(toggle =>
@@ -48,8 +47,10 @@ export default class PublishSettingTab extends PluginSettingTab {
                     .onChange(value => this.plugin.settings.ignoreProperties = value)
             );
 
-        // Add new setting for controlling progress modal display
-        new Setting(imageStoreTypeDiv)
+        // ── Upload ──
+        containerEl.createEl("h2", {text: "Upload"});
+
+        new Setting(containerEl)
             .setName("Show progress modal")
             .setDesc("Show a modal dialog with detailed progress when uploading images (auto close in 3s). If disabled, a simpler status indicator will be used.")
             .addToggle(toggle =>
@@ -58,17 +59,60 @@ export default class PublishSettingTab extends PluginSettingTab {
                     .onChange(value => this.plugin.settings.showProgressModal = value)
             );
 
-        // Add new setting for uploading web images
-        new Setting(imageStoreTypeDiv)
+        new Setting(containerEl)
             .setName("Upload web images")
-            .setDesc("When enabled, web images (http/https URLs) will be downloaded and re-uploaded to your configured storage. Images already hosted on your storage service will be skipped. This is useful for preserving web-clipped content that might become unavailable.")
+            .setDesc("When enabled, web images (http/https URLs) will be downloaded and re-uploaded to your configured storage. Images already hosted on your storage service will be skipped.")
             .addToggle(toggle =>
                 toggle
                     .setValue(this.plugin.settings.uploadWebImages)
                     .onChange(value => this.plugin.settings.uploadWebImages = value)
             );
 
-        // Image Store
+        // ── Mermaid ──
+        containerEl.createEl("h2", {text: "Mermaid"});
+
+        new Setting(containerEl)
+            .setName("Convert Mermaid diagrams to images")
+            .setDesc("Render mermaid code blocks as PNG images and upload them during publish.")
+            .addToggle(toggle =>
+                toggle
+                    .setValue(this.plugin.settings.convertMermaid)
+                    .onChange(value => this.plugin.settings.convertMermaid = value)
+            );
+
+        new Setting(containerEl)
+            .setName("Mermaid image scale")
+            .setDesc("Scale factor for exported images (1x–4x). 2x recommended for retina displays.")
+            .addSlider(slider =>
+                slider
+                    .setLimits(1, 4, 1)
+                    .setValue(this.plugin.settings.mermaidScale)
+                    .setDynamicTooltip()
+                    .onChange(value => this.plugin.settings.mermaidScale = value)
+            );
+
+        new Setting(containerEl)
+            .setName("Mermaid theme")
+            .setDesc("Color theme for rendered diagrams.")
+            .addDropdown(dd => {
+                const themes: Record<string, string> = {
+                    "default": "Default",
+                    "dark": "Dark",
+                    "forest": "Forest",
+                    "neutral": "Neutral",
+                    "base": "Base",
+                };
+                Object.entries(themes).forEach(([value, label]) => dd.addOption(value, label));
+                dd.setValue(this.plugin.settings.mermaidTheme);
+                dd.onChange(value => this.plugin.settings.mermaidTheme = value);
+            });
+
+        // ── Image Store ──
+        containerEl.createEl("h2", {text: "Image Store"});
+
+        const imageStoreTypeDiv = containerEl.createDiv();
+        this.imageStoreDiv = containerEl.createDiv();
+
         new Setting(imageStoreTypeDiv)
             .setName("Image store")
             .setDesc("Remote image store for upload images to.")

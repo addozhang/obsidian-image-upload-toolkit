@@ -36,8 +36,9 @@
 - ✅ **Real-Time Progress** - Optional progress modal with detailed feedback
 - ✅ **Flexible Paths** - Support for relative paths and dynamic path variables
 - ✅ **Web Image Upload** - Download and re-upload web images to your storage (optional)
+- ✅ **Mermaid Conversion** - Automatically convert mermaid diagrams to PNG images during publish (optional)
 
-### Supported Storage Services (8 providers)
+### Supported Storage Services (9 providers)
 | Service | Free Tier | Rating | Best For |
 |---------|-----------|---------|----------|
 | Imgur | Limited | ⭐⭐⭐ | Personal blogs |
@@ -48,6 +49,7 @@
 | TencentCloud COS | Pay-as-you-go | ⭐⭐⭐⭐ | Chinese users |
 | Qiniu Kodo | Pay-as-you-go | ⭐⭐⭐⭐ | Chinese users |
 | ImageKit | Limited | ⭐⭐⭐⭐ | CDN optimization |
+| Backblaze B2 | Pay-as-you-go | ⭐⭐⭐⭐ | Cost-effective storage |
 
 Perfect for publishing to static sites like [GitHub Pages](https://pages.github.com) or any platform requiring externally hosted images.
 
@@ -64,6 +66,9 @@ Perfect for publishing to static sites like [GitHub Pages](https://pages.github.
 - **Ignore note properties**: ✅ Recommended (removes frontmatter when publishing)
 - **Show progress modal**: ✅ Recommended (better user experience)
 - **Upload web images**: ❌ Optional (downloads and re-uploads web images to prevent link rot)
+- **Convert mermaid diagrams**: ❌ Optional (converts mermaid code blocks to PNG images during publish)
+- **Mermaid scale**: 2 (image resolution multiplier, 1-4x)
+- **Mermaid theme**: default (options: default/dark/forest/neutral/base)
 
 ### Step 3: Choose Storage Service
 Select your preferred storage service from the dropdown. See [Storage Service Configuration](#-storage-service-configuration) for detailed setup instructions.
@@ -93,6 +98,7 @@ Select your preferred storage service from the dropdown. See [Storage Service Co
 - **Professional**: Cloudflare R2 (high performance)
 - **Enterprise**: AWS S3 (full-featured)
 - **Chinese Users**: Aliyun OSS (optimized for China)
+- **Budget-Friendly**: Backblaze B2 (low-cost with generous free tier)
 
 ### Detailed Configuration
 
@@ -182,6 +188,19 @@ Note: Images are committed as regular files to the repository
    - Access Key and Secret Key
    - Bucket Name: Your Kodo bucket
    - Custom Domain: Domain bound to your bucket
+```
+
+#### Backblaze B2
+```markdown
+1. Create Backblaze account at https://www.backblaze.com/b2/sign-up.html
+2. Create a B2 bucket for images
+3. Generate Application Key from App Keys page
+4. Configure in plugin:
+   - Key ID: Your application key ID
+   - Application Key: Your application key
+   - Bucket ID: Your B2 bucket ID
+   - Bucket Name: Your B2 bucket name
+   - Custom Domain: Optional (Cloudflare CDN or custom domain)
 ```
 
 ## 🔍 Troubleshooting
@@ -284,7 +303,16 @@ npm run dev
 
 ## 📝 Changelog
 
-### v1.2.0 (Latest)
+### v1.3.0 (Latest)
+- ✨ Added mermaid diagram conversion to PNG images during publish
+- ✨ Added Backblaze B2 storage support
+- ✨ Configurable mermaid scale factor (1-4x) and theme (default/dark/forest/neutral/base)
+- 🐛 Fixed double-upload of mermaid-generated images when "Upload web images" is enabled
+- 🐛 Mermaid source blocks are preserved when "Update original document" is enabled
+- 🔧 Migrated ImageKit from SDK to Obsidian's built-in `requestUrl` API
+- 🔧 Improved B2 MIME type detection and URL derivation
+
+### v1.2.0
 - ✨ Added web image upload feature (addresses #37)
 - ✨ Smart detection to skip images already hosted on your storage
 - 📝 Improved documentation and error messages

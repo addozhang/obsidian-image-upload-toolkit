@@ -2,6 +2,15 @@ import ImageUploader from "../imageUploader";
 import AWS from 'aws-sdk';
 import {UploaderUtils} from "../uploaderUtils";
 
+const EXTENSION_MIME_MAP: Record<string, string> = {
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  png: "image/png",
+  gif: "image/gif",
+  svg: "image/svg+xml",
+  webp: "image/webp",
+};
+
 export default class B2Uploader implements ImageUploader {
   private readonly s3!: AWS.S3;
   private readonly bucket!: string;
@@ -27,19 +36,20 @@ export default class B2Uploader implements ImageUploader {
     const uint8Array = new Uint8Array(arrayBuffer);
     var path = UploaderUtils.generateName(this.pathTmpl, image.name);
     path = path.replace(/^\/+/, ''); // remove the /
+    const ext = image.name.split('.').pop()?.toLowerCase() ?? '';
+    const contentType = image.type || EXTENSION_MIME_MAP[ext] || `image/${ext}`;
     const params = {
       Bucket: this.bucket,
       Key: path,
       Body: uint8Array,
-      ContentType: `image/${image.name.split('.').pop()}`,
+      ContentType: contentType,
     };
     return new Promise((resolve, reject) => {
       this.s3.upload(params, (err, data) => {
         if (err) {
           reject(err);
         } else {
-          const dst = data.Location.split(`/${this.bucket}/`).pop();
-          resolve(UploaderUtils.customizeDomainName(dst, this.customDomainName));
+          resolve(UploaderUtils.customizeDomainName(data.Key, this.customDomainName));
         }
       });
     });
