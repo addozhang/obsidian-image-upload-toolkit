@@ -352,4 +352,4 @@ Settings are stored in `.obsidian/plugins/image-upload-toolkit/data.json`:
 
 ## Current Version
 
-v1.3.0 - Latest features include mermaid diagram conversion to images during publish (with configurable scale and theme), Backblaze B2 storage support, and various robustness improvements (state-based double-upload prevention, ImageKit API migration, B2 MIME detection fixes).
+v1.4.0 - Latest features include mermaid diagram conversion to images during publish (with configurable scale and theme), Backblaze B2 storage support, and various robustness improvements (state-based double-upload prevention, ImageKit API migration, B2 MIME detection fixes).

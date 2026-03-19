@@ -303,7 +303,10 @@ npm run dev
 
 ## 📝 Changelog
 
-### v1.3.0 (Latest)
+### v1.4.0 (Latest)
+- 🔖 Version bump release — same features as v1.3.0 with corrected release tagging
+
+### v1.3.0
 - ✨ Added mermaid diagram conversion to PNG images during publish
 - ✨ Added Backblaze B2 storage support
 - ✨ Configurable mermaid scale factor (1-4x) and theme (default/dark/forest/neutral/base)
