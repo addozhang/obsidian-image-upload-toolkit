@@ -253,6 +253,28 @@ export default class PublishSettingTab extends PluginSettingTab {
                     .setPlaceholder("Enter path")
                     .setValue(this.plugin.settings.ossSetting.customDomainName)
                     .onChange(value => this.plugin.settings.ossSetting.customDomainName = value))
+
+        new Setting(parentEL)
+            .setName("Signed URL")
+            .setDesc("Return signed URL instead of public URL.")
+            .addToggle(toggle =>
+                toggle
+                    .setValue(!!this.plugin.settings.ossSetting.signUrl)
+                    .onChange(value => this.plugin.settings.ossSetting.signUrl = value)
+            );
+
+        new Setting(parentEL)
+            .setName("Signed URL Expires (seconds)")
+            .setDesc("How long the signed URL stays valid. Default 3600.")
+            .addText(text =>
+                text
+                    .setPlaceholder("3600")
+                    .setValue(String(this.plugin.settings.ossSetting.signExpires ?? 3600))
+                    .onChange(value => {
+                        const seconds = Number(value);
+                        this.plugin.settings.ossSetting.signExpires =
+                            Number.isFinite(seconds) && seconds > 0 ? Math.floor(seconds) : 3600;
+                    }))
     }
 
     private drawImageKitSetting(parentEL: HTMLDivElement) {

@@ -60,6 +60,8 @@ const DEFAULT_SETTINGS: PublishSettings = {
         endpoint: "https://oss-cn-hangzhou.aliyuncs.com/",
         path: "",
         customDomainName: "",
+        signUrl: false,
+        signExpires: 3600,
     },
     imagekitSetting: {
         endpoint: "",
