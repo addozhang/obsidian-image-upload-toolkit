@@ -5,19 +5,19 @@ import {
 
 import ImageTagProcessor, {ACTION_PUBLISH} from "./uploader/imageTagProcessor";
 import ImageUploader from "./uploader/imageUploader";
-import {ImgurAnonymousSetting} from "./uploader/imgur/imgurAnonymousUploader";
+import type {ImgurAnonymousSetting} from "./uploader/imgur/imgurAnonymousUploader";
 import {IMGUR_PLUGIN_CLIENT_ID} from "./uploader/imgur/constants";
 import ImageStore from "./imageStore";
 import buildUploader from "./uploader/imageUploaderBuilder";
 import PublishSettingTab from "./ui/publishSettingTab";
-import {OssSetting} from "./uploader/oss/ossUploader";
-import {ImagekitSetting} from "./uploader/imagekit/imagekitUploader";
-import {AwsS3Setting} from "./uploader/s3/awsS3Uploader";
-import {CosSetting} from "./uploader/cos/cosUploader";
-import {KodoSetting} from "./uploader/qiniu/kodoUploader";
-import {GitHubSetting} from "./uploader/github/gitHubUploader";
-import {R2Setting} from "./uploader/r2/r2Uploader";
-import {B2Setting} from "./uploader/b2/b2Uploader";
+import type {OssSetting} from "./uploader/oss/ossUploader";
+import type {ImagekitSetting} from "./uploader/imagekit/imagekitUploader";
+import type {AwsS3Setting} from "./uploader/s3/awsS3Uploader";
+import type {CosSetting} from "./uploader/cos/cosUploader";
+import type {KodoSetting} from "./uploader/qiniu/kodoUploader";
+import type {GitHubSetting} from "./uploader/github/gitHubUploader";
+import type {R2Setting} from "./uploader/r2/r2Uploader";
+import type {B2Setting} from "./uploader/b2/b2Uploader";
 
 export interface PublishSettings {
     imageAltText: boolean;
