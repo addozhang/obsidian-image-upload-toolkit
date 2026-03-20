@@ -7,14 +7,19 @@
   "license": "MIT",
   "scripts": {
     "build": "obsidian-plugin build src/publish.ts",
-    "dev": "obsidian-plugin dev src/publish.ts"
+    "dev": "obsidian-plugin dev src/publish.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "devDependencies": {
     "@types/node": "^14.14.2",
+    "@vitest/coverage-v8": "^4.1.0",
     "esbuild": "^0.18.20",
     "obsidian": "obsidianmd/obsidian-api",
     "obsidian-plugin-cli": "^0.4.3",
-    "typescript": "^4.0.3"
+    "typescript": "^4.0.3",
+    "vitest": "^4.1.0"
   },
   "dependencies": {
     "@octokit/rest": "^19.0.4",

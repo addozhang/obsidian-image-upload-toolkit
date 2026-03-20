@@ -7,6 +7,40 @@ export interface WebImageDownloadResult {
     contentType?: string;
 }
 
+const CONTENT_TYPE_EXTENSION_MAP: Record<string, string> = {
+    'image/png': '.png',
+    'image/jpeg': '.jpg',
+    'image/jpg': '.jpg',
+    'image/gif': '.gif',
+    'image/svg+xml': '.svg',
+    'image/webp': '.webp'
+};
+
+export function getExtensionFromContentType(contentType?: string): string {
+    if (!contentType) return '.jpg';
+    return CONTENT_TYPE_EXTENSION_MAP[contentType.toLowerCase()] || '.jpg';
+}
+
+export function extractFilename(url: string, contentType?: string): string {
+    try {
+        const urlObj = new URL(url);
+        const pathname = urlObj.pathname;
+        const segments = pathname.split('/').filter(s => s.length > 0);
+        let filename = segments.length > 0 ? segments[segments.length - 1] : '';
+
+        if (filename && /\.(png|jpg|jpeg|gif|svg|webp)$/i.test(filename)) {
+            return decodeURIComponent(filename);
+        }
+
+        const extension = getExtensionFromContentType(contentType);
+        const timestamp = Date.now();
+        return `web-image-${timestamp}${extension}`;
+    } catch (error) {
+        const extension = getExtensionFromContentType(contentType);
+        return `web-image-${Date.now()}${extension}`;
+    }
+}
+
 export class WebImageDownloader {
     /**
      * Download an image from a web URL
@@ -52,56 +86,14 @@ export class WebImageDownloader {
         }
     }
 
-    /**
-     * Extract filename from URL or generate one based on content type
-     */
     private static extractFilename(url: string, contentType?: string): string {
-        try {
-            // Parse URL to get pathname
-            const urlObj = new URL(url);
-            const pathname = urlObj.pathname;
-            
-            // Get the last segment of the path
-            const segments = pathname.split('/').filter(s => s.length > 0);
-            let filename = segments.length > 0 ? segments[segments.length - 1] : '';
-            
-            // If filename has an extension, use it
-            if (filename && /\.(png|jpg|jpeg|gif|svg|webp)$/i.test(filename)) {
-                return decodeURIComponent(filename);
-            }
-            
-            // Otherwise, generate filename based on content type
-            const extension = this.getExtensionFromContentType(contentType);
-            const timestamp = Date.now();
-            return `web-image-${timestamp}${extension}`;
-        } catch (error) {
-            // Fallback to timestamp-based name
-            const extension = this.getExtensionFromContentType(contentType);
-            return `web-image-${Date.now()}${extension}`;
-        }
+        return extractFilename(url, contentType);
     }
 
-    /**
-     * Get file extension from content type
-     */
     private static getExtensionFromContentType(contentType?: string): string {
-        if (!contentType) return '.jpg';
-        
-        const typeMap: Record<string, string> = {
-            'image/png': '.png',
-            'image/jpeg': '.jpg',
-            'image/jpg': '.jpg',
-            'image/gif': '.gif',
-            'image/svg+xml': '.svg',
-            'image/webp': '.webp'
-        };
-        
-        return typeMap[contentType.toLowerCase()] || '.jpg';
+        return getExtensionFromContentType(contentType);
     }
 
-    /**
-     * Check if a URL is a web image (http/https)
-     */
     static isWebImage(url: string): boolean {
         return url.startsWith('http://') || url.startsWith('https://');
     }

@@ -2,7 +2,7 @@ import {loadMermaid, Notice} from "obsidian";
 import ImageUploader from "./imageUploader";
 
 // Matches ```mermaid or ~~~mermaid fenced blocks, tolerates \r\n and trailing whitespace
-const MERMAID_REGEX = /(?:```|~~~)mermaid[^\S\r\n]*\r?\n([\s\S]*?)(?:```|~~~)/g;
+export const MERMAID_REGEX = /(?:```|~~~)mermaid[^\S\r\n]*\r?\n([\s\S]*?)(?:```|~~~)/g;
 
 // Marker prefix to identify mermaid-generated image URLs (prevents double-upload)
 export const MERMAID_IMG_MARKER = "mermaid-export-";
@@ -12,7 +12,7 @@ export interface MermaidProcessResult {
     generatedUrls: Set<string>;
 }
 
-const VALID_THEMES = ["default", "dark", "forest", "neutral", "base"];
+export const VALID_THEMES = ["default", "dark", "forest", "neutral", "base"];
 const MAX_CANVAS_DIMENSION = 16384;
 
 export default class MermaidProcessor {

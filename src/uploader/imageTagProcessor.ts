@@ -6,9 +6,58 @@ import UploadProgressModal from "../ui/uploadProgressModal";
 import {WebImageDownloader} from "./webImageDownloader";
 import MermaidProcessor from "./mermaidProcessor";
 
-const MD_REGEX = /\!\[(.*)\]\((.*?\.(png|jpg|jpeg|gif|svg|webp|excalidraw))\)/g;
-const WIKI_REGEX = /\!\[\[(.*?\.(png|jpg|jpeg|gif|svg|webp|excalidraw))(|.*)?\]\]/g;
-const PROPERTIES_REGEX = /^---[\s\S]+?---\n/;
+export const MD_REGEX = /\!\[(.*)\]\((.*?\.(png|jpg|jpeg|gif|svg|webp|excalidraw))\)/g;
+export const WIKI_REGEX = /\!\[\[(.*?\.(png|jpg|jpeg|gif|svg|webp|excalidraw))(|.*)?\]\]/g;
+export const PROPERTIES_REGEX = /^---[\s\S]+?---\n/;
+
+export function isAlreadyHosted(url: string, settings: PublishSettings): boolean {
+    try {
+        const urlObj = new URL(url);
+        const hostname = urlObj.hostname;
+
+        switch (settings.imageStore) {
+            case 'imgur':
+                return hostname.includes('imgur.com') || hostname.includes('i.imgur.com');
+            case 'github':
+                if (settings.githubSetting?.repositoryName) {
+                    return url.includes('github.com') &&
+                           url.includes(settings.githubSetting.repositoryName);
+                }
+                return hostname.includes('github.com') || hostname.includes('githubusercontent.com');
+            case 'oss':
+                if (settings.ossSetting?.customDomainName) {
+                    return hostname.includes(settings.ossSetting.customDomainName);
+                }
+                return hostname.includes('aliyuncs.com');
+            case 's3':
+                if (settings.awsS3Setting?.customDomainName) {
+                    return hostname.includes(settings.awsS3Setting.customDomainName);
+                }
+                return hostname.includes('amazonaws.com') || hostname.includes('s3');
+            case 'cos':
+                if (settings.cosSetting?.customDomainName) {
+                    return hostname.includes(settings.cosSetting.customDomainName);
+                }
+                return hostname.includes('myqcloud.com');
+            case 'qiniu':
+                if (settings.kodoSetting?.customDomainName) {
+                    return hostname.includes(settings.kodoSetting.customDomainName);
+                }
+                return hostname.includes('qiniudn.com') || hostname.includes('clouddn.com');
+            case 'imagekit':
+                return hostname.includes('imagekit.io');
+            case 'r2':
+                if (settings.r2Setting?.customDomainName) {
+                    return hostname.includes(settings.r2Setting.customDomainName);
+                }
+                return hostname.includes('r2.dev') || hostname.includes('r2.cloudflarestorage.com');
+            default:
+                return false;
+        }
+    } catch (error) {
+        return false;
+    }
+}
 
 interface Image {
     name: string;
@@ -282,55 +331,7 @@ export default class ImageTagProcessor {
     }
 
     private isAlreadyHosted(url: string): boolean {
-        try {
-            const urlObj = new URL(url);
-            const hostname = urlObj.hostname;
-            
-            // Check against common patterns for each storage service
-            switch (this.settings.imageStore) {
-                case 'imgur':
-                    return hostname.includes('imgur.com') || hostname.includes('i.imgur.com');
-                case 'github':
-                    if (this.settings.githubSetting?.repositoryName) {
-                        // Check if it's from the configured GitHub repo
-                        return url.includes('github.com') &&
-                               url.includes(this.settings.githubSetting.repositoryName);
-                    }
-                    return hostname.includes('github.com') || hostname.includes('githubusercontent.com');
-                case 'oss':
-                    if (this.settings.ossSetting?.customDomainName) {
-                        return hostname.includes(this.settings.ossSetting.customDomainName);
-                    }
-                    return hostname.includes('aliyuncs.com');
-                case 's3':
-                    if (this.settings.awsS3Setting?.customDomainName) {
-                        return hostname.includes(this.settings.awsS3Setting.customDomainName);
-                    }
-                    return hostname.includes('amazonaws.com') || hostname.includes('s3');
-                case 'cos':
-                    if (this.settings.cosSetting?.customDomainName) {
-                        return hostname.includes(this.settings.cosSetting.customDomainName);
-                    }
-                    return hostname.includes('myqcloud.com');
-                case 'qiniu':
-                    if (this.settings.kodoSetting?.customDomainName) {
-                        return hostname.includes(this.settings.kodoSetting.customDomainName);
-                    }
-                    return hostname.includes('qiniudn.com') || hostname.includes('clouddn.com');
-                case 'imagekit':
-                    return hostname.includes('imagekit.io');
-                case 'r2':
-                    if (this.settings.r2Setting?.customDomainName) {
-                        return hostname.includes(this.settings.r2Setting.customDomainName);
-                    }
-                    return hostname.includes('r2.dev') || hostname.includes('r2.cloudflarestorage.com');
-                default:
-                    return false;
-            }
-        } catch (error) {
-            // If URL parsing fails, assume not hosted
-            return false;
-        }
+        return isAlreadyHosted(url, this.settings);
     }
 
     private resolveImagePath(imageName: string): ResolvedImagePath {
