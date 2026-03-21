@@ -5,6 +5,7 @@ import {PublishSettings} from "../publish";
 import UploadProgressModal from "../ui/uploadProgressModal";
 import {WebImageDownloader} from "./webImageDownloader";
 import MermaidProcessor from "./mermaidProcessor";
+import ImageStore from "../imageStore";
 
 export const MD_REGEX = /\!\[(.*)\]\((.*?\.(png|jpg|jpeg|gif|svg|webp|excalidraw))\)/g;
 export const WIKI_REGEX = /\!\[\[(.*?\.(png|jpg|jpeg|gif|svg|webp|excalidraw))(|.*)?\]\]/g;
@@ -15,38 +16,40 @@ export function isAlreadyHosted(url: string, settings: PublishSettings): boolean
         const urlObj = new URL(url);
         const hostname = urlObj.hostname;
 
-        switch (settings.imageStore) {
-            case 'imgur':
+        switch (ImageStore.normalizeId(settings.imageStore)) {
+            case ImageStore.IMGUR.id:
                 return hostname.includes('imgur.com') || hostname.includes('i.imgur.com');
-            case 'github':
+            case ImageStore.GYAZO.id:
+                return hostname.includes('gyazo.com') || hostname.includes('i.gyazo.com') || hostname.includes('thumb.gyazo.com');
+            case ImageStore.GITHUB.id:
                 if (settings.githubSetting?.repositoryName) {
                     return url.includes('github.com') &&
                            url.includes(settings.githubSetting.repositoryName);
                 }
                 return hostname.includes('github.com') || hostname.includes('githubusercontent.com');
-            case 'oss':
+            case ImageStore.ALIYUN_OSS.id:
                 if (settings.ossSetting?.customDomainName) {
                     return hostname.includes(settings.ossSetting.customDomainName);
                 }
                 return hostname.includes('aliyuncs.com');
-            case 's3':
+            case ImageStore.AWS_S3.id:
                 if (settings.awsS3Setting?.customDomainName) {
                     return hostname.includes(settings.awsS3Setting.customDomainName);
                 }
                 return hostname.includes('amazonaws.com') || hostname.includes('s3');
-            case 'cos':
+            case ImageStore.TENCENTCLOUD_COS.id:
                 if (settings.cosSetting?.customDomainName) {
                     return hostname.includes(settings.cosSetting.customDomainName);
                 }
                 return hostname.includes('myqcloud.com');
-            case 'qiniu':
+            case ImageStore.QINIU_KUDO.id:
                 if (settings.kodoSetting?.customDomainName) {
                     return hostname.includes(settings.kodoSetting.customDomainName);
                 }
                 return hostname.includes('qiniudn.com') || hostname.includes('clouddn.com');
-            case 'imagekit':
+            case ImageStore.ImageKit.id:
                 return hostname.includes('imagekit.io');
-            case 'r2':
+            case ImageStore.CLOUDFLARE_R2.id:
                 if (settings.r2Setting?.customDomainName) {
                     return hostname.includes(settings.r2Setting.customDomainName);
                 }

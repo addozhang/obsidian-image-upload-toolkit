@@ -38,11 +38,12 @@
 - ✅ **Web Image Upload** - Download and re-upload web images to your storage (optional)
 - ✅ **Mermaid Conversion** - Automatically convert mermaid diagrams to PNG images during publish (optional)
 
-### Supported Storage Services (9 providers)
+### Supported Storage Services (10 providers)
 | Service | Free Tier | Rating | Best For |
 |---------|-----------|---------|----------|
 | Imgur | Limited | ⭐⭐⭐ | Personal blogs |
 | GitHub | Unlimited | ⭐⭐⭐⭐ | Open source projects |
+| Gyazo | Unlimited | ⭐⭐⭐⭐ | Fast sharing workflows |
 | Cloudflare R2 | Pay-as-you-go | ⭐⭐⭐⭐⭐ | Professional use |
 | AWS S3 | Pay-as-you-go | ⭐⭐⭐⭐ | Enterprise |
 | Aliyun OSS | Pay-as-you-go | ⭐⭐⭐⭐ | Chinese users |
@@ -95,6 +96,7 @@ Select your preferred storage service from the dropdown. See [Storage Service Co
 ### Service Selection Guide
 - **Personal Use**: Imgur (simple and free)
 - **Open Source**: GitHub (version control integration)
+- **Quick Sharing**: Gyazo (simple token-based upload)
 - **Professional**: Cloudflare R2 (high performance)
 - **Enterprise**: AWS S3 (full-featured)
 - **Chinese Users**: Aliyun OSS (optimized for China)
@@ -116,6 +118,19 @@ Select your preferred storage service from the dropdown. See [Storage Service Co
 2. Prepare a public repository for image storage
 3. Configure repository information and access token
 Note: Images are committed as regular files to the repository
+```
+
+#### Gyazo
+```markdown
+1. Visit https://gyazo.com/oauth/applications
+2. Create a Gyazo application
+3. Issue an access token from the application dashboard
+4. No OAuth callback server is required for this plugin. It uses the issued access token directly.
+5. Configure in plugin:
+   - Access Token
+   - Access Policy: anyone or only_me
+   - Common Description: optional shared desc value for every upload
+Note: only_me uploads may not be usable for public publishing workflows
 ```
 
 #### Cloudflare R2 (Recommended for Professional Use)
