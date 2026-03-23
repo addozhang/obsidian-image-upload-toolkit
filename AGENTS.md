@@ -1,6 +1,6 @@
 # Obsidian Image Upload Toolkit
 
-An Obsidian plugin for uploading local images to multiple cloud storage providers (Imgur, GitHub, AWS S3, Aliyun OSS, TencentCloud COS, Qiniu Kodo, ImageKit, Cloudflare R2, Backblaze B2). Also supports automatic mermaid diagram conversion to images during publish.
+An Obsidian plugin for uploading local images to multiple cloud storage providers (Imgur, Gyazo, GitHub, AWS S3, Aliyun OSS, TencentCloud COS, Qiniu Kodo, ImageKit, Cloudflare R2, Backblaze B2). Also supports automatic mermaid diagram conversion to images during publish.
 
 ## Project Overview
 
@@ -19,7 +19,7 @@ This is a TypeScript-based Obsidian plugin that processes markdown documents, de
 ```
 src/
 ├── publish.ts                      # Main plugin entry point
-├── imageStore.ts                   # Storage provider registry
+├── imageStore.ts                   # Storage provider registry (with normalizeId() for legacy alias support)
 ├── styles.css                      # Plugin styles
 ├── ui/
 │   ├── publishSettingTab.ts        # Settings UI
@@ -33,6 +33,7 @@ src/
     ├── uploaderUtils.ts            # Shared utilities
     ├── apiError.ts                 # Error handling
     ├── imgur/                      # Imgur implementation
+    ├── gyazo/                      # Gyazo implementation (v1.6.0)
     ├── github/                     # GitHub implementation
     ├── s3/                         # AWS S3 implementation
     ├── r2/                         # Cloudflare R2 implementation
@@ -177,7 +178,27 @@ To add a new storage provider:
 
 ## Testing
 
-Currently no automated test suite. Manual testing checklist:
+### Automated Tests
+
+Unit tests are located in `tests/unit/` and run via [Vitest](https://vitest.dev/):
+
+```bash
+npm test                # Run all tests
+npm run test:watch      # Watch mode
+npm run test:coverage   # Coverage report
+```
+
+Current test files:
+- `gyazoUploader.test.ts` — Gyazo uploader (upload success, error handling, field omission)
+- `imageStore.test.ts` — Provider registry and `normalizeId()` alias resolution
+- `isAlreadyHosted.test.ts` — Hosted-URL detection for all providers
+- `imageTagRegex.test.ts` — Markdown/Wiki image tag regex matching
+- `uploaderUtils.test.ts` — Path template generation and domain customization
+- `webImageDownloader.test.ts` — Web image download logic
+- `mermaidProcessor.test.ts` — Mermaid-to-PNG conversion
+- `mermaidRegex.test.ts` — Mermaid code block regex matching
+
+### Manual Testing Checklist
 
 1. Test each storage provider with sample images
 2. Verify path variable substitution works correctly
@@ -286,7 +307,7 @@ Follow conventional commit format:
 - `qiniu` - Qiniu Kodo SDK
 - `proxy-agent` - HTTP/HTTPS proxy support
 
-> **Note**: ImageKit uses Obsidian's built-in `requestUrl` API directly instead of the `imagekit` SDK. Mermaid rendering uses Obsidian's built-in `loadMermaid()` API — no bundled mermaid dependency.
+> **Note**: ImageKit and Gyazo use Obsidian's built-in `requestUrl` API directly instead of external SDKs. Mermaid rendering uses Obsidian's built-in `loadMermaid()` API — no bundled mermaid dependency.
 
 ### Development
 - `typescript` - TypeScript compiler
@@ -309,6 +330,11 @@ Settings are stored in `.obsidian/plugins/image-upload-toolkit/data.json`:
   "mermaidScale": 2,
   "mermaidTheme": "default",
   "imgurAnonymousSetting": { "clientId": "..." },
+  "gyazoSetting": {
+    "accessToken": "...",
+    "accessPolicy": "anyone",
+    "description": ""
+  },
   "b2Setting": {
     "keyId": "...",
     "applicationKey": "...",
@@ -352,4 +378,4 @@ Settings are stored in `.obsidian/plugins/image-upload-toolkit/data.json`:
 
 ## Current Version
 
-v1.4.0 - Latest features include mermaid diagram conversion to images during publish (with configurable scale and theme), Backblaze B2 storage support, and various robustness improvements (state-based double-upload prevention, ImageKit API migration, B2 MIME detection fixes).
+v1.6.0 - Added Gyazo uploader support (PR #52), `normalizeId()` for backward-compatible provider alias resolution, and refactored all switch cases to use `ImageStore` constants.
