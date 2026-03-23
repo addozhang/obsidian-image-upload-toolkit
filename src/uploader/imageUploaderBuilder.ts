@@ -3,10 +3,14 @@ import ImageUploader from "./imageUploader";
 import ImageStore from "../imageStore";
 
 export default function buildUploader(settings: PublishSettings): ImageUploader {
-    switch (settings.imageStore) {
+    switch (ImageStore.normalizeId(settings.imageStore)) {
         case ImageStore.IMGUR.id: {
             const {default: ImgurAnonymousUploader} = require("./imgur/imgurAnonymousUploader");
             return new ImgurAnonymousUploader(settings.imgurAnonymousSetting.clientId);
+        }
+        case ImageStore.GYAZO.id: {
+            const {default: GyazoUploader} = require("./gyazo/gyazoUploader");
+            return new GyazoUploader(settings.gyazoSetting);
         }
         case ImageStore.ALIYUN_OSS.id: {
             const {default: OssUploader} = require("./oss/ossUploader");

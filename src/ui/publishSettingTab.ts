@@ -16,6 +16,7 @@ export default class PublishSettingTab extends PluginSettingTab {
     display(): any {
         const {containerEl} = this;
         containerEl.empty()
+        this.plugin.settings.imageStore = ImageStore.normalizeId(this.plugin.settings.imageStore);
 
         // ── General ──
         containerEl.createEl("h2", {text: "General"});
@@ -137,9 +138,12 @@ export default class PublishSettingTab extends PluginSettingTab {
 
     private async drawImageStoreSettings(parentEL: HTMLDivElement) {
         parentEL.empty();
-        switch (this.plugin.settings.imageStore) {
+        switch (ImageStore.normalizeId(this.plugin.settings.imageStore)) {
             case ImageStore.IMGUR.id:
                 this.drawImgurSetting(parentEL);
+                break;
+            case ImageStore.GYAZO.id:
+                this.drawGyazoSetting(parentEL);
                 break;
             case ImageStore.ALIYUN_OSS.id:
                 this.drawOSSSetting(parentEL);
@@ -192,6 +196,50 @@ export default class PublishSettingTab extends PluginSettingTab {
         a.textContent = url;
         a.setAttribute("href", url);
         fragment.append("Generate your own Client ID at ");
+        fragment.append(a);
+        return fragment;
+    }
+
+    private drawGyazoSetting(parentEL: HTMLDivElement) {
+        new Setting(parentEL)
+            .setName("Access Token")
+            .setDesc(PublishSettingTab.gyazoTokenSettingDescription())
+            .addText(text =>
+                text
+                    .setPlaceholder("Enter access token")
+                    .setValue(this.plugin.settings.gyazoSetting.accessToken)
+                    .onChange(value => this.plugin.settings.gyazoSetting.accessToken = value)
+            );
+
+        new Setting(parentEL)
+            .setName("Access Policy")
+            .setDesc("Set image visibility. Choose 'only_me' only if you do not need other people or external sites to access the uploaded image URL.")
+            .addDropdown(dropdown =>
+                dropdown
+                    .addOption("anyone", "anyone")
+                    .addOption("only_me", "only_me")
+                    .setValue(this.plugin.settings.gyazoSetting.accessPolicy)
+                    .onChange((value: "anyone" | "only_me") => this.plugin.settings.gyazoSetting.accessPolicy = value)
+            );
+
+        new Setting(parentEL)
+            .setName("Common Description")
+            .setDesc("A fixed Gyazo description applied to every upload. Leave it empty to skip the desc field.")
+            .addText(text =>
+                text
+                    .setPlaceholder("Enter a shared description (optional)")
+                    .setValue(this.plugin.settings.gyazoSetting.desc)
+                    .onChange(value => this.plugin.settings.gyazoSetting.desc = value)
+            );
+    }
+
+    private static gyazoTokenSettingDescription() {
+        const fragment = document.createDocumentFragment();
+        const a = document.createElement("a");
+        const url = "https://gyazo.com/oauth/applications";
+        a.textContent = url;
+        a.setAttribute("href", url);
+        fragment.append("Create an application and issue an access token at ");
         fragment.append(a);
         return fragment;
     }

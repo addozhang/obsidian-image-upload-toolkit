@@ -18,6 +18,7 @@ import type {KodoSetting} from "./uploader/qiniu/kodoUploader";
 import type {GitHubSetting} from "./uploader/github/gitHubUploader";
 import type {R2Setting} from "./uploader/r2/r2Uploader";
 import type {B2Setting} from "./uploader/b2/b2Uploader";
+import type {GyazoSetting} from "./uploader/gyazo/gyazoUploader";
 
 export interface PublishSettings {
     imageAltText: boolean;
@@ -31,6 +32,7 @@ export interface PublishSettings {
     mermaidTheme: string; // Mermaid render theme: default, dark, forest, neutral, base
     //Imgur Anonymous setting
     imgurAnonymousSetting: ImgurAnonymousSetting;
+    gyazoSetting: GyazoSetting;
     ossSetting: OssSetting;
     imagekitSetting: ImagekitSetting;
     awsS3Setting: AwsS3Setting;
@@ -52,6 +54,11 @@ const DEFAULT_SETTINGS: PublishSettings = {
     mermaidScale: 2, // 2x for crisp output on retina displays
     mermaidTheme: "default",
     imgurAnonymousSetting: {clientId: IMGUR_PLUGIN_CLIENT_ID},
+    gyazoSetting: {
+        accessToken: "",
+        accessPolicy: "anyone",
+        desc: "",
+    },
     ossSetting: {
         region: "oss-cn-hangzhou",
         accessKeyId: "",
@@ -144,7 +151,10 @@ export default class ObsidianPublish extends Plugin {
     }
 
     async loadSettings() {
-        this.settings = Object.assign({}, DEFAULT_SETTINGS, (await this.loadData()) as PublishSettings);
+        const loadedData = (await this.loadData()) as Partial<PublishSettings> | null;
+        this.settings = Object.assign({}, DEFAULT_SETTINGS, loadedData);
+        this.settings.imageStore = ImageStore.normalizeId(this.settings.imageStore);
+        this.settings.gyazoSetting = Object.assign({}, DEFAULT_SETTINGS.gyazoSetting, loadedData?.gyazoSetting);
     }
 
     async saveSettings() {

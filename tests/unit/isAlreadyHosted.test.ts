@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { isAlreadyHosted } from "../../src/uploader/imageTagProcessor";
 import type { PublishSettings } from "../../src/publish";
+import ImageStore from "../../src/imageStore";
 
 const makeSettings = (overrides: any) =>
   ({
-    imageStore: "imgur",
+    imageStore: ImageStore.IMGUR.id,
+    gyazoSetting: { desc: "", accessToken: "", accessPolicy: "anyone" },
     githubSetting: { repositoryName: "" },
     ossSetting: { customDomainName: "" },
     awsS3Setting: { customDomainName: "" },
@@ -20,6 +22,15 @@ describe("isAlreadyHosted", () => {
 
     expect(isAlreadyHosted("https://i.imgur.com/abc123.png", settings)).toBe(true);
     expect(isAlreadyHosted("https://example.com/img.png", settings)).toBe(false);
+  });
+
+  it("gyazo provider supports alias and canonical ids", () => {
+    const aliasSettings = makeSettings({ imageStore: "gyazo" });
+    const canonicalSettings = makeSettings({ imageStore: ImageStore.GYAZO.id });
+
+    expect(isAlreadyHosted("https://i.gyazo.com/abc123.png", aliasSettings)).toBe(true);
+    expect(isAlreadyHosted("https://gyazo.com/abc123", canonicalSettings)).toBe(true);
+    expect(isAlreadyHosted("https://thumb.gyazo.com/thumb/200/abc123.png", canonicalSettings)).toBe(true);
   });
 
   it("github provider with repository name", () => {
