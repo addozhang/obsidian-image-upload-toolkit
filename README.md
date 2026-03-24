@@ -39,18 +39,18 @@
 - ✅ **Mermaid Conversion** - Automatically convert mermaid diagrams to PNG images during publish (optional)
 
 ### Supported Storage Services (10 providers)
-| Service | Free Tier | Rating | Best For |
-|---------|-----------|---------|----------|
-| Imgur | Limited | ⭐⭐⭐ | Personal blogs |
-| GitHub | Unlimited | ⭐⭐⭐⭐ | Open source projects |
-| Gyazo | Unlimited | ⭐⭐⭐⭐ | Fast sharing workflows |
-| Cloudflare R2 | Pay-as-you-go | ⭐⭐⭐⭐⭐ | Professional use |
-| AWS S3 | Pay-as-you-go | ⭐⭐⭐⭐ | Enterprise |
-| Aliyun OSS | Pay-as-you-go | ⭐⭐⭐⭐ | Chinese users |
-| TencentCloud COS | Pay-as-you-go | ⭐⭐⭐⭐ | Chinese users |
-| Qiniu Kodo | Pay-as-you-go | ⭐⭐⭐⭐ | Chinese users |
-| ImageKit | Limited | ⭐⭐⭐⭐ | CDN optimization |
-| Backblaze B2 | Pay-as-you-go | ⭐⭐⭐⭐ | Cost-effective storage |
+| Service | Rating | Best For |
+|---------|---------|----------|
+| Imgur | ⭐⭐⭐ | Personal blogs |
+| GitHub | ⭐⭐⭐⭐ | Open source projects |
+| Cloudflare R2 | ⭐⭐⭐⭐⭐ | Professional use |
+| AWS S3 | ⭐⭐⭐⭐ | Enterprise |
+| Aliyun OSS | ⭐⭐⭐⭐ | Chinese users |
+| TencentCloud COS | ⭐⭐⭐⭐ | Chinese users |
+| Qiniu Kodo | ⭐⭐⭐⭐ | Chinese users |
+| ImageKit | ⭐⭐⭐⭐ | CDN optimization |
+| Backblaze B2 | ⭐⭐⭐⭐ | Cost-effective storage |
+| Gyazo | ⭐⭐⭐⭐ | Fast sharing workflows |
 
 Perfect for publishing to static sites like [GitHub Pages](https://pages.github.com) or any platform requiring externally hosted images.
 
