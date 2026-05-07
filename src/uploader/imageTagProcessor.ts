@@ -8,7 +8,7 @@ import MermaidProcessor from "./mermaidProcessor";
 import ImageStore from "../imageStore";
 
 export const MD_REGEX = /\!\[(.*)\]\((.*?\.(png|jpg|jpeg|gif|svg|webp|excalidraw))\)/g;
-export const OPEN_MD_REGEX = /\!\[([^\]]*)\]\(([^)]*)/g;
+export const OPEN_MD_REGEX = /\!\[([^\]]*)\]\(([^)]*)\)/g;
 export const WIKI_REGEX = /\!\[\[(.*?\.(png|jpg|jpeg|gif|svg|webp|excalidraw))(|.*)?\]\]/g;
 export const PROPERTIES_REGEX = /^---[\s\S]+?---\n/;
 
