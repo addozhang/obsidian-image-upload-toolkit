@@ -22,6 +22,7 @@ export function getExtensionFromContentType(contentType?: string): string {
 }
 
 export function extractFilename(url: string, contentType?: string): string {
+    const timestamp = Date.now() + "_" + Math.random().toString(36).slice(2);
     try {
         const urlObj = new URL(url);
         const pathname = urlObj.pathname;
@@ -31,13 +32,11 @@ export function extractFilename(url: string, contentType?: string): string {
         if (filename && /\.(png|jpg|jpeg|gif|svg|webp)$/i.test(filename)) {
             return decodeURIComponent(filename);
         }
-
         const extension = getExtensionFromContentType(contentType);
-        const timestamp = Date.now();
         return `web-image-${timestamp}${extension}`;
     } catch (error) {
         const extension = getExtensionFromContentType(contentType);
-        return `web-image-${Date.now()}${extension}`;
+        return `web-image-${timestamp}${extension}`;
     }
 }
 
