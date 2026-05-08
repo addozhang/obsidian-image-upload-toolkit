@@ -7,8 +7,7 @@ import {WebImageDownloader} from "./webImageDownloader";
 import MermaidProcessor from "./mermaidProcessor";
 import ImageStore from "../imageStore";
 
-export const MD_REGEX = /\!\[(.*)\]\((.*?\.(png|jpg|jpeg|gif|svg|webp|excalidraw))\)/g;
-export const OPEN_MD_REGEX = /\!\[([^\]]*)\]\(([^)]*)\)/g;
+export const MD_REGEX = /\!\[([^\]]*)\]\(([^)]*)\)/g;
 export const WIKI_REGEX = /\!\[\[(.*?\.(png|jpg|jpeg|gif|svg|webp|excalidraw))(|.*)?\]\]/g;
 export const PROPERTIES_REGEX = /^---[\s\S]+?---\n/;
 
@@ -265,7 +264,7 @@ export default class ImageTagProcessor {
                 this.processMatched(match[1], match[0], images);
             }
             
-            const mdMatches = value.matchAll(OPEN_MD_REGEX);
+            const mdMatches = value.matchAll(MD_REGEX);
             for (const match of mdMatches) {
                 const imageUrl = match[2];
                 
@@ -279,6 +278,12 @@ export default class ImageTagProcessor {
                     continue;
                 }
                 
+                // Skip non-image local files (e.g., .pdf, .txt) to prevent invalid uploads
+                const localPath = imageUrl.split('?')[0];
+                if (!/\.(png|jpg|jpeg|gif|svg|webp|excalidraw)$/i.test(localPath)) {
+                    continue;
+                }
+
                 const decodedName = decodeURI(imageUrl);
                 this.processMatched(decodedName, match[0], images);
             }

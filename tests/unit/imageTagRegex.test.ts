@@ -13,6 +13,7 @@ describe("MD_REGEX", () => {
     "![alt](image.webp)",
     "![alt](drawing.excalidraw)",
     "![alt](http://example.com/img.png)",
+    "![image](https://mmbiz.qpic.cn/mmbiz_svg/Q3auHgzwzM4xmCJEFEWXFbXXHia3ibH7U4RLVfQzuRjs2icgedowztV9fIB3Vsrrzt53YVkIGn2Q5dehvaWrUib8GaeHWAqYdzOJvBrxraoKfAicZBVw2wK8Htg/640?wx_fmt=svg&from=appmsg&tp=webp&wxfrom=5&wx_lazy=1#imgIndex=1)",
   ];
 
   const nonMatches = ["![alt](file.pdf)", "![alt](file.txt)"];
@@ -26,22 +27,29 @@ describe("MD_REGEX", () => {
     }
   });
 
-  it("does not match unsupported markdown image formats", () => {
+  it("matches markdown image syntax regardless of extension", () => {
     const regex = fresh(MD_REGEX);
 
     for (const input of nonMatches) {
-      expect(regex.test(input)).toBe(false);
+      expect(regex.test(input)).toBe(true);
       regex.lastIndex = 0;
     }
   });
 
-  it("captures alt full path and extension groups", () => {
+  it("captures alt and full path groups", () => {
     const regex = fresh(MD_REGEX);
     const match = regex.exec("![my alt](path/to/file.jpeg)");
 
     expect(match?.[1]).toBe("my alt");
     expect(match?.[2]).toBe("path/to/file.jpeg");
-    expect(match?.[3]).toBe("jpeg");
+  });
+
+  it("captures alt and url for web images without extension", () => {
+    const regex = fresh(MD_REGEX);
+    const match = regex.exec("![image](https://mmbiz.qpic.cn/mmbiz_svg/Q3auHgzwzM4xmCJEFEWXFbXXHia3ibH7U4RLVfQzuRjs2icgedowztV9fIB3Vsrrzt53YVkIGn2Q5dehvaWrUib8GaeHWAqYdzOJvBrxraoKfAicZBVw2wK8Htg/640?wx_fmt=svg&from=appmsg&tp=webp&wxfrom=5&wx_lazy=1#imgIndex=1)");
+
+    expect(match?.[1]).toBe("image");
+    expect(match?.[2]).toBe("https://mmbiz.qpic.cn/mmbiz_svg/Q3auHgzwzM4xmCJEFEWXFbXXHia3ibH7U4RLVfQzuRjs2icgedowztV9fIB3Vsrrzt53YVkIGn2Q5dehvaWrUib8GaeHWAqYdzOJvBrxraoKfAicZBVw2wK8Htg/640?wx_fmt=svg&from=appmsg&tp=webp&wxfrom=5&wx_lazy=1#imgIndex=1");
   });
 });
 
