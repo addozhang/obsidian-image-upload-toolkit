@@ -35,21 +35,25 @@ describe("extractFilename", () => {
   it("generates png filename from content type when extension missing", () => {
     vi.spyOn(Date, "now").mockReturnValue(1710000000000);
 
-    expect(extractFilename("https://example.com/path/image", "image/png")).toBe(
-      "web-image-1710000000000.png",
+    expect(extractFilename("https://example.com/path/image", "image/png")).toMatch(
+      /^web-image-1710000000000_[a-z0-9]+\.png$/,
     );
   });
 
   it("generates jpg filename when extension and content type missing", () => {
     vi.spyOn(Date, "now").mockReturnValue(1710000000001);
 
-    expect(extractFilename("https://example.com/path/image")).toBe("web-image-1710000000001.jpg");
+    expect(extractFilename("https://example.com/path/image")).toMatch(
+      /^web-image-1710000000001_[a-z0-9]+\.jpg$/,
+    );
   });
 
   it("falls back to generated filename for invalid URL", () => {
     vi.spyOn(Date, "now").mockReturnValue(1710000000002);
 
-    expect(extractFilename("not-a-valid-url")).toBe("web-image-1710000000002.jpg");
+    expect(extractFilename("not-a-valid-url")).toMatch(
+      /^web-image-1710000000002_[a-z0-9]+\.jpg$/,
+    );
   });
 });
 
