@@ -278,6 +278,7 @@ export default class ImageTagProcessor {
                     continue;
                 }
                 
+                // Skip non-image local files (e.g., .pdf, .txt) to prevent invalid uploads
                 const localPath = imageUrl.split('?')[0];
                 if (!/\.(png|jpg|jpeg|gif|svg|webp|excalidraw)$/i.test(localPath)) {
                     continue;
