@@ -396,6 +396,14 @@ export default class PublishSettingTab extends PluginSettingTab {
                     .setValue(this.plugin.settings.awsS3Setting.path)
                     .onChange(value => this.plugin.settings.awsS3Setting.path = value))
 
+        new Setting(parentEL)
+            .setName("AWS S3 Endpoint")
+            .setDesc("Custom S3-compatible endpoint URL (e.g., https://s3.example.com). Leave empty to use default AWS S3.")
+            .addText(text => text
+                .setPlaceholder("Enter custom endpoint URL (optional)")
+                .setValue(this.plugin.settings.awsS3Setting?.endpoint || '')
+                .onChange(value => this.plugin.settings.awsS3Setting.endpoint = value));
+
         //custom domain
         new Setting(parentEL)
             .setName("Custom Domain Name")

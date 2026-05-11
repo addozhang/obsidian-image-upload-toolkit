@@ -82,6 +82,7 @@ const DEFAULT_SETTINGS: PublishSettings = {
         bucketName: "",
         path: "",
         customDomainName: "",
+        endpoint: "",
     },
     cosSetting: {
         region: "",
