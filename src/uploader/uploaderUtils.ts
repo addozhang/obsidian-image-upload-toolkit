@@ -7,6 +7,7 @@ export class UploaderUtils {
         const month = (date.getMonth() + 1).toString().padStart(2, '0');
         const day = date.getDate().toString().padStart(2, '0');
         const random = this.generateRandomString(20);
+        const ext = path.extname(imageName).replace(/^\./, '');
 
         return pathTmpl != undefined && pathTmpl.trim().length > 0 ? pathTmpl
                 .replace('{year}', year)
@@ -14,6 +15,7 @@ export class UploaderUtils {
                 .replace('{day}', day)
                 .replace('{random}', random)
                 .replace('{filename}', imageName)
+                .replace('{ext}', ext)
             : imageName
             ;
     }

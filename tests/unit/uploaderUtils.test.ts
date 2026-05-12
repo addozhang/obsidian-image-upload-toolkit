@@ -30,6 +30,30 @@ describe("UploaderUtils.generateName", () => {
     expect(result).toBe("uploads/photo.jpg");
   });
 
+  it("replaces ext variable with extension without dot", () => {
+    vi.spyOn(Math, "random").mockReturnValue(0);
+
+    const result = UploaderUtils.generateName("{random}.{ext}", "photo.jpg");
+
+    expect(result).toBe("A".repeat(20) + ".jpg");
+  });
+
+  it("replaces ext for different file types", () => {
+    vi.spyOn(Math, "random").mockReturnValue(0);
+
+    expect(UploaderUtils.generateName("uploads/{filename}.{ext}", "image.png")).toBe("uploads/image.png.png");
+    expect(UploaderUtils.generateName("uploads/{filename}.{ext}", "image.webp")).toBe("uploads/image.webp.webp");
+    expect(UploaderUtils.generateName("uploads/{filename}.{ext}", "image.JPEG")).toBe("uploads/image.JPEG.JPEG");
+  });
+
+  it("replaces ext with no extension in filename", () => {
+    vi.spyOn(Math, "random").mockReturnValue(0);
+
+    const result = UploaderUtils.generateName("uploads/{random}.{ext}", "noextension");
+
+    expect(result).toBe("uploads/" + "A".repeat(20) + ".");
+  });
+
   it("replaces all variables together", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2024-01-17T08:00:00.000Z"));

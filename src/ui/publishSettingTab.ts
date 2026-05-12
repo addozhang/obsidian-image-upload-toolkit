@@ -285,7 +285,7 @@ export default class PublishSettingTab extends PluginSettingTab {
 
         new Setting(parentEL)
             .setName("Target Path")
-            .setDesc("The path to store image.\nSupport {year} {mon} {day} {random} {filename} vars. For example, /{year}/{mon}/{day}/{filename} with uploading pic.jpg, it will store as /2023/06/08/pic.jpg.")
+            .setDesc("The path to store image.\nSupport {year} {mon} {day} {random} {filename} {ext} vars. For example, /{year}/{mon}/{day}/{filename} with uploading pic.jpg, it will store as /2023/06/08/pic.jpg. Another example, /{random}.{ext} will store as /abc123def456.jpg.")
             .addText(text =>
                 text
                     .setPlaceholder("Enter path")
@@ -389,7 +389,7 @@ export default class PublishSettingTab extends PluginSettingTab {
                 .onChange(value => this.plugin.settings.awsS3Setting.bucketName = value));
         new Setting(parentEL)
             .setName("Target Path")
-            .setDesc("The path to store image.\nSupport {year} {mon} {day} {random} {filename} vars. For example, /{year}/{mon}/{day}/{filename} with uploading pic.jpg, it will store as /2023/06/08/pic.jpg.")
+            .setDesc("The path to store image.\nSupport {year} {mon} {day} {random} {filename} {ext} vars. For example, /{year}/{mon}/{day}/{filename} with uploading pic.jpg, it will store as /2023/06/08/pic.jpg. Another example, /{random}.{ext} will store as /abc123def456.jpg.")
             .addText(text =>
                 text
                     .setPlaceholder("Enter path")
@@ -446,7 +446,7 @@ export default class PublishSettingTab extends PluginSettingTab {
 
         new Setting(parentEL)
             .setName("Target Path")
-            .setDesc("The path to store image.\nSupport {year} {mon} {day} {random} {filename} vars. For example, /{year}/{mon}/{day}/{filename} with uploading pic.jpg, it will store as /2023/06/08/pic.jpg.")
+            .setDesc("The path to store image.\nSupport {year} {mon} {day} {random} {filename} {ext} vars. For example, /{year}/{mon}/{day}/{filename} with uploading pic.jpg, it will store as /2023/06/08/pic.jpg. Another example, /{random}.{ext} will store as /abc123def456.jpg.")
             .addText(text =>
                 text
                     .setPlaceholder("Enter path")
@@ -492,7 +492,7 @@ export default class PublishSettingTab extends PluginSettingTab {
 
         // new Setting(parentEL)
         //     .setName("Target Path")
-        //     .setDesc("The path to store image.\nSupport {year} {mon} {day} {random} {filename} vars. For example, /{year}/{mon}/{day}/{filename} with uploading pic.jpg, it will store as /2023/06/08/pic.jpg.")
+        //     .setDesc("The path to store image.\nSupport {year} {mon} {day} {random} {filename} {ext} vars. For example, /{year}/{mon}/{day}/{filename} with uploading pic.jpg, it will store as /2023/06/08/pic.jpg. Another example, /{random}.{ext} will store as /abc123def456.jpg.")
         //     .addText(text =>
         //         text
         //             .setPlaceholder("Enter path")
@@ -599,7 +599,7 @@ export default class PublishSettingTab extends PluginSettingTab {
 
         new Setting(parentEL)
             .setName("Target Path")
-            .setDesc("The path to store image.\nSupport {year} {mon} {day} {random} {filename} vars. For example, /{year}/{mon}/{day}/{filename} with uploading pic.jpg, it will store as /2023/06/08/pic.jpg.")
+            .setDesc("The path to store image.\nSupport {year} {mon} {day} {random} {filename} {ext} vars. For example, /{year}/{mon}/{day}/{filename} with uploading pic.jpg, it will store as /2023/06/08/pic.jpg. Another example, /{random}.{ext} will store as /abc123def456.jpg.")
             .addText(text =>
                 text
                     .setPlaceholder("Enter path")
@@ -653,7 +653,7 @@ export default class PublishSettingTab extends PluginSettingTab {
 
         new Setting(parentEL)
             .setName("Target Path")
-            .setDesc("The path to store image.\nSupport {year} {mon} {day} {random} {filename} vars. For example, /{year}/{mon}/{day}/{filename} with uploading pic.jpg, it will store as /2023/06/08/pic.jpg.")
+            .setDesc("The path to store image.\nSupport {year} {mon} {day} {random} {filename} {ext} vars. For example, /{year}/{mon}/{day}/{filename} with uploading pic.jpg, it will store as /2023/06/08/pic.jpg. Another example, /{random}.{ext} will store as /abc123def456.jpg.")
             .addText(text =>
                 text
                     .setPlaceholder("Enter path")
