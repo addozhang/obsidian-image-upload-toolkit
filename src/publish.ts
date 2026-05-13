@@ -82,6 +82,7 @@ const DEFAULT_SETTINGS: PublishSettings = {
         bucketName: "",
         path: "",
         customDomainName: "",
+        endpoint: "",
     },
     cosSetting: {
         region: "",
@@ -155,6 +156,7 @@ export default class ObsidianPublish extends Plugin {
         this.settings = Object.assign({}, DEFAULT_SETTINGS, loadedData);
         this.settings.imageStore = ImageStore.normalizeId(this.settings.imageStore);
         this.settings.gyazoSetting = Object.assign({}, DEFAULT_SETTINGS.gyazoSetting, loadedData?.gyazoSetting);
+        this.settings.awsS3Setting = Object.assign({}, DEFAULT_SETTINGS.awsS3Setting, loadedData?.awsS3Setting);
     }
 
     async saveSettings() {

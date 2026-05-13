@@ -10,11 +10,17 @@ export default class AwsS3Uploader implements ImageUploader {
 
 
   constructor(setting: AwsS3Setting) {
-    this.s3 = new AWS.S3({
+    const s3Options: AWS.S3.ClientConfiguration = {
       accessKeyId: setting.accessKeyId,
       secretAccessKey: setting.secretAccessKey,
       region: setting.region
-    });
+    };
+    const endpoint = setting.endpoint?.trim();
+    if (endpoint) {
+      s3Options.endpoint = endpoint;
+      s3Options.s3ForcePathStyle = true;
+    }
+    this.s3 = new AWS.S3(s3Options);
     this.bucket = setting.bucketName;
     this.pathTmpl = setting.path;
     this.customDomainName = setting.customDomainName;
@@ -57,4 +63,5 @@ export interface AwsS3Setting {
   bucketName: string;
   path: string;
   customDomainName: string;
+  endpoint: string;
 }
