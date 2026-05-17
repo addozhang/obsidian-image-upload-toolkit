@@ -66,13 +66,10 @@ export default class UploadProgressModal extends Modal {
         // Image list (if we have image names)
         if (this.imageStatus.size > 0) {
             const imageListContainer = contentEl.createDiv({cls: "image-list-container"});
-            imageListContainer.createEl("h3", {text: "Images"});
+            imageListContainer.createDiv({cls: "image-list-heading", text: "Images"});
             this.imageListEl = imageListContainer.createDiv({cls: "image-list"});
             this.renderImageList();
         }
-        
-        // Style the modal
-        this.addStyles();
     }
     
     /**
@@ -145,47 +142,6 @@ export default class UploadProgressModal extends Modal {
             
             // Image name
             itemEl.createSpan({text: name, cls: "image-name"});
-        }
-    }
-    
-    /**
-     * Add custom styles to the modal
-     */
-    private addStyles(): void {
-        // Add custom styles to the progress bar
-        this.progressBarEl.style.width = "0%";
-        this.progressBarEl.style.height = "8px";
-        this.progressBarEl.style.backgroundColor = "var(--interactive-accent)";
-        this.progressBarEl.style.borderRadius = "4px";
-        this.progressBarEl.style.transition = "width 0.3s ease-in-out";
-        
-        const modalContent = this.contentEl;
-        
-        // Progress bar container styling
-        const progressBarContainer = modalContent.querySelector(".progress-bar-container");
-        if (progressBarContainer instanceof activeWindow.HTMLElement) {
-            progressBarContainer.style.width = "100%";
-            progressBarContainer.style.height = "8px";
-            progressBarContainer.style.backgroundColor = "var(--background-modifier-border)";
-            progressBarContainer.style.borderRadius = "4px";
-            progressBarContainer.style.marginBottom = "10px";
-        }
-        
-        // Progress section styling
-        const progressSection = modalContent.querySelector(".progress-section");
-        if (progressSection instanceof activeWindow.HTMLElement) {
-            progressSection.style.marginBottom = "20px";
-            progressSection.style.textAlign = "center";
-        }
-        
-        // Image list styling
-        const imageList = modalContent.querySelector(".image-list");
-        if (imageList instanceof activeWindow.HTMLElement) {
-            imageList.style.maxHeight = "200px";
-            imageList.style.overflowY = "auto";
-            imageList.style.border = "1px solid var(--background-modifier-border)";
-            imageList.style.borderRadius = "4px";
-            imageList.style.padding = "8px";
         }
     }
 }

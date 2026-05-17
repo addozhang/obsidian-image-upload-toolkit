@@ -62,8 +62,8 @@ export default tseslint.config(
 		rules: {
 			// Sentence-case fixes are tracked separately as a UI-copy pass.
 			"obsidianmd/ui/sentence-case": "warn",
-			// Inline-style refactor is tracked separately.
-			"obsidianmd/no-static-styles-assignment": "warn",
+			// no-static-styles-assignment resolved in Batch 3 (styles moved to styles.css).
+			"obsidianmd/no-static-styles-assignment": "error",
 		},
 	},
 	{

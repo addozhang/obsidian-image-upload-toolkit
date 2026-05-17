@@ -1,3 +1,81 @@
 /*
-* Add any styles you want to be included w/ your plugin here
-*/
+ * obsidian-image-upload-toolkit
+ * Styles for plugin-owned UI surfaces. Use CSS variables exposed by Obsidian
+ * (--interactive-accent, --background-modifier-border, etc.) so the plugin
+ * inherits the active theme.
+ */
+
+/* Upload progress modal */
+.upload-progress-modal .upload-progress-content {
+    padding: 4px 0;
+}
+
+.upload-progress-modal .progress-section {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.upload-progress-modal .status-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.upload-progress-modal .progress-bar-container {
+    width: 100%;
+    height: 8px;
+    background-color: var(--background-modifier-border);
+    border-radius: 4px;
+    margin-bottom: 10px;
+    overflow: hidden;
+}
+
+.upload-progress-modal .progress-bar {
+    width: 0;
+    height: 8px;
+    background-color: var(--interactive-accent);
+    border-radius: 4px;
+    transition: width 0.3s ease-in-out;
+}
+
+.upload-progress-modal .progress-text {
+    font-size: var(--font-ui-small);
+    color: var(--text-muted);
+}
+
+.upload-progress-modal .image-list-container {
+    margin-top: 12px;
+}
+
+.upload-progress-modal .image-list-heading {
+    font-weight: var(--font-semibold);
+    margin-bottom: 6px;
+}
+
+.upload-progress-modal .image-list {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    padding: 8px;
+}
+
+.upload-progress-modal .image-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 2px 0;
+}
+
+.upload-progress-modal .image-status-icon.success {
+    color: var(--interactive-success, var(--color-green));
+}
+
+.upload-progress-modal .image-status-icon.pending {
+    color: var(--text-muted);
+}
+
+.upload-progress-modal .image-name {
+    font-size: var(--font-ui-small);
+}
