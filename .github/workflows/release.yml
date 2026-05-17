@@ -5,14 +5,13 @@ on:
     tags:
       - "*"
 
-env:
-  PLUGIN_NAME: obsidian-publish-plugin
-
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      id-token: write
+      attestations: write
 
     steps:
       - uses: actions/checkout@v4
@@ -25,15 +24,22 @@ jobs:
       - name: Install dependencies
         run: npm install --legacy-peer-deps
 
+      - name: Lint
+        run: npm run lint
+
       - name: Run tests
         run: npm test
 
       - name: Build
-        run: |
-          npm run build
-          mkdir ${{ env.PLUGIN_NAME }}
-          cp dist/main.js dist/manifest.json ${{ env.PLUGIN_NAME }}
-          zip -r ${{ env.PLUGIN_NAME }}.zip ${{ env.PLUGIN_NAME }}
+        run: npm run build
+
+      - name: Generate artifact attestation
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: |
+            dist/main.js
+            dist/manifest.json
+            src/styles.css
 
       - name: Create or reuse release and upload assets
         env:
@@ -45,9 +51,9 @@ jobs:
             gh release create "$TAG" --title "$TAG" --generate-notes
           fi
 
-          # Upload assets (--clobber overwrites if the asset name already exists)
+          # Upload only the assets that Obsidian's plugin reviewer scans.
+          # See https://docs.obsidian.md/Plugins/Releasing/Submission+requirements+for+plugins
           gh release upload "$TAG" \
-            "${{ env.PLUGIN_NAME }}.zip#${PLUGIN_NAME}-${TAG}.zip" \
             dist/main.js \
             dist/manifest.json \
             src/styles.css \
