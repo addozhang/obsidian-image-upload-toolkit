@@ -4,8 +4,8 @@ import OSS from "ali-oss"
 
 export default class OssUploader implements ImageUploader {
     private readonly client!: OSS;
-    private readonly pathTmpl: String;
-    private readonly customDomainName: String;
+    private readonly pathTmpl: string;
+    private readonly customDomainName: string;
 
     constructor(setting: OssSetting) {
         this.client = new OSS({

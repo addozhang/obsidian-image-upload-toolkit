@@ -17,7 +17,7 @@ const MAX_CANVAS_DIMENSION = 16384;
 
 export default class MermaidProcessor {
     private uploader: ImageUploader;
-    private mermaidInstance: any = null;
+    private mermaidInstance: unknown = null;
     private scale: number;
     private theme: string;
 
@@ -27,7 +27,7 @@ export default class MermaidProcessor {
         this.theme = VALID_THEMES.includes(theme) ? theme : "default";
     }
 
-    private async ensureMermaid(): Promise<any> {
+    private async ensureMermaid(): Promise<unknown> {
         if (!this.mermaidInstance) {
             this.mermaidInstance = await loadMermaid();
             this.mermaidInstance.initialize({ startOnLoad: false, theme: this.theme });
@@ -100,7 +100,7 @@ export default class MermaidProcessor {
                 const canvas = document.createElement("canvas");
                 canvas.width = canvasWidth;
                 canvas.height = canvasHeight;
-                const ctx = canvas.getContext("2d")!;
+                const ctx = canvas.getContext("2d");
                 ctx.fillStyle = "#ffffff";
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
                 ctx.scale(scale, scale);
@@ -110,7 +110,7 @@ export default class MermaidProcessor {
                     else reject(new Error("canvas.toBlob returned null"));
                 }, "image/png");
             };
-            img.onerror = (e) => reject(e);
+            img.onerror = () => reject(new Error("Failed to load SVG into image element"));
             img.src = dataUrl;
         });
     }
@@ -147,7 +147,7 @@ export default class MermaidProcessor {
             const lines = this.extractTextLines(fo);
             if (lines.length === 0) { fo.remove(); return; }
 
-            const styledEl = fo.querySelector("span, div, p") as HTMLElement | null;
+            const styledEl = fo.querySelector("span, div, p");
             const computed = styledEl ? window.getComputedStyle(styledEl) : null;
             const fontSize = parseFloat(computed?.fontSize || "14");
             const fontFamily = computed?.fontFamily || "sans-serif";
@@ -236,8 +236,8 @@ export default class MermaidProcessor {
             if (!el) return svgString;
 
             const viewBox = el.getAttribute("viewBox")?.split(/[\s,]+/).map(Number);
-            const hasWidth = el.hasAttribute("width") && parseFloat(el.getAttribute("width")!) > 0;
-            const hasHeight = el.hasAttribute("height") && parseFloat(el.getAttribute("height")!) > 0;
+            const hasWidth = el.hasAttribute("width") && parseFloat(el.getAttribute("width")) > 0;
+            const hasHeight = el.hasAttribute("height") && parseFloat(el.getAttribute("height")) > 0;
 
             if (!hasWidth || !hasHeight) {
                 if (viewBox?.length === 4) {

@@ -5,8 +5,8 @@ import {UploaderUtils} from "../uploaderUtils";
 export default class CosUploader implements ImageUploader {
 
     private readonly client!: COS;
-    private readonly pathTmpl: String;
-    private readonly customDomainName: String;
+    private readonly pathTmpl: string;
+    private readonly customDomainName: string;
     private readonly region: string;
     private readonly bucket: string;
 
@@ -28,7 +28,7 @@ export default class CosUploader implements ImageUploader {
             Region: this.region,
             Key: UploaderUtils.generateName(this.pathTmpl, image.name),
         });
-        var url = 'https://' + (await result).Location;
+        let url = 'https://' + (await result).Location;
         return UploaderUtils.customizeDomainName(url, this.customDomainName);
     }
 
