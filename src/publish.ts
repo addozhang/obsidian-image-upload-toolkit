@@ -165,7 +165,9 @@ export default class ObsidianPublish extends Plugin {
         if (!this.imageUploader) {
             new Notice("Image uploader setup failed, please check setting.")
         } else {
-            this.imageTagProcessor.process(ACTION_PUBLISH).then(() => {
+            this.imageTagProcessor.process(ACTION_PUBLISH).catch(err => {
+                console.error("Image upload toolkit: publish failed", err);
+                new Notice(`Publish failed: ${err?.message || err}`, 8000);
             });
         }
     }

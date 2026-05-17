@@ -120,7 +120,7 @@ export default class ImageTagProcessor {
         for (const image of images) {
             // Handle web images differently
             if (image.isWebImage) {
-                promises.push(new Promise<Image>(async (resolve, reject) => {
+                promises.push((async (): Promise<Image> => {
                     try {
                         // Download the web image
                         const downloadResult = await WebImageDownloader.download(image.path);
@@ -135,7 +135,7 @@ export default class ImageTagProcessor {
                         if (this.progressModal) {
                             this.progressModal.updateProgress(image.name, true);
                         }
-                        resolve(image);
+                        return image;
                     } catch (e) {
                         // Update progress on failed upload
                         if (this.progressModal) {
@@ -144,9 +144,9 @@ export default class ImageTagProcessor {
                         const errorMessage = `Upload web image ${image.path} failed: ${e.error || e.message || e}`;
                         new Notice(errorMessage, 10000);
                         console.error('Web image upload error:', e);
-                        reject(new Error(errorMessage));
+                        throw new Error(errorMessage);
                     }
-                }));
+                })());
                 continue;
             }
             
@@ -247,7 +247,7 @@ export default class ImageTagProcessor {
 
         switch (action) {
             case ACTION_PUBLISH:
-                navigator.clipboard.writeText(value);
+                await navigator.clipboard.writeText(value);
                 new Notice("Copied to clipboard");
                 break;
             default:

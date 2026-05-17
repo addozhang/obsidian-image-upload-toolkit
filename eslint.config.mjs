@@ -48,11 +48,11 @@ export default tseslint.config(
 			"@typescript-eslint/no-unsafe-return": "warn",
 			"@typescript-eslint/no-unsafe-argument": "warn",
 			"@typescript-eslint/no-require-imports": "warn",
-			// Tracked for a later batch (promise hygiene refactor).
-			"@typescript-eslint/no-floating-promises": "warn",
-			"@typescript-eslint/no-misused-promises": "warn",
-			"@typescript-eslint/await-thenable": "warn",
-			"no-async-promise-executor": "warn",
+			// Promise hygiene re-enabled as error in Batch 5.
+			"@typescript-eslint/no-floating-promises": "error",
+			"@typescript-eslint/no-misused-promises": "error",
+			"@typescript-eslint/await-thenable": "error",
+			"no-async-promise-executor": "error",
 		},
 	},
 	{

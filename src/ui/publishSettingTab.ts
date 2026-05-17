@@ -103,7 +103,7 @@ export default class PublishSettingTab extends PluginSettingTab {
                     "neutral": "Neutral",
                     "base": "Base",
                 };
-                Object.entries(themes).forEach(([value, label]) => dd.addOption(value, label));
+                Object.entries(themes).forEach(([value, label]) => { dd.addOption(value, label); });
                 dd.setValue(this.plugin.settings.mermaidTheme);
                 dd.onChange(value => this.plugin.settings.mermaidTheme = value);
             });
@@ -128,12 +128,15 @@ export default class PublishSettingTab extends PluginSettingTab {
                     await this.drawImageStoreSettings(this.imageStoreDiv);
                 });
             });
-        this.drawImageStoreSettings(this.imageStoreDiv);
+        void this.drawImageStoreSettings(this.imageStoreDiv);
     }
 
-    async hide(): Promise<unknown> {
-        await this.plugin.saveSettings();
-        this.plugin.setupImageUploader();
+    hide(): void {
+        void this.plugin.saveSettings().then(() => {
+            this.plugin.setupImageUploader();
+        }).catch(err => {
+            console.error("Image upload toolkit: saveSettings failed", err);
+        });
     }
 
     private async drawImageStoreSettings(parentEL: HTMLDivElement) {
