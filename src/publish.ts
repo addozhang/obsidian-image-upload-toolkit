@@ -181,7 +181,7 @@ export default class ObsidianPublish extends Plugin {
                 this.settings.showProgressModal, // Use modal based on setting
             );
         } catch (e) {
-            console.log(`Failed to setup image uploader: ${e}`)
+            console.error(`Failed to setup image uploader: ${e}`)
         }
     }
 }

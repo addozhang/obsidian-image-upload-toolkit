@@ -25,7 +25,7 @@ export default class R2Uploader implements ImageUploader {
   async upload(image: File, fullPath: string): Promise<string> {
     const arrayBuffer = await this.readFileAsArrayBuffer(image);
     const uint8Array = new Uint8Array(arrayBuffer);
-    var path = UploaderUtils.generateName(this.pathTmpl, image.name);
+    let path = UploaderUtils.generateName(this.pathTmpl, image.name);
     path = path.replace(/^\/+/, ''); // remove the /
     const params = {
       Bucket: this.bucket,
@@ -36,7 +36,7 @@ export default class R2Uploader implements ImageUploader {
     return new Promise((resolve, reject) => {
       this.r2.upload(params, (err, data) => {
         if (err) {
-          reject(err);
+          reject(err instanceof Error ? err : new Error(String(err)));
         } else {
           const dst = data.Location.split(`/${this.bucket}/`).pop();
           resolve(UploaderUtils.customizeDomainName(dst, this.customDomainName));

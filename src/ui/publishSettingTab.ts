@@ -13,13 +13,13 @@ export default class PublishSettingTab extends PluginSettingTab {
         this.plugin = plugin;
     }
 
-    display(): any {
+    display(): unknown {
         const {containerEl} = this;
         containerEl.empty()
         this.plugin.settings.imageStore = ImageStore.normalizeId(this.plugin.settings.imageStore);
 
         // ── General ──
-        containerEl.createEl("h2", {text: "General"});
+        ;
 
         new Setting(containerEl)
             .setName("Use image name as Alt Text")
@@ -49,7 +49,7 @@ export default class PublishSettingTab extends PluginSettingTab {
             );
 
         // ── Upload ──
-        containerEl.createEl("h2", {text: "Upload"});
+        new Setting(containerEl).setName("Upload").setHeading();
 
         new Setting(containerEl)
             .setName("Show progress modal")
@@ -70,7 +70,7 @@ export default class PublishSettingTab extends PluginSettingTab {
             );
 
         // ── Mermaid ──
-        containerEl.createEl("h2", {text: "Mermaid"});
+        new Setting(containerEl).setName("Mermaid").setHeading();
 
         new Setting(containerEl)
             .setName("Convert Mermaid diagrams to images")
@@ -109,7 +109,7 @@ export default class PublishSettingTab extends PluginSettingTab {
             });
 
         // ── Image Store ──
-        containerEl.createEl("h2", {text: "Image Store"});
+        new Setting(containerEl).setName("Image Store").setHeading();
 
         const imageStoreTypeDiv = containerEl.createDiv();
         this.imageStoreDiv = containerEl.createDiv();
@@ -131,7 +131,7 @@ export default class PublishSettingTab extends PluginSettingTab {
         this.drawImageStoreSettings(this.imageStoreDiv);
     }
 
-    async hide(): Promise<any> {
+    async hide(): Promise<unknown> {
         await this.plugin.saveSettings();
         this.plugin.setupImageUploader();
     }

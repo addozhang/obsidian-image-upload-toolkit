@@ -7,8 +7,8 @@ import {WebImageDownloader} from "./webImageDownloader";
 import MermaidProcessor from "./mermaidProcessor";
 import ImageStore from "../imageStore";
 
-export const MD_REGEX = /\!\[([^\]]*)\]\(([^)]*)\)/g;
-export const WIKI_REGEX = /\!\[\[(.*?\.(png|jpg|jpeg|gif|svg|webp|excalidraw))(|.*)?\]\]/g;
+export const MD_REGEX = /!\[([^\]]*)\]\(([^)]*)\)/g;
+export const WIKI_REGEX = /!\[\[(.*?\.(png|jpg|jpeg|gif|svg|webp|excalidraw))(|.*)?\]\]/g;
 export const PROPERTIES_REGEX = /^---[\s\S]+?---\n/;
 
 export function isAlreadyHosted(url: string, settings: PublishSettings): boolean {
@@ -153,7 +153,7 @@ export default class ImageTagProcessor {
             // Handle local images
             if (this.app.vault.getAbstractFileByPath(normalizePath(image.path)) == null) {
                 new Notice(`Can NOT locate ${image.name} with ${image.path}, please check image path or attachment option in plugin setting!`, 10000);
-                console.log(`${normalizePath(image.path)} not exist`);
+                console.warn(`${normalizePath(image.path)} not exist`);
                 // Update the progress modal with the failure
                 if (this.progressModal) {
                     this.progressModal.updateProgress(image.name, false);

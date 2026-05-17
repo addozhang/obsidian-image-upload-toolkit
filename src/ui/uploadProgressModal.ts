@@ -18,7 +18,7 @@ export default class UploadProgressModal extends Modal {
      * Initialize the modal with the total number of images to upload
      * @param images Array of image objects or total count of images
      */
-    public initialize(images: any[] | number): void {
+    public initialize(images: unknown[] | number): void {
         if (typeof images === 'number') {
             this.totalImages = images;
         } else {

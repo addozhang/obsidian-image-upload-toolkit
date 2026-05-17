@@ -34,7 +34,7 @@ export default class B2Uploader implements ImageUploader {
   async upload(image: File, fullPath: string): Promise<string> {
     const arrayBuffer = await this.readFileAsArrayBuffer(image);
     const uint8Array = new Uint8Array(arrayBuffer);
-    var path = UploaderUtils.generateName(this.pathTmpl, image.name);
+    let path = UploaderUtils.generateName(this.pathTmpl, image.name);
     path = path.replace(/^\/+/, ''); // remove the /
     const ext = image.name.split('.').pop()?.toLowerCase() ?? '';
     const contentType = image.type || EXTENSION_MIME_MAP[ext] || `image/${ext}`;
@@ -47,7 +47,7 @@ export default class B2Uploader implements ImageUploader {
     return new Promise((resolve, reject) => {
       this.s3.upload(params, (err, data) => {
         if (err) {
-          reject(err);
+          reject(err instanceof Error ? err : new Error(String(err)));
         } else {
           resolve(UploaderUtils.customizeDomainName(data.Key, this.customDomainName));
         }
