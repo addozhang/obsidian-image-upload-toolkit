@@ -1,6 +1,6 @@
 {
   "name": "obsidian-image-upload-toolkit",
-  "version": "1.6.1",
+  "version": "1.6.2",
   "description": "",
   "author": "addozhang",
   "main": "main.js",
@@ -8,18 +8,27 @@
   "scripts": {
     "build": "obsidian-plugin build src/publish.ts",
     "dev": "obsidian-plugin dev src/publish.ts",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"
   },
   "devDependencies": {
+    "@eslint/js": "^9.30.1",
+    "@eslint/json": "^0.13.1",
     "@types/node": "^14.14.2",
     "@vitest/coverage-v8": "^4.1.0",
     "esbuild": "^0.18.20",
+    "eslint": "^9.30.1",
+    "eslint-plugin-obsidianmd": "^0.1.9",
+    "globals": "^14.0.0",
+    "jiti": "^2.6.1",
     "jsdom": "^29.0.0",
     "obsidian": "obsidianmd/obsidian-api",
     "obsidian-plugin-cli": "^0.4.3",
     "typescript": "^4.0.3",
+    "typescript-eslint": "^8.35.1",
     "vitest": "^4.1.0"
   },
   "dependencies": {
