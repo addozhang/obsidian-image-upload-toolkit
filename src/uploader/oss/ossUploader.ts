@@ -1,34 +1,79 @@
+import {requestUrl} from "obsidian";
+import {createHash, createHmac} from "crypto";
 import ImageUploader from "../imageUploader";
 import {UploaderUtils} from "../uploaderUtils";
-import OSS from "ali-oss"
+
+const EXTENSION_MIME_MAP: Record<string, string> = {
+    jpg: "image/jpeg",
+    jpeg: "image/jpeg",
+    png: "image/png",
+    gif: "image/gif",
+    svg: "image/svg+xml",
+    webp: "image/webp",
+    bmp: "image/bmp",
+};
 
 export default class OssUploader implements ImageUploader {
-    private readonly client!: OSS;
     private readonly pathTmpl: string;
     private readonly customDomainName: string;
+    private readonly region: string;
+    private readonly bucket: string;
+    private readonly accessKeyId: string;
+    private readonly accessKeySecret: string;
 
     constructor(setting: OssSetting) {
-        this.client = new OSS({
-            region: setting.region,
-            accessKeyId: setting.accessKeyId,
-            accessKeySecret: setting.accessKeySecret,
-            bucket: setting.bucket,
-            secure: true,
-        });
-        this.client.agent = this.client.urllib.agent;
-        this.client.httpsAgent = this.client.urllib.httpsAgent;
+        this.region = setting.region;
+        this.bucket = setting.bucket;
+        this.accessKeyId = setting.accessKeyId;
+        this.accessKeySecret = setting.accessKeySecret;
         this.pathTmpl = setting.path;
         this.customDomainName = setting.customDomainName;
     }
 
-    async upload(image: File, path: string): Promise<string> {
-        // Use the File object's buffer instead of reading from filesystem
-        // This allows uploading web images and local images uniformly
-        const buffer = await image.arrayBuffer();
-        const result = this.client.put(UploaderUtils.generateName(this.pathTmpl, image.name), Buffer.from(buffer));
-        return UploaderUtils.customizeDomainName((await result).url, this.customDomainName);
+    async upload(image: File, fullPath: string): Promise<string> {
+        const key = UploaderUtils.generateName(this.pathTmpl, image.name).replace(/^\/+/, "");
+        const body = await image.arrayBuffer();
+        const contentType = this.resolveContentType(image);
+        const contentMd5 = createHash("md5").update(Buffer.from(body)).digest("base64");
+        const date = new Date().toUTCString();
+
+        const stringToSign = [
+            "PUT",
+            contentMd5,
+            contentType,
+            date,
+            `/${this.bucket}/${key}`,
+        ].join("\n");
+        const signature = createHmac("sha1", this.accessKeySecret).update(stringToSign).digest("base64");
+
+        const url = `https://${this.bucket}.${this.region}.aliyuncs.com/${encodeURI(key)}`;
+        const response = await requestUrl({
+            url,
+            method: "PUT",
+            headers: {
+                Authorization: `OSS ${this.accessKeyId}:${signature}`,
+                "Content-Type": contentType,
+                "Content-MD5": contentMd5,
+                Date: date,
+            },
+            body,
+            throw: false,
+        });
+
+        if (response.status < 200 || response.status >= 300) {
+            throw new Error(`Aliyun OSS upload failed (${response.status}): ${response.text || "no response body"}`);
+        }
+
+        return UploaderUtils.customizeDomainName(url, this.customDomainName);
     }
 
+    private resolveContentType(image: File): string {
+        if (image.type) {
+            return image.type;
+        }
+        const ext = image.name.split(".").pop()?.toLowerCase() ?? "";
+        return EXTENSION_MIME_MAP[ext] || "application/octet-stream";
+    }
 }
 
 export interface OssSetting {
