@@ -190,14 +190,11 @@ export default class PublishSettingTab extends PluginSettingTab {
     }
 
     private static clientIdSettingDescription() {
-        const fragment = document.createDocumentFragment();
-        const a = document.createElement("a");
         const url = "https://api.imgur.com/oauth2/addclient";
-        a.textContent = url;
-        a.setAttribute("href", url);
-        fragment.append("Generate your own Client ID at ");
-        fragment.append(a);
-        return fragment;
+        return createFragment(frag => {
+            frag.append("Generate your own Client ID at ");
+            frag.createEl("a", { text: url, href: url });
+        });
     }
 
     private drawGyazoSetting(parentEL: HTMLDivElement) {
@@ -234,14 +231,11 @@ export default class PublishSettingTab extends PluginSettingTab {
     }
 
     private static gyazoTokenSettingDescription() {
-        const fragment = document.createDocumentFragment();
-        const a = document.createElement("a");
         const url = "https://gyazo.com/oauth/applications";
-        a.textContent = url;
-        a.setAttribute("href", url);
-        fragment.append("Create an application and issue an access token at ");
-        fragment.append(a);
-        return fragment;
+        return createFragment(frag => {
+            frag.append("Create an application and issue an access token at ");
+            frag.createEl("a", { text: url, href: url });
+        });
     }
 
     // Aliyun OSS Setting
@@ -343,14 +337,11 @@ export default class PublishSettingTab extends PluginSettingTab {
     }
 
     private static imagekitSettingDescription() {
-        const fragment = document.createDocumentFragment();
-        const a = document.createElement("a");
         const url = "https://imagekit.io/dashboard/developer/api-keys";
-        a.textContent = url;
-        a.setAttribute("href", url);
-        fragment.append("Obtain id and keys from ");
-        fragment.append(a);
-        return fragment;
+        return createFragment(frag => {
+            frag.append("Obtain id and keys from ");
+            frag.createEl("a", { text: url, href: url });
+        });
     }
 
     private drawAwsS3Setting(parentEL: HTMLDivElement) {
@@ -553,14 +544,11 @@ export default class PublishSettingTab extends PluginSettingTab {
     }
 
     private static githubTokenDescription() {
-        const fragment = document.createDocumentFragment();
-        const a = document.createElement("a");
         const url = "https://github.com/settings/tokens";
-        a.textContent = url;
-        a.setAttribute("href", url);
-        fragment.append("Generate a personal access token with 'repo' scope at ");
-        fragment.append(a);
-        return fragment;
+        return createFragment(frag => {
+            frag.append("Generate a personal access token with 'repo' scope at ");
+            frag.createEl("a", { text: url, href: url });
+        });
     }
 
     private drawR2Setting(parentEL: HTMLDivElement) {

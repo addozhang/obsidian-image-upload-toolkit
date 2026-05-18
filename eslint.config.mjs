@@ -10,6 +10,13 @@ export default tseslint.config(
 			globals: {
 				...globals.browser,
 				...globals.node,
+				// Obsidian augments window/document with multi-window helpers.
+				activeWindow: "readonly",
+				activeDocument: "readonly",
+				createFragment: "readonly",
+				createEl: "readonly",
+				createDiv: "readonly",
+				createSpan: "readonly",
 			},
 			parserOptions: {
 				projectService: {
@@ -60,12 +67,12 @@ export default tseslint.config(
 		},
 	},
 	{
-		// Tracked for the DOM-correctness batch (innerHTML refactor).
+		// no-inner-html resolved in Batch 2 (mermaidProcessor uses DOMParser).
 		plugins: {
 			"@microsoft/sdl": sdl,
 		},
 		rules: {
-			"@microsoft/sdl/no-inner-html": "warn",
+			"@microsoft/sdl/no-inner-html": "error",
 		},
 	},
 	globalIgnores([

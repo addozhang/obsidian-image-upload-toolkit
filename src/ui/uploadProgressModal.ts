@@ -8,10 +8,19 @@ export default class UploadProgressModal extends Modal {
     private imageListEl: HTMLElement;
     private statusEl: HTMLElement;
     private imageStatus: Map<string, boolean> = new Map();
-    
+    private autoCloseTimer: number | null = null;
+
     constructor(app) {
         super(app);
         this.titleEl.setText("Uploading Images");
+    }
+
+    onClose(): void {
+        if (this.autoCloseTimer !== null) {
+            activeWindow.clearTimeout(this.autoCloseTimer);
+            this.autoCloseTimer = null;
+        }
+        super.onClose?.();
     }
     
     /**
@@ -98,7 +107,8 @@ export default class UploadProgressModal extends Modal {
             this.statusEl.createSpan({text: "Complete", cls: "status-text"});
             
             // Auto-close after 3 seconds
-            setTimeout(() => {
+            this.autoCloseTimer = activeWindow.setTimeout(() => {
+                this.autoCloseTimer = null;
                 this.close();
             }, 3000);
         }
@@ -153,7 +163,7 @@ export default class UploadProgressModal extends Modal {
         
         // Progress bar container styling
         const progressBarContainer = modalContent.querySelector(".progress-bar-container");
-        if (progressBarContainer instanceof HTMLElement) {
+        if (progressBarContainer instanceof activeWindow.HTMLElement) {
             progressBarContainer.style.width = "100%";
             progressBarContainer.style.height = "8px";
             progressBarContainer.style.backgroundColor = "var(--background-modifier-border)";
@@ -163,14 +173,14 @@ export default class UploadProgressModal extends Modal {
         
         // Progress section styling
         const progressSection = modalContent.querySelector(".progress-section");
-        if (progressSection instanceof HTMLElement) {
+        if (progressSection instanceof activeWindow.HTMLElement) {
             progressSection.style.marginBottom = "20px";
             progressSection.style.textAlign = "center";
         }
         
         // Image list styling
         const imageList = modalContent.querySelector(".image-list");
-        if (imageList instanceof HTMLElement) {
+        if (imageList instanceof activeWindow.HTMLElement) {
             imageList.style.maxHeight = "200px";
             imageList.style.overflowY = "auto";
             imageList.style.border = "1px solid var(--background-modifier-border)";
