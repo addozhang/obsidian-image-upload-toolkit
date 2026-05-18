@@ -1,21 +1,22 @@
 import ImageUploader from "../imageUploader";
-import AWS from 'aws-sdk';
+import {PutObjectCommand, S3Client} from "@aws-sdk/client-s3";
 import {UploaderUtils} from "../uploaderUtils";
 
 export default class R2Uploader implements ImageUploader {
-  private readonly r2!: AWS.S3;
+  private readonly r2!: S3Client;
   private readonly bucket!: string;
   private pathTmpl: string;
   private customDomainName: string;
 
   constructor(setting: R2Setting) {
-    this.r2 = new AWS.S3({
-      accessKeyId: setting.accessKeyId,
-      secretAccessKey: setting.secretAccessKey,
+    this.r2 = new S3Client({
+      credentials: {
+        accessKeyId: setting.accessKeyId,
+        secretAccessKey: setting.secretAccessKey,
+      },
       endpoint: setting.endpoint,
       region: 'auto', // Cloudflare R2 uses 'auto' region
-      s3ForcePathStyle: true, // Needed for Cloudflare R2
-      signatureVersion: 'v4', // Cloudflare R2 uses v4 signatures
+      forcePathStyle: true, // Needed for Cloudflare R2
     });
     this.bucket = setting.bucketName;
     this.pathTmpl = setting.path;
@@ -23,35 +24,17 @@ export default class R2Uploader implements ImageUploader {
   }
 
   async upload(image: File, fullPath: string): Promise<string> {
-    const arrayBuffer = await this.readFileAsArrayBuffer(image);
+    const arrayBuffer = await image.arrayBuffer();
     const uint8Array = new Uint8Array(arrayBuffer);
     let path = UploaderUtils.generateName(this.pathTmpl, image.name);
     path = path.replace(/^\/+/, ''); // remove the /
-    const params = {
+    await this.r2.send(new PutObjectCommand({
       Bucket: this.bucket,
       Key: path,
       Body: uint8Array,
       ContentType: `image/${image.name.split('.').pop()}`,
-    };
-    return new Promise((resolve, reject) => {
-      this.r2.upload(params, (err, data) => {
-        if (err) {
-          reject(err instanceof Error ? err : new Error(String(err)));
-        } else {
-          const dst = data.Location.split(`/${this.bucket}/`).pop();
-          resolve(UploaderUtils.customizeDomainName(dst, this.customDomainName));
-        }
-      });
-    });
-  }
-
-  private readFileAsArrayBuffer(file: File): Promise<ArrayBuffer> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as ArrayBuffer);
-      reader.onerror = reject;
-      reader.readAsArrayBuffer(file);
-    });
+    }));
+    return UploaderUtils.customizeDomainName(path, this.customDomainName);
   }
 }
 
