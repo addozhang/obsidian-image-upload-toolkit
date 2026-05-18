@@ -84,6 +84,7 @@ export default tseslint.config(
 		"__mocks__/**",
 		"src/**/*.test.ts",
 		"tests/**",
+		"scripts/**",
 	]),
 );
 

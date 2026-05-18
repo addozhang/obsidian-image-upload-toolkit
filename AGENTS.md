@@ -201,99 +201,27 @@ Current test files:
 
 ### End-to-End Testing via Chrome DevTools Protocol
 
-Unit tests can't catch Electron-specific runtime issues (e.g. Chromium rejecting an explicit `Host` header in `requestUrl`, which broke COS in 1.6.2 release candidate). We drive a **real Obsidian instance** over CDP to exercise the full publish flow against live cloud credentials.
+Unit tests can't catch Electron-specific runtime issues (e.g. Chromium rejecting an explicit `Host` header in `requestUrl`, which broke COS in the 1.6.2 release candidate). The repo ships a small suite of CDP-driven scripts under [`scripts/e2e/`](scripts/e2e/) that drive a **real Obsidian instance** to exercise the full publish flow against live cloud credentials.
 
-#### Setup
+See [`scripts/e2e/README.md`](scripts/e2e/README.md) for the full workflow. Quick summary:
 
-1. Launch Obsidian with the CDP endpoint enabled:
+1. Launch Obsidian with `--remote-debugging-port=9223` (e.g. `open -a Obsidian --args --remote-debugging-port=9223`).
+2. Install the built plugin into a test vault that has live credentials for the providers you want to exercise. macOS TCC blocks `~/Documents` for non-Obsidian processes; place the test vault under `~/iCloud Drive/` or another accessible location.
+3. Run a script via the helper:
    ```bash
-   open -a Obsidian --args --remote-debugging-port=9223
+   ./scripts/e2e/cdp.sh "$(cat scripts/e2e/cdp-e2e-all.js)"
    ```
-2. Install the built plugin into a test vault that has live credentials for the providers you want to exercise:
-   ```bash
-   npm run build
-   cp main.js manifest.json styles.css \
-     "$VAULT/.obsidian/plugins/image-upload-toolkit/"
-   ```
-   Note: macOS TCC blocks `~/Documents` for non-Obsidian processes; place the test vault under `~/iCloud Drive/` or another accessible location.
-3. Enable the plugin in the vault (or hot-reload it via CDP — see "Reload Plugin via CDP" below).
 
-#### The `cdp.sh` Helper
+The helper (`scripts/e2e/cdp.sh`) requires `websocat` and `python3` on `PATH`. The expression runs in the Obsidian renderer with full access to `app`, `app.plugins.plugins["image-upload-toolkit"]`, `app.vault`, `app.commands.executeCommandById(...)`, `navigator.clipboard`, and `activeDocument`.
 
-Requires `jq` and `websocat` on `$PATH` (`brew install jq websocat`). A minimal shell wrapper that posts a single `Runtime.evaluate` call to the active page and prints the JSON result. The pattern is:
+Footguns worth knowing without opening the README:
 
-```bash
-#!/usr/bin/env bash
-# /tmp/cdp.sh — usage: cdp.sh '<js expression>'
-TARGET=$(curl -s http://localhost:9223/json/list \
-  | jq -r '[.[] | select(.type=="page")][0].webSocketDebuggerUrl')
-EXPR=$1
-jq -nc --arg e "$EXPR" '{
-  id: 1, method: "Runtime.evaluate",
-  params: { expression: $e, awaitPromise: true, returnByValue: true }
-}' | websocat -n1 "$TARGET"
-```
+- `require("obsidian")` and dynamic `import()` of the bundle don't work inside CDP — `obsidian` is an esbuild external and resolves to nothing at runtime in this context. Use the plugin instance.
+- `editor.setValue()` does NOT persist to disk. When asserting on `replaceOriginalDoc`, read `leaf.view.editor.getValue()`, not `app.vault.read(file)`.
+- Commands are `checkCallback`-based — use `app.commands.executeCommandById(...)`, not `.callback()`.
+- The progress modal opens asynchronously; poll `activeDocument.querySelector(".modal.upload-progress-modal")` for a few hundred ms.
 
-Anything that evaluates to a JSON-serializable value comes back in `result.result.value`. Wrap multi-statement scripts in an async IIFE so `awaitPromise: true` can wait on the result.
-
-#### What You Have Access To Inside CDP
-
-The evaluated expression runs in the Obsidian renderer, so the full app is in scope:
-
-- `app`, `app.vault`, `app.workspace`, `app.commands`, `app.plugins`
-- `app.plugins.plugins["image-upload-toolkit"]` — live plugin instance
-  - `.settings` — current settings object (mutating it persists nothing until `saveData`)
-  - `.setupImageUploader()` — sync; rebuild the uploader after settings mutation
-- `app.commands.executeCommandById("image-upload-toolkit:publish-page")` — invokes the publish command (it's `checkCallback`-based, so don't call `.callback` directly)
-- `navigator.clipboard.readText()` — read what publish wrote to the clipboard
-- `activeDocument.querySelector(".modal.upload-progress-modal")` — assert the progress modal opened
-- `app.workspace.activeLeaf.view.editor.getValue()` — read the current editor buffer (do NOT use `app.vault.read(file)` after `editor.setValue()`; the latter doesn't auto-persist to disk)
-
-Avoid `require("obsidian")` and dynamic `import()` of the bundle from inside CDP — `obsidian` is an esbuild external and resolves to nothing at runtime in this context. Use the plugin instance for everything you need from the API.
-
-#### Reload Plugin via CDP
-
-After copying a new build into the vault:
-
-```bash
-/tmp/cdp.sh '(async () => {
-  await app.plugins.disablePlugin("image-upload-toolkit");
-  await app.plugins.enablePlugin("image-upload-toolkit");
-  return app.plugins.plugins["image-upload-toolkit"].manifest.version;
-})()'
-```
-
-#### Sample Test Scripts
-
-These scripts are not checked into the repo — they're working scratch under `/tmp/` during a release cycle. Treat the entries below as patterns to copy when you need to reproduce or extend coverage.
-
-- **Multi-store upload smoke test** (`/tmp/cdp-e2e-all.js`): iterates over `["ALIYUN_OSS", "AWS_S3", "Imagekit", "TENCENTCLOUD_COS", "IMGUR"]`, mutates `settings.imageStore`, calls `setupImageUploader()`, writes a sentinel PNG to the vault, runs the publish command, reads the clipboard, asserts the URL host matches the provider.
-- **Mermaid round-trip** (`/tmp/cdp-mermaid-e2e.js`): creates a note with a `mermaid` fence, runs publish, asserts the clipboard contains an uploaded image URL and the original document still contains the source fence.
-- **Supplemental coverage** (`/tmp/cdp-e2e-supplemental.js`): 13 cases covering settings panel rendering, progress modal lifecycle, web image download/skip, multi-block mermaid + theme/scale, `replaceOriginalDoc`, wiki-link images, hosted-URL dedupe, `ignoreProperties` toggle, and `imageAltText` toggle.
-
-#### Canonical IDs and Setting Keys
-
-When mutating settings programmatically, use the exact casing from `src/imageStore.ts`:
-
-| Store        | `ImageStore.id`     | Settings key             |
-|--------------|---------------------|--------------------------|
-| Imgur        | `IMGUR`             | `imgurAnonymousSetting`  |
-| Aliyun OSS   | `ALIYUN_OSS`        | `ossSetting`             |
-| ImageKit     | `Imagekit`          | `imagekitSetting`        |
-| AWS S3       | `AWS_S3`            | `awsS3Setting`           |
-| Tencent COS  | `TENCENTCLOUD_COS`  | `cosSetting`             |
-| Qiniu Kodo   | `QINIU_KUDO`        | `kodoSetting`            |
-| GitHub       | `GITHUB`            | `githubSetting`          |
-| Gyazo        | `GYAZO`             | `gyazoSetting`           |
-| Cloudflare R2| `CLOUDFLARE_R2`     | `r2Setting`              |
-| Backblaze B2 | `BACKBLAZE_B2`      | `b2Setting`              |
-
-#### Cleanup
-
-The publish flow uploads to **real buckets**. Test scripts should:
-- Prefix test filenames (e.g. `__iut-<timestamp>.png`) so they're easy to identify and prune from the bucket.
-- Snapshot `plugin.settings` before mutating and restore it after the run.
-- Delete any temp notes/images created in the vault via `app.vault.delete(file)`.
+The scripts upload to **real buckets**. They prefix sentinel filenames (`iut-*`, `__iut-*`), snapshot/restore `plugin.settings`, and delete temp notes via `app.vault.delete(file)`.
 
 ### Manual Testing Checklist
 
