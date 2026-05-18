@@ -1,5 +1,11 @@
 import {loadMermaid, Notice} from "obsidian";
 import ImageUploader from "./imageUploader";
+import {errorMessage} from "./errorUtils";
+
+interface MermaidInstance {
+    initialize(config: { startOnLoad?: boolean; theme?: string }): void;
+    render(id: string, code: string): Promise<{ svg: string }>;
+}
 
 // Matches ```mermaid or ~~~mermaid fenced blocks, tolerates \r\n and trailing whitespace
 export const MERMAID_REGEX = /(?:```|~~~)mermaid[^\S\r\n]*\r?\n([\s\S]*?)(?:```|~~~)/g;
@@ -17,7 +23,7 @@ const MAX_CANVAS_DIMENSION = 16384;
 
 export default class MermaidProcessor {
     private uploader: ImageUploader;
-    private mermaidInstance: unknown = null;
+    private mermaidInstance: MermaidInstance | null = null;
     private scale: number;
     private theme: string;
 
@@ -27,9 +33,9 @@ export default class MermaidProcessor {
         this.theme = VALID_THEMES.includes(theme) ? theme : "default";
     }
 
-    private async ensureMermaid(): Promise<unknown> {
+    private async ensureMermaid(): Promise<MermaidInstance> {
         if (!this.mermaidInstance) {
-            this.mermaidInstance = await loadMermaid();
+            this.mermaidInstance = (await loadMermaid()) as MermaidInstance;
             this.mermaidInstance.initialize({ startOnLoad: false, theme: this.theme });
         }
         return this.mermaidInstance;
@@ -42,11 +48,11 @@ export default class MermaidProcessor {
 
         new Notice(`Rendering ${matches.length} mermaid diagram(s)...`);
 
-        let mermaid;
+        let mermaid: MermaidInstance;
         try {
             mermaid = await this.ensureMermaid();
         } catch (e) {
-            const msg = `Mermaid initialization failed: ${e.message || e}`;
+            const msg = `Mermaid initialization failed: ${errorMessage(e)}`;
             console.error(`MermaidProcessor: ${msg}`);
             new Notice(msg, 8000);
             return { value, generatedUrls };
@@ -66,7 +72,7 @@ export default class MermaidProcessor {
                 generatedUrls.add(url);
                 value = value.replace(match[0], `![mermaid](${url})`);
             } catch (e) {
-                const msg = `Failed to render mermaid block ${i + 1}: ${e.message || e}`;
+                const msg = `Failed to render mermaid block ${i + 1}: ${errorMessage(e)}`;
                 console.warn(`MermaidProcessor: ${msg}`);
                 new Notice(msg, 8000);
                 value = value.replace(match[0], `<!-- mermaid render failed: block ${i + 1} -->`);
