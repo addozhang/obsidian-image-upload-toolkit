@@ -32,7 +32,6 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1048.0",
-    "@octokit/rest": "^19.0.4",
-    "imagekit": "^5.0.0"
+    "@octokit/rest": "^19.0.4"
   }
 }
