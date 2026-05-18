@@ -8,6 +8,7 @@
 - [🛠️ Installation & Configuration](#️-installation--configuration)
 - [📖 Usage Guide](#-usage-guide)
 - [🔧 Storage Service Configuration](#-storage-service-configuration)
+- [🔒 Privacy & Network Use](#-privacy--network-use)
 - [🔍 Troubleshooting](#-troubleshooting)
 - [📈 Best Practices](#-best-practices)
 - [👥 Contributing](#-contributing)
@@ -217,6 +218,38 @@ Note: only_me uploads may not be usable for public publishing workflows
    - Bucket Name: Your B2 bucket name
    - Custom Domain: Optional (Cloudflare CDN or custom domain)
 ```
+
+## 🔒 Privacy & Network Use
+
+This plugin makes outbound network requests **only** to the storage service you explicitly select and configure in the settings tab. No telemetry, analytics, or tracking requests are sent anywhere. All requests are made through Obsidian's built-in `requestUrl` API or the official AWS SDK (used for S3-compatible services).
+
+### Endpoints contacted
+
+The plugin will contact one of the following hostnames depending on which storage service is configured. If a service is not configured, no requests are made to its endpoint.
+
+| Service | Endpoint(s) |
+|---|---|
+| Imgur | `api.imgur.com` |
+| Gyazo | `upload.gyazo.com` |
+| Aliyun OSS | `<bucket>.<region>.aliyuncs.com` (region you configure) |
+| ImageKit | `upload.imagekit.io` |
+| AWS S3 | `s3.<region>.amazonaws.com` (region you configure) |
+| Tencent COS | `<bucket>.cos.<region>.myqcloud.com` (region you configure) |
+| Qiniu Kodo | `upload.qiniup.com` |
+| GitHub | `api.github.com` |
+| Cloudflare R2 | `<account-id>.r2.cloudflarestorage.com` (account you configure) |
+| Backblaze B2 | `s3.<region>.backblazeb2.com` (region you configure) |
+
+### Optional features that make additional requests
+
+- **Upload web images** (off by default): when enabled, the plugin downloads images referenced by `http(s)://` URLs in your note before re-uploading them to your configured storage. Requests go to whichever hostnames those URLs point to.
+- **Convert Mermaid diagrams to images** (off by default): Mermaid rendering happens entirely in the local Obsidian renderer; no network requests are made for diagram rendering itself. The resulting PNG is uploaded through your configured storage like any other image.
+
+### Credentials & data handling
+
+- API keys, tokens, and secrets you enter are stored in Obsidian's plugin data file (`.obsidian/plugins/image-upload-toolkit/data.json`) on your device only.
+- Credentials are sent only to the corresponding storage service's official endpoint, using the request signing required by that service.
+- The plugin does not transmit your note contents to any service beyond the images you upload.
 
 ## 🔍 Troubleshooting
 
