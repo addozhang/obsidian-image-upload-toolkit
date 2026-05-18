@@ -20,10 +20,10 @@ export default class ImgurAnonymousUploader implements ImageUploader {
             method: "POST",
             url: `${IMGUR_API_BASE}image`})
 
-        if ((await resp).status != 200) {
-            await handleImgurErrorResponse(resp);
+        if (resp.status != 200) {
+            handleImgurErrorResponse(resp);
         }
-        return ((await resp.json) as ImgurPostData).data.link;
+        return (resp.json as ImgurPostData).data.link;
     }
 }
 
@@ -31,9 +31,9 @@ export interface ImgurAnonymousSetting {
     clientId: string;
 }
 
-export async function handleImgurErrorResponse(resp: RequestUrlResponse): Promise<void> {
-    if ((await resp).headers["Content-Type"] === "application/json") {
-        throw new ApiError(((await resp.json) as ImgurErrorData).data.error);
+export function handleImgurErrorResponse(resp: RequestUrlResponse): void {
+    if (resp.headers["Content-Type"] === "application/json") {
+        throw new ApiError((resp.json as ImgurErrorData).data.error);
     }
     throw new Error(resp.text);
 }
