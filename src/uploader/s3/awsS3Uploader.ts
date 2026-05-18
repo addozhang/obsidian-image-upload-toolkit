@@ -1,53 +1,41 @@
 import ImageUploader from "../imageUploader";
-import AWS from 'aws-sdk';
+import {PutObjectCommand, S3Client} from "@aws-sdk/client-s3";
 import {UploaderUtils} from "../uploaderUtils";
 
 export default class AwsS3Uploader implements ImageUploader {
-  private readonly s3!: AWS.S3;
+  private readonly s3!: S3Client;
   private readonly bucket!: string;
+  private readonly region: string;
   private pathTmpl: string;
   private customDomainName: string;
 
 
   constructor(setting: AwsS3Setting) {
-    this.s3 = new AWS.S3({
-      accessKeyId: setting.accessKeyId,
-      secretAccessKey: setting.secretAccessKey,
-      region: setting.region
+    this.s3 = new S3Client({
+      credentials: {
+        accessKeyId: setting.accessKeyId,
+        secretAccessKey: setting.secretAccessKey,
+      },
+      region: setting.region,
     });
     this.bucket = setting.bucketName;
+    this.region = setting.region;
     this.pathTmpl = setting.path;
     this.customDomainName = setting.customDomainName;
   }
 
   async upload(image: File, fullPath: string): Promise<string> {
-    const arrayBuffer = await this.readFileAsArrayBuffer(image);
+    const arrayBuffer = await image.arrayBuffer();
     const uint8Array = new Uint8Array(arrayBuffer);
     let path = UploaderUtils.generateName(this.pathTmpl, image.name);
     path = path.replace(/^\/+/, ''); // remove the /
-    const params = {
+    await this.s3.send(new PutObjectCommand({
       Bucket: this.bucket,
       Key: path,
       Body: uint8Array,
-    };
-    return new Promise((resolve, reject) => {
-      this.s3.upload(params, (err, data) => {
-        if (err) {
-          reject(err instanceof Error ? err : new Error(String(err)));
-        } else {
-          resolve(UploaderUtils.customizeDomainName(data.Location, this.customDomainName));
-        }
-      });
-    });
-  }
-
-  private readFileAsArrayBuffer(file: File): Promise<ArrayBuffer> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as ArrayBuffer);
-      reader.onerror = reject;
-      reader.readAsArrayBuffer(file);
-    });
+    }));
+    const location = `https://${this.bucket}.s3.${this.region}.amazonaws.com/${path}`;
+    return UploaderUtils.customizeDomainName(location, this.customDomainName);
   }
 }
 export interface AwsS3Setting {
