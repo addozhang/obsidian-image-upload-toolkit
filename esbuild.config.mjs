@@ -11,18 +11,7 @@ const context = await esbuild.context({
   format: "cjs",
   target: "es2022",
   mainFields: ["browser", "module", "main"],
-  external: [
-    "obsidian",
-    "electron",
-    // urllib (transitive via cos-nodejs-sdk-v5, qiniu) lazy-loads proxy agents
-    // that are not installed; mark external until those SDKs are removed.
-    "proxy-agent",
-    "agent-base",
-    "https-proxy-agent",
-    "http-proxy-agent",
-    "socks-proxy-agent",
-    "pac-proxy-agent",
-  ],
+  external: ["obsidian", "electron"],
   outfile: "dist/main.js",
   sourcemap: prod ? false : "inline",
   minify: prod,
