@@ -34,7 +34,6 @@
     "@aws-sdk/client-s3": "^3.1048.0",
     "@octokit/rest": "^19.0.4",
     "cos-nodejs-sdk-v5": "^2.14.6",
-    "imagekit": "^5.0.0",
-    "qiniu": "^7.14.0"
+    "imagekit": "^5.0.0"
   }
 }
