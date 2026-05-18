@@ -12,13 +12,28 @@ export default class ImgurAnonymousUploader implements ImageUploader {
     }
 
     async upload(image: File, path: string): Promise<string> {
-        const requestData = new FormData();
-        requestData.append("image", image);
+        // Imgur /3/image accepts base64-encoded image bytes when the request
+        // body is application/x-www-form-urlencoded with the `image` field.
+        // requestUrl() does not support multipart/form-data, so use base64.
+        const buf = await image.arrayBuffer();
+        const bytes = new Uint8Array(buf);
+        let binary = "";
+        for (let i = 0; i < bytes.length; i++) {
+            binary += String.fromCharCode(bytes[i]);
+        }
+        const b64 = btoa(binary);
+        const body = `image=${encodeURIComponent(b64)}&type=base64`;
+
         const resp = await requestUrl({
-            body: await image.arrayBuffer(),
-            headers: {Authorization: `Client-ID ${this.clientId}`},
+            body,
+            headers: {
+                Authorization: `Client-ID ${this.clientId}`,
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
             method: "POST",
-            url: `${IMGUR_API_BASE}image`})
+            throw: false,
+            url: `${IMGUR_API_BASE}image`,
+        });
 
         if (resp.status != 200) {
             handleImgurErrorResponse(resp);
@@ -32,8 +47,9 @@ export interface ImgurAnonymousSetting {
 }
 
 export function handleImgurErrorResponse(resp: RequestUrlResponse): void {
-    if (resp.headers["Content-Type"] === "application/json") {
+    const contentType = resp.headers["Content-Type"] || resp.headers["content-type"];
+    if (contentType && contentType.startsWith("application/json")) {
         throw new ApiError((resp.json as ImgurErrorData).data.error);
     }
-    throw new Error(resp.text);
+    throw new Error(resp.text || `Imgur upload failed: HTTP ${resp.status}`);
 }
