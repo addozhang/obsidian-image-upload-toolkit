@@ -1,7 +1,5 @@
-import path from "path";
-
 export class UploaderUtils {
-    static generateName(pathTmpl,imageName: string): string {
+    static generateName(pathTmpl: string | undefined, imageName: string): string {
         const date = new Date();
         const year = date.getFullYear().toString();
         const month = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -30,12 +28,12 @@ export class UploaderUtils {
         return result;
     }
 
-    static customizeDomainName(url, customDomainName) {
+    static customizeDomainName(url: string, customDomainName: string): string {
         const regex = /https?:\/\/([^/]+)/;
         customDomainName = customDomainName.replaceAll('https://', '')
         if (customDomainName && customDomainName.trim() !== "") {
             if (url.match(regex) != null) {
-                return url.replace(regex, (match, domain) => {
+                return url.replace(regex, (match, domain: string) => {
                     return match.replace(domain, customDomainName);
                 })
             } else {
