@@ -12,7 +12,7 @@ export default class UploadProgressModal extends Modal {
 
     constructor(app) {
         super(app);
-        this.titleEl.setText("Uploading Images");
+        this.titleEl.setText("Uploading images");
     }
 
     onClose(): void {

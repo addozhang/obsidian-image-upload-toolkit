@@ -22,8 +22,8 @@ export default class PublishSettingTab extends PluginSettingTab {
         ;
 
         new Setting(containerEl)
-            .setName("Use image name as Alt Text")
-            .setDesc("Whether to use image name as Alt Text with '-' and '_' replaced with space.")
+            .setName("Use image name as alt text")
+            .setDesc("Use the image name as alt text, replacing '-' and '_' with spaces.")
             .addToggle(toggle =>
                 toggle
                     .setValue(this.plugin.settings.imageAltText)
@@ -62,7 +62,7 @@ export default class PublishSettingTab extends PluginSettingTab {
 
         new Setting(containerEl)
             .setName("Upload web images")
-            .setDesc("When enabled, web images (http/https URLs) will be downloaded and re-uploaded to your configured storage. Images already hosted on your storage service will be skipped.")
+            .setDesc("When enabled, web images (http/https URLs) are downloaded and re-uploaded to your configured storage. Images already hosted on your storage service are skipped.")
             .addToggle(toggle =>
                 toggle
                     .setValue(this.plugin.settings.uploadWebImages)
@@ -74,7 +74,7 @@ export default class PublishSettingTab extends PluginSettingTab {
 
         new Setting(containerEl)
             .setName("Convert Mermaid diagrams to images")
-            .setDesc("Render mermaid code blocks as PNG images and upload them during publish.")
+            .setDesc("Render Mermaid code blocks as PNG images and upload them during publish.")
             .addToggle(toggle =>
                 toggle
                     .setValue(this.plugin.settings.convertMermaid)
@@ -109,7 +109,7 @@ export default class PublishSettingTab extends PluginSettingTab {
             });
 
         // ── Image Store ──
-        new Setting(containerEl).setName("Image Store").setHeading();
+        new Setting(containerEl).setName("Image store").setHeading();
 
         const imageStoreTypeDiv = containerEl.createDiv();
         this.imageStoreDiv = containerEl.createDiv();
@@ -186,7 +186,7 @@ export default class PublishSettingTab extends PluginSettingTab {
             .setDesc(PublishSettingTab.clientIdSettingDescription())
             .addText(text =>
                 text
-                    .setPlaceholder("Enter client_id")
+                    .setPlaceholder("Enter client ID")
                     .setValue(this.plugin.settings.imgurAnonymousSetting.clientId)
                     .onChange(value => this.plugin.settings.imgurAnonymousSetting.clientId = value)
             )
@@ -202,7 +202,7 @@ export default class PublishSettingTab extends PluginSettingTab {
 
     private drawGyazoSetting(parentEL: HTMLDivElement) {
         new Setting(parentEL)
-            .setName("Access Token")
+            .setName("Access token")
             .setDesc(PublishSettingTab.gyazoTokenSettingDescription())
             .addText(text =>
                 text
@@ -212,19 +212,19 @@ export default class PublishSettingTab extends PluginSettingTab {
             );
 
         new Setting(parentEL)
-            .setName("Access Policy")
-            .setDesc("Set image visibility. Choose 'only_me' only if you do not need other people or external sites to access the uploaded image URL.")
+            .setName("Access policy")
+            .setDesc("Set image visibility. Choose 'Only me' only if you do not need other people or external sites to access the uploaded image URL.")
             .addDropdown(dropdown =>
                 dropdown
-                    .addOption("anyone", "anyone")
-                    .addOption("only_me", "only_me")
+                    .addOption("anyone", "Anyone")
+                    .addOption("only_me", "Only me")
                     .setValue(this.plugin.settings.gyazoSetting.accessPolicy)
                     .onChange((value: "anyone" | "only_me") => this.plugin.settings.gyazoSetting.accessPolicy = value)
             );
 
         new Setting(parentEL)
-            .setName("Common Description")
-            .setDesc("A fixed Gyazo description applied to every upload. Leave it empty to skip the desc field.")
+            .setName("Common description")
+            .setDesc("A fixed Gyazo description applied to every upload. Leave empty to skip the description field.")
             .addText(text =>
                 text
                     .setPlaceholder("Enter a shared description (optional)")
@@ -256,24 +256,24 @@ export default class PublishSettingTab extends PluginSettingTab {
                     })
             )
         new Setting(parentEL)
-            .setName("Access Key Id")
-            .setDesc("The access key id of AliYun RAM.")
+            .setName("Access key ID")
+            .setDesc("The access key ID of Aliyun RAM.")
             .addText(text =>
                 text
-                    .setPlaceholder("Enter access key id")
+                    .setPlaceholder("Enter access key ID")
                     .setValue(this.plugin.settings.ossSetting.accessKeyId)
                     .onChange(value => this.plugin.settings.ossSetting.accessKeyId = value))
         new Setting(parentEL)
-            .setName("Access Key Secret")
-            .setDesc("The access key secret of AliYun RAM.")
+            .setName("Access key secret")
+            .setDesc("The access key secret of Aliyun RAM.")
             .addText(text =>
                 text
                     .setPlaceholder("Enter access key secret")
                     .setValue(this.plugin.settings.ossSetting.accessKeySecret)
                     .onChange(value => this.plugin.settings.ossSetting.accessKeySecret = value))
         new Setting(parentEL)
-            .setName("Access Bucket Name")
-            .setDesc("The name of bucket to store images.")
+            .setName("Bucket name")
+            .setDesc("The name of the bucket to store images.")
             .addText(text =>
                 text
                     .setPlaceholder("Enter bucket name")
@@ -281,8 +281,8 @@ export default class PublishSettingTab extends PluginSettingTab {
                     .onChange(value => this.plugin.settings.ossSetting.bucket = value))
 
         new Setting(parentEL)
-            .setName("Target Path")
-            .setDesc("The path to store image.\nSupport {year} {mon} {day} {random} {filename} vars. For example, /{year}/{mon}/{day}/{filename} with uploading pic.jpg, it will store as /2023/06/08/pic.jpg.")
+            .setName("Target path")
+            .setDesc("The path to store images. Supports {year} {mon} {day} {random} {filename} vars. For example, /{year}/{mon}/{day}/{filename} with uploading pic.jpg stores it as /2023/06/08/pic.jpg.")
             .addText(text =>
                 text
                     .setPlaceholder("Enter path")
@@ -291,7 +291,7 @@ export default class PublishSettingTab extends PluginSettingTab {
 
         //custom domain
         new Setting(parentEL)
-            .setName("Custom Domain Name")
+            .setName("Custom domain name")
             .setDesc("If the custom domain name is example.com, you can use https://example.com/pic.jpg to access pic.img.")
             .addText(text =>
                 text
@@ -302,11 +302,11 @@ export default class PublishSettingTab extends PluginSettingTab {
 
     private drawImageKitSetting(parentEL: HTMLDivElement) {
         new Setting(parentEL)
-            .setName("Imagekit ID")
+            .setName("ImageKit ID")
             .setDesc(PublishSettingTab.imagekitSettingDescription())
             .addText(text =>
                 text
-                    .setPlaceholder("Enter your ImagekitID")
+                    .setPlaceholder("Enter your ImageKit ID")
                     .setValue(this.plugin.settings.imagekitSetting.imagekitID)
                     .onChange(value => {
                         this.plugin.settings.imagekitSetting.imagekitID = value
@@ -315,7 +315,7 @@ export default class PublishSettingTab extends PluginSettingTab {
 
         new Setting(parentEL)
             .setName("Folder name")
-            .setDesc("Please enter the directory name, otherwise leave it blank")
+            .setDesc("The directory name. Leave blank to upload to the root folder.")
             .addText(text =>
                 text
                     .setPlaceholder("Enter the folder name")
@@ -323,18 +323,18 @@ export default class PublishSettingTab extends PluginSettingTab {
                     .onChange(value => this.plugin.settings.imagekitSetting.folder = value))
 
         new Setting(parentEL)
-            .setName("Public Key")
+            .setName("Public key")
             .addText(text =>
                 text
-                    .setPlaceholder("Enter your Public Key")
+                    .setPlaceholder("Enter your public key")
                     .setValue(this.plugin.settings.imagekitSetting.publicKey)
                     .onChange(value => this.plugin.settings.imagekitSetting.publicKey = value))
 
         new Setting(parentEL)
-            .setName("Private Key")
+            .setName("Private key")
             .addText(text =>
                 text
-                    .setPlaceholder("Enter your Private Key")
+                    .setPlaceholder("Enter your private key")
                     .setValue(this.plugin.settings.imagekitSetting.privateKey)
                     .onChange(value => this.plugin.settings.imagekitSetting.privateKey = value))
     }
@@ -350,8 +350,8 @@ export default class PublishSettingTab extends PluginSettingTab {
     private drawAwsS3Setting(parentEL: HTMLDivElement) {
         // Add AWS S3 configuration section
         new Setting(parentEL)
-            .setName('AWS S3 Access Key ID')
-            .setDesc('Your AWS S3 access key ID')
+            .setName('AWS S3 access key ID')
+            .setDesc('Your AWS S3 access key ID.')
             .addText(text => text
                 .setPlaceholder('Enter your access key ID')
                 .setValue(this.plugin.settings.awsS3Setting?.accessKeyId || '')
@@ -359,31 +359,31 @@ export default class PublishSettingTab extends PluginSettingTab {
                 ));
 
         new Setting(parentEL)
-            .setName('AWS S3 Secret Access Key')
-            .setDesc('Your AWS S3 secret access key')
+            .setName('AWS S3 secret access key')
+            .setDesc('Your AWS S3 secret access key.')
             .addText(text => text
                 .setPlaceholder('Enter your secret access key')
                 .setValue(this.plugin.settings.awsS3Setting?.secretAccessKey || '')
                 .onChange(value => this.plugin.settings.awsS3Setting.secretAccessKey = value));
 
         new Setting(parentEL)
-            .setName('AWS S3 Region')
-            .setDesc('Your AWS S3 region')
+            .setName('AWS S3 region')
+            .setDesc('Your AWS S3 region.')
             .addText(text => text
                 .setPlaceholder('Enter your region')
                 .setValue(this.plugin.settings.awsS3Setting?.region || '')
                 .onChange(value => this.plugin.settings.awsS3Setting.region = value));
 
         new Setting(parentEL)
-            .setName('AWS S3 Bucket Name')
-            .setDesc('Your AWS S3 bucket name')
+            .setName('AWS S3 bucket name')
+            .setDesc('Your AWS S3 bucket name.')
             .addText(text => text
                 .setPlaceholder('Enter your bucket name')
                 .setValue(this.plugin.settings.awsS3Setting?.bucketName || '')
                 .onChange(value => this.plugin.settings.awsS3Setting.bucketName = value));
         new Setting(parentEL)
-            .setName("Target Path")
-            .setDesc("The path to store image.\nSupport {year} {mon} {day} {random} {filename} vars. For example, /{year}/{mon}/{day}/{filename} with uploading pic.jpg, it will store as /2023/06/08/pic.jpg.")
+            .setName("Target path")
+            .setDesc("The path to store images. Supports {year} {mon} {day} {random} {filename} vars. For example, /{year}/{mon}/{day}/{filename} with uploading pic.jpg stores it as /2023/06/08/pic.jpg.")
             .addText(text =>
                 text
                     .setPlaceholder("Enter path")
@@ -392,7 +392,7 @@ export default class PublishSettingTab extends PluginSettingTab {
 
         //custom domain
         new Setting(parentEL)
-            .setName("Custom Domain Name")
+            .setName("Custom domain name")
             .setDesc("If the custom domain name is example.com, you can use https://example.com/pic.jpg to access pic.img.")
             .addText(text =>
                 text
@@ -414,24 +414,24 @@ export default class PublishSettingTab extends PluginSettingTab {
                     })
             )
         new Setting(parentEL)
-            .setName("Secret Id")
-            .setDesc("The secret id of TencentCloud.")
+            .setName("Secret ID")
+            .setDesc("The secret ID of Tencent Cloud.")
             .addText(text =>
                 text
-                    .setPlaceholder("Enter access key id")
+                    .setPlaceholder("Enter secret ID")
                     .setValue(this.plugin.settings.cosSetting.secretId)
                     .onChange(value => this.plugin.settings.cosSetting.secretId = value))
         new Setting(parentEL)
-            .setName("Secret Key")
-            .setDesc("The secret key of TencentCloud.")
+            .setName("Secret key")
+            .setDesc("The secret key of Tencent Cloud.")
             .addText(text =>
                 text
-                    .setPlaceholder("Enter access key secret")
+                    .setPlaceholder("Enter secret key")
                     .setValue(this.plugin.settings.cosSetting.secretKey)
                     .onChange(value => this.plugin.settings.cosSetting.secretKey = value))
         new Setting(parentEL)
-            .setName("Access Bucket Name")
-            .setDesc("The name of bucket to store images.")
+            .setName("Bucket name")
+            .setDesc("The name of the bucket to store images.")
             .addText(text =>
                 text
                     .setPlaceholder("Enter bucket name")
@@ -439,8 +439,8 @@ export default class PublishSettingTab extends PluginSettingTab {
                     .onChange(value => this.plugin.settings.cosSetting.bucket = value))
 
         new Setting(parentEL)
-            .setName("Target Path")
-            .setDesc("The path to store image.\nSupport {year} {mon} {day} {random} {filename} vars. For example, /{year}/{mon}/{day}/{filename} with uploading pic.jpg, it will store as /2023/06/08/pic.jpg.")
+            .setName("Target path")
+            .setDesc("The path to store images. Supports {year} {mon} {day} {random} {filename} vars. For example, /{year}/{mon}/{day}/{filename} with uploading pic.jpg stores it as /2023/06/08/pic.jpg.")
             .addText(text =>
                 text
                     .setPlaceholder("Enter path")
@@ -449,7 +449,7 @@ export default class PublishSettingTab extends PluginSettingTab {
 
         //custom domain
         new Setting(parentEL)
-            .setName("Custom Domain Name")
+            .setName("Custom domain name")
             .setDesc("If the custom domain name is example.com, you can use https://example.com/pic.jpg to access pic.img.")
             .addText(text =>
                 text
@@ -460,7 +460,7 @@ export default class PublishSettingTab extends PluginSettingTab {
 
     private drawQiniuSetting(parentEL: HTMLDivElement) {
         new Setting(parentEL)
-            .setName("Access Key")
+            .setName("Access key")
             .setDesc("The access key of Qiniu.")
             .addText(text =>
                 text
@@ -468,7 +468,7 @@ export default class PublishSettingTab extends PluginSettingTab {
                     .setValue(this.plugin.settings.kodoSetting.accessKey)
                     .onChange(value => this.plugin.settings.kodoSetting.accessKey = value))
         new Setting(parentEL)
-            .setName("Secret Key")
+            .setName("Secret key")
             .setDesc("The secret key of Qiniu.")
             .addText(text =>
                 text
@@ -476,8 +476,8 @@ export default class PublishSettingTab extends PluginSettingTab {
                     .setValue(this.plugin.settings.kodoSetting.secretKey)
                     .onChange(value => this.plugin.settings.kodoSetting.secretKey = value))
         new Setting(parentEL)
-            .setName("Bucket Name")
-            .setDesc("The name of bucket to store images.")
+            .setName("Bucket name")
+            .setDesc("The name of the bucket to store images.")
             .addText(text =>
                 text
                     .setPlaceholder("Enter bucket name")
@@ -495,7 +495,7 @@ export default class PublishSettingTab extends PluginSettingTab {
 
         //custom domain
         new Setting(parentEL)
-            .setName("Custom Domain Name")
+            .setName("Custom domain name")
             .setDesc("If the custom domain name is example.com, you can use https://example.com/pic.jpg to access pic.img.")
             .addText(text =>
                 text
@@ -506,7 +506,7 @@ export default class PublishSettingTab extends PluginSettingTab {
 
     private drawGitHubSetting(parentEL: HTMLDivElement) {
         new Setting(parentEL)
-            .setName("Repository Name")
+            .setName("Repository name")
             .setDesc("The name of the GitHub repository to store images (format: owner/repo).")
             .addText(text =>
                 text
@@ -516,7 +516,7 @@ export default class PublishSettingTab extends PluginSettingTab {
             );
 
         new Setting(parentEL)
-            .setName("Branch Name")
+            .setName("Branch name")
             .setDesc("The branch to store images in (defaults to 'main').")
             .addText(text =>
                 text
@@ -526,7 +526,7 @@ export default class PublishSettingTab extends PluginSettingTab {
             );
 
         new Setting(parentEL)
-            .setName("Personal Access Token")
+            .setName("Personal access token")
             .setDesc(PublishSettingTab.githubTokenDescription())
             .addText(text =>
                 text
@@ -556,8 +556,8 @@ export default class PublishSettingTab extends PluginSettingTab {
 
     private drawR2Setting(parentEL: HTMLDivElement) {
         new Setting(parentEL)
-            .setName('Cloudflare R2 Access Key ID')
-            .setDesc('Your Cloudflare R2 access key ID')
+            .setName('Cloudflare R2 access key ID')
+            .setDesc('Your Cloudflare R2 access key ID.')
             .addText(text => text
                 .setPlaceholder('Enter your access key ID')
                 .setValue(this.plugin.settings.r2Setting?.accessKeyId || '')
@@ -565,32 +565,32 @@ export default class PublishSettingTab extends PluginSettingTab {
                 ));
 
         new Setting(parentEL)
-            .setName('Cloudflare R2 Secret Access Key')
-            .setDesc('Your Cloudflare R2 secret access key')
+            .setName('Cloudflare R2 secret access key')
+            .setDesc('Your Cloudflare R2 secret access key.')
             .addText(text => text
                 .setPlaceholder('Enter your secret access key')
                 .setValue(this.plugin.settings.r2Setting?.secretAccessKey || '')
                 .onChange(value => this.plugin.settings.r2Setting.secretAccessKey = value));
 
         new Setting(parentEL)
-            .setName('Cloudflare R2 Endpoint')
-            .setDesc('Your Cloudflare R2 endpoint URL (e.g., https://account-id.r2.cloudflarestorage.com)')
+            .setName('Cloudflare R2 endpoint')
+            .setDesc('Your Cloudflare R2 endpoint URL (e.g., https://account-id.r2.cloudflarestorage.com).')
             .addText(text => text
                 .setPlaceholder('Enter your R2 endpoint')
                 .setValue(this.plugin.settings.r2Setting?.endpoint || '')
                 .onChange(value => this.plugin.settings.r2Setting.endpoint = value));
 
         new Setting(parentEL)
-            .setName('Cloudflare R2 Bucket Name')
-            .setDesc('Your Cloudflare R2 bucket name')
+            .setName('Cloudflare R2 bucket name')
+            .setDesc('Your Cloudflare R2 bucket name.')
             .addText(text => text
                 .setPlaceholder('Enter your bucket name')
                 .setValue(this.plugin.settings.r2Setting?.bucketName || '')
                 .onChange(value => this.plugin.settings.r2Setting.bucketName = value));
 
         new Setting(parentEL)
-            .setName("Target Path")
-            .setDesc("The path to store image.\nSupport {year} {mon} {day} {random} {filename} vars. For example, /{year}/{mon}/{day}/{filename} with uploading pic.jpg, it will store as /2023/06/08/pic.jpg.")
+            .setName("Target path")
+            .setDesc("The path to store images. Supports {year} {mon} {day} {random} {filename} vars. For example, /{year}/{mon}/{day}/{filename} with uploading pic.jpg stores it as /2023/06/08/pic.jpg.")
             .addText(text =>
                 text
                     .setPlaceholder("Enter path")
@@ -599,8 +599,8 @@ export default class PublishSettingTab extends PluginSettingTab {
 
         //custom domain
         new Setting(parentEL)
-            .setName("R2.dev URL, Custom Domain Name")
-            .setDesc("You can use the R2.dev URL such as https://pub-xxxx.r2.dev here, or custom domain. If the custom domain name is example.com, you can use https://example.com/pic.jpg to access pic.img.")
+            .setName("R2.dev URL or custom domain name")
+            .setDesc("You can use the R2.dev URL such as https://pub-xxxx.r2.dev, or a custom domain. If the custom domain name is example.com, you can use https://example.com/pic.jpg to access pic.img.")
             .addText(text =>
                 text
                     .setPlaceholder("Enter domain name")
@@ -610,8 +610,8 @@ export default class PublishSettingTab extends PluginSettingTab {
 
     private drawB2Setting(parentEL: HTMLDivElement) {
         new Setting(parentEL)
-            .setName('Backblaze B2 Access Key ID')
-            .setDesc('Your Backblaze B2 application key ID')
+            .setName('Backblaze B2 access key ID')
+            .setDesc('Your Backblaze B2 application key ID.')
             .addText(text => text
                 .setPlaceholder('Enter your application key ID')
                 .setValue(this.plugin.settings.b2Setting?.accessKeyId || '')
@@ -619,32 +619,32 @@ export default class PublishSettingTab extends PluginSettingTab {
                 ));
 
         new Setting(parentEL)
-            .setName('Backblaze B2 Secret Access Key')
-            .setDesc('Your Backblaze B2 application key')
+            .setName('Backblaze B2 secret access key')
+            .setDesc('Your Backblaze B2 application key.')
             .addText(text => text
                 .setPlaceholder('Enter your application key')
                 .setValue(this.plugin.settings.b2Setting?.secretAccessKey || '')
                 .onChange(value => this.plugin.settings.b2Setting.secretAccessKey = value));
 
         new Setting(parentEL)
-            .setName('Backblaze B2 Region')
-            .setDesc('Your Backblaze B2 region (e.g., us-west-004)')
+            .setName('Backblaze B2 region')
+            .setDesc('Your Backblaze B2 region (e.g., us-west-004).')
             .addText(text => text
                 .setPlaceholder('Enter your region')
                 .setValue(this.plugin.settings.b2Setting?.region || '')
                 .onChange(value => this.plugin.settings.b2Setting.region = value));
 
         new Setting(parentEL)
-            .setName('Backblaze B2 Bucket Name')
-            .setDesc('Your Backblaze B2 bucket name')
+            .setName('Backblaze B2 bucket name')
+            .setDesc('Your Backblaze B2 bucket name.')
             .addText(text => text
                 .setPlaceholder('Enter your bucket name')
                 .setValue(this.plugin.settings.b2Setting?.bucketName || '')
                 .onChange(value => this.plugin.settings.b2Setting.bucketName = value));
 
         new Setting(parentEL)
-            .setName("Target Path")
-            .setDesc("The path to store image.\nSupport {year} {mon} {day} {random} {filename} vars. For example, /{year}/{mon}/{day}/{filename} with uploading pic.jpg, it will store as /2023/06/08/pic.jpg.")
+            .setName("Target path")
+            .setDesc("The path to store images. Supports {year} {mon} {day} {random} {filename} vars. For example, /{year}/{mon}/{day}/{filename} with uploading pic.jpg stores it as /2023/06/08/pic.jpg.")
             .addText(text =>
                 text
                     .setPlaceholder("Enter path")
@@ -653,7 +653,7 @@ export default class PublishSettingTab extends PluginSettingTab {
 
         //custom domain
         new Setting(parentEL)
-            .setName("Custom Domain Name")
+            .setName("Custom domain name")
             .setDesc("If you have configured a custom domain, you can use https://example.com/pic.jpg to access pic.img. Otherwise, leave it empty to use the default B2 URL.")
             .addText(text =>
                 text

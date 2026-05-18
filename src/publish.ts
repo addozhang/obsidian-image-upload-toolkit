@@ -135,7 +135,7 @@ export default class ObsidianPublish extends Plugin {
         
         this.addCommand({
             id: "publish-page",
-            name: "Publish Page",
+            name: "Publish page",
             checkCallback: (checking: boolean) => {
                 if (!checking) {
                     this.publish()
