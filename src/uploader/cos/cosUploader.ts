@@ -45,8 +45,11 @@ export default class CosUploader implements ImageUploader {
             url,
             method: "PUT",
             headers: {
+                // NOTE: do not set `Host` here. Electron/Chromium forbids
+                // explicitly setting the Host header (`net::ERR_INVALID_ARGUMENT`).
+                // The browser sets it automatically from the URL and COS
+                // validates it against the signature.
                 Authorization: authorization,
-                Host: host,
                 "Content-Type": contentType,
             },
             body,
