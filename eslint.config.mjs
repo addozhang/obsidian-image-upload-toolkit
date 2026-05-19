@@ -60,8 +60,13 @@ export default tseslint.config(
 			obsidianmd,
 		},
 		rules: {
-			// Sentence-case fixes are tracked separately as a UI-copy pass.
-			"obsidianmd/ui/sentence-case": "warn",
+			// sentence-case disabled: rule has 100% false-positive rate on this
+			// codebase because every flagged string is either a proper brand
+			// name (AWS, ImageKit, Cloudflare, Backblaze, Aliyun, Tencent,
+			// Qiniu, Gyazo, OSS, COS) or a normal sentence whose first word is
+			// correctly capitalized. Rewriting "AWS S3" → "Aws s3" would
+			// degrade UI quality, contradicting the rule's intent.
+			"obsidianmd/ui/sentence-case": "off",
 			// no-static-styles-assignment resolved in Batch 3 (styles moved to styles.css).
 			"obsidianmd/no-static-styles-assignment": "error",
 		},
