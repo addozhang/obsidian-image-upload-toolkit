@@ -35,7 +35,7 @@ export function extractFilename(url: string, contentType?: string): string {
         }
         const extension = getExtensionFromContentType(contentType);
         return `web-image-${timestamp}${extension}`;
-    } catch (error) {
+    } catch {
         const extension = getExtensionFromContentType(contentType);
         return `web-image-${timestamp}${extension}`;
     }

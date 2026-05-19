@@ -58,7 +58,7 @@ export function isAlreadyHosted(url: string, settings: PublishSettings): boolean
             default:
                 return false;
         }
-    } catch (error) {
+    } catch {
         return false;
     }
 }
@@ -345,9 +345,6 @@ export default class ImageTagProcessor {
     }
 
     private resolveImagePath(imageName: string): ResolvedImagePath {
-        let pathName = imageName.endsWith('.excalidraw') ?
-            imageName + '.png' :
-            imageName;
         // Obsidian attachment folder options:
         // 1. Vault folder: "/image.png"
         // 2. In the folder specified below: such as "Attachments", then "Attachments/image.png"

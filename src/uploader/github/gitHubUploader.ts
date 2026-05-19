@@ -41,12 +41,12 @@ export default class GitHubUploader implements ImageUploader {
         if (!Array.isArray(data)) {
           fileSha = data.sha;
         }
-      } catch (error) {
+      } catch {
         // File doesn't exist yet, which is fine
       }
       
       // Create or update the file in the repository
-      const response = await this.octokit.repos.createOrUpdateFileContents({
+      await this.octokit.repos.createOrUpdateFileContents({
         owner: this.owner,
         repo: this.repo,
         path: filePath,
