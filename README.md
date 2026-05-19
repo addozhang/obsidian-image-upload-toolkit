@@ -332,7 +332,7 @@ The plugin will contact one of the following hostnames depending on which storag
 
 ### Development Setup
 ```bash
-git clone https://github.com/your-username/obsidian-image-upload-toolkit.git
+git clone https://github.com/addozhang/obsidian-image-upload-toolkit.git
 cd obsidian-image-upload-toolkit
 npm install
 npm run dev
