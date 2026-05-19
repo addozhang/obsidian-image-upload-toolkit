@@ -1,5 +1,6 @@
 import {requestUrl} from "obsidian";
 import ApiError from "./apiError";
+import {errorMessage} from "./errorUtils";
 
 export interface WebImageDownloadResult {
     buffer: ArrayBuffer;
@@ -81,7 +82,7 @@ export class WebImageDownloader {
             if (error instanceof ApiError) {
                 throw error;
             }
-            throw new ApiError(`Failed to download image from ${url}: ${error.message || error}`);
+            throw new ApiError(`Failed to download image from ${url}: ${errorMessage(error)}`);
         }
     }
 

@@ -6,6 +6,7 @@ import UploadProgressModal from "../ui/uploadProgressModal";
 import {WebImageDownloader} from "./webImageDownloader";
 import MermaidProcessor from "./mermaidProcessor";
 import ImageStore from "../imageStore";
+import {errorMessage} from "./errorUtils";
 
 export const MD_REGEX = /!\[([^\]]*)\]\(([^)]*)\)/g;
 export const WIKI_REGEX = /!\[\[(.*?\.(png|jpg|jpeg|gif|svg|webp|excalidraw))(|.*)?\]\]/g;
@@ -141,10 +142,10 @@ export default class ImageTagProcessor {
                         if (this.progressModal) {
                             this.progressModal.updateProgress(image.name, false);
                         }
-                        const errorMessage = `Upload web image ${image.path} failed: ${e.error || e.message || e}`;
-                        new Notice(errorMessage, 10000);
+                        const errorMessageText = `Upload web image ${image.path} failed: ${errorMessage(e)}`;
+                        new Notice(errorMessageText, 10000);
                         console.error('Web image upload error:', e);
-                        throw new Error(errorMessage);
+                        throw new Error(errorMessageText);
                     }
                 })());
                 continue;
@@ -178,9 +179,9 @@ export default class ImageTagProcessor {
                             if (this.progressModal) {
                                 this.progressModal.updateProgress(image.name, false);
                             }
-                            const errorMessage = `Upload ${image.path} failed, remote server returned an error: ${e.error || e.message || e}`;
-                            new Notice(errorMessage, 10000);
-                            reject(new Error(errorMessage));
+                            const errorMessageText = `Upload ${image.path} failed, remote server returned an error: ${errorMessage(e)}`;
+                            new Notice(errorMessageText, 10000);
+                            reject(new Error(errorMessageText));
                         });
                 }));
             } catch (error) {

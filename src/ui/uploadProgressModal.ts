@@ -1,4 +1,8 @@
-import {Modal, setIcon} from "obsidian";
+import {App, Modal, setIcon} from "obsidian";
+
+interface NamedImage {
+    name?: string;
+}
 
 export default class UploadProgressModal extends Modal {
     private totalImages: number = 0;
@@ -10,7 +14,7 @@ export default class UploadProgressModal extends Modal {
     private imageStatus: Map<string, boolean> = new Map();
     private autoCloseTimer: number | null = null;
 
-    constructor(app) {
+    constructor(app: App) {
         super(app);
         this.titleEl.setText("Uploading images");
     }
@@ -27,7 +31,7 @@ export default class UploadProgressModal extends Modal {
      * Initialize the modal with the total number of images to upload
      * @param images Array of image objects or total count of images
      */
-    public initialize(images: unknown[] | number): void {
+    public initialize(images: NamedImage[] | number): void {
         if (typeof images === 'number') {
             this.totalImages = images;
         } else {
