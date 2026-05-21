@@ -11,14 +11,14 @@ export default class R2Uploader implements ImageUploader {
   constructor(setting: R2Setting) {
     this.r2 = new S3Client({
       credentials: {
-        accessKeyId: setting.accessKeyId,
-        secretAccessKey: setting.secretAccessKey,
+        accessKeyId: UploaderUtils.trimCredential(setting.accessKeyId),
+        secretAccessKey: UploaderUtils.trimCredential(setting.secretAccessKey),
       },
-      endpoint: setting.endpoint,
+      endpoint: UploaderUtils.normalizeEndpoint(setting.endpoint),
       region: 'auto', // Cloudflare R2 uses 'auto' region
       forcePathStyle: true, // Needed for Cloudflare R2
     });
-    this.bucket = setting.bucketName;
+    this.bucket = UploaderUtils.trimCredential(setting.bucketName);
     this.pathTmpl = setting.path;
     this.customDomainName = setting.customDomainName;
   }

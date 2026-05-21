@@ -99,3 +99,64 @@ describe("UploaderUtils.customizeDomainName", () => {
     expect(result).toBe("https://cdn.example.com//path/file.png");
   });
 });
+
+describe("UploaderUtils.trimCredential", () => {
+  it("strips trailing newline (the #58 footgun)", () => {
+    expect(UploaderUtils.trimCredential("secret-key\n")).toBe("secret-key");
+  });
+
+  it("strips leading and trailing whitespace", () => {
+    expect(UploaderUtils.trimCredential("  AKIA1234  ")).toBe("AKIA1234");
+  });
+
+  it("strips internal-edge tabs and CRLF", () => {
+    expect(UploaderUtils.trimCredential("\tdeadbeef\r\n")).toBe("deadbeef");
+  });
+
+  it("returns empty string for undefined input", () => {
+    expect(UploaderUtils.trimCredential(undefined)).toBe("");
+  });
+
+  it("returns empty string for null input", () => {
+    expect(UploaderUtils.trimCredential(null)).toBe("");
+  });
+
+  it("returns empty string for empty input", () => {
+    expect(UploaderUtils.trimCredential("")).toBe("");
+  });
+
+  it("preserves internal whitespace (does not collapse)", () => {
+    // unlikely for AWS keys but spec the behavior
+    expect(UploaderUtils.trimCredential("  a b  ")).toBe("a b");
+  });
+});
+
+describe("UploaderUtils.normalizeEndpoint", () => {
+  it("strips a single trailing slash", () => {
+    expect(UploaderUtils.normalizeEndpoint("https://account.r2.cloudflarestorage.com/"))
+      .toBe("https://account.r2.cloudflarestorage.com");
+  });
+
+  it("strips multiple trailing slashes", () => {
+    expect(UploaderUtils.normalizeEndpoint("https://account.r2.cloudflarestorage.com///"))
+      .toBe("https://account.r2.cloudflarestorage.com");
+  });
+
+  it("leaves endpoint without trailing slash unchanged", () => {
+    expect(UploaderUtils.normalizeEndpoint("https://account.r2.cloudflarestorage.com"))
+      .toBe("https://account.r2.cloudflarestorage.com");
+  });
+
+  it("trims whitespace and trailing slash together", () => {
+    expect(UploaderUtils.normalizeEndpoint("  https://s3.example.com/  "))
+      .toBe("https://s3.example.com");
+  });
+
+  it("returns empty string for undefined", () => {
+    expect(UploaderUtils.normalizeEndpoint(undefined)).toBe("");
+  });
+
+  it("returns empty string for null", () => {
+    expect(UploaderUtils.normalizeEndpoint(null)).toBe("");
+  });
+});
