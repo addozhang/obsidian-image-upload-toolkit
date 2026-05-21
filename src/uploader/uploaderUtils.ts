@@ -42,4 +42,27 @@ export class UploaderUtils {
         }
         return url;
     }
+
+    /**
+     * Strip leading/trailing whitespace (including newlines) from a credential
+     * field. Returns an empty string for null/undefined input so downstream
+     * callers don't need to guard.
+     *
+     * Pasting credentials from the web frequently introduces trailing newlines
+     * or spaces. AWS-family SDKs reject these with cryptic signing errors, so
+     * we normalize at the boundary.
+     */
+    static trimCredential(value: string | undefined | null): string {
+        return (value ?? "").trim();
+    }
+
+    /**
+     * Normalize an S3/R2/B2 endpoint URL: trims whitespace and removes any
+     * trailing slash so the AWS SDK's URL composition does not produce a
+     * double-slashed path that hangs or 400s.
+     */
+    static normalizeEndpoint(endpoint: string | undefined | null): string {
+        const trimmed = (endpoint ?? "").trim();
+        return trimmed.replace(/\/+$/, "");
+    }
 }

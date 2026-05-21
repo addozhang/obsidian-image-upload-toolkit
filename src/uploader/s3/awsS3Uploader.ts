@@ -11,15 +11,16 @@ export default class AwsS3Uploader implements ImageUploader {
 
 
   constructor(setting: AwsS3Setting) {
+    const region = UploaderUtils.trimCredential(setting.region);
     this.s3 = new S3Client({
       credentials: {
-        accessKeyId: setting.accessKeyId,
-        secretAccessKey: setting.secretAccessKey,
+        accessKeyId: UploaderUtils.trimCredential(setting.accessKeyId),
+        secretAccessKey: UploaderUtils.trimCredential(setting.secretAccessKey),
       },
-      region: setting.region,
+      region,
     });
-    this.bucket = setting.bucketName;
-    this.region = setting.region;
+    this.bucket = UploaderUtils.trimCredential(setting.bucketName);
+    this.region = region;
     this.pathTmpl = setting.path;
     this.customDomainName = setting.customDomainName;
   }

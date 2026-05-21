@@ -3,6 +3,55 @@
  * Only stubs the APIs actually imported by our source files.
  */
 
+// --- DOM helpers (polyfills for Obsidian's HTMLElement extensions) ---
+type ElOpts = string | { cls?: string; text?: string; attr?: Record<string, string> };
+
+function applyOpts(el: HTMLElement, opts?: ElOpts): HTMLElement {
+  if (!opts) return el;
+  if (typeof opts === "string") {
+    el.className = opts;
+    return el;
+  }
+  if (opts.cls) el.className = opts.cls;
+  if (opts.text !== undefined) el.textContent = opts.text;
+  if (opts.attr) {
+    for (const [k, v] of Object.entries(opts.attr)) el.setAttribute(k, v);
+  }
+  return el;
+}
+
+function installDomExtensions(): void {
+  const proto = (globalThis as any).HTMLElement?.prototype;
+  if (!proto || (proto as any).__iutMockInstalled) return;
+  proto.createEl = function (tag: string, opts?: ElOpts) {
+    const child = document.createElement(tag);
+    applyOpts(child, opts);
+    this.appendChild(child);
+    return child;
+  };
+  proto.createDiv = function (opts?: ElOpts) {
+    return this.createEl("div", opts);
+  };
+  proto.createSpan = function (opts?: ElOpts) {
+    return this.createEl("span", opts);
+  };
+  proto.setText = function (text: string) {
+    this.textContent = text;
+    return this;
+  };
+  proto.empty = function () {
+    while (this.firstChild) this.removeChild(this.firstChild);
+    return this;
+  };
+  (proto as any).__iutMockInstalled = true;
+}
+
+installDomExtensions();
+
+// activeWindow / activeDocument shims used by the modal
+(globalThis as any).activeWindow = globalThis;
+(globalThis as any).activeDocument = (globalThis as any).document;
+
 // --- Utility functions ---
 export function normalizePath(p: string): string {
   return p.replace(/\\/g, "/").replace(/\/+/g, "/");
@@ -14,6 +63,10 @@ export async function requestUrl(_opts: any): Promise<any> {
 
 export async function loadMermaid(): Promise<any> {
   throw new Error("loadMermaid is not implemented in test mock");
+}
+
+export function setIcon(el: HTMLElement, name: string): void {
+  el.setAttribute("data-icon", name);
 }
 
 // --- Classes ---
@@ -45,11 +98,22 @@ export class PluginSettingTab {
 
 export class Modal {
   app: any;
-  contentEl: any = document.createElement("div");
-  modalEl: any = document.createElement("div");
-  constructor(app: any) { this.app = app; }
-  open(): void {}
-  close(): void {}
+  contentEl: HTMLElement = document.createElement("div");
+  modalEl: HTMLElement = document.createElement("div");
+  titleEl: HTMLElement = document.createElement("div");
+  constructor(app: any) {
+    this.app = app;
+    // Match Obsidian's behavior: titleEl is attached inside modalEl
+    this.modalEl.appendChild(this.titleEl);
+    this.modalEl.appendChild(this.contentEl);
+  }
+  open(): void {
+    document.body.appendChild(this.modalEl);
+  }
+  close(): void {
+    if (this.modalEl.parentNode) this.modalEl.parentNode.removeChild(this.modalEl);
+  }
+  onClose?(): void;
 }
 
 export class Setting {

@@ -18,16 +18,17 @@ export default class B2Uploader implements ImageUploader {
   private customDomainName: string;
 
   constructor(setting: B2Setting) {
+    const region = UploaderUtils.trimCredential(setting.region);
     this.s3 = new S3Client({
       credentials: {
-        accessKeyId: setting.accessKeyId,
-        secretAccessKey: setting.secretAccessKey,
+        accessKeyId: UploaderUtils.trimCredential(setting.accessKeyId),
+        secretAccessKey: UploaderUtils.trimCredential(setting.secretAccessKey),
       },
-      endpoint: `https://s3.${setting.region}.backblazeb2.com`,
-      region: setting.region,
+      endpoint: `https://s3.${region}.backblazeb2.com`,
+      region,
       forcePathStyle: true,
     });
-    this.bucket = setting.bucketName;
+    this.bucket = UploaderUtils.trimCredential(setting.bucketName);
     this.pathTmpl = setting.path;
     this.customDomainName = setting.customDomainName;
   }
