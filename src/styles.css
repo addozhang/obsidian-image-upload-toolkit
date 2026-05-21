@@ -39,6 +39,32 @@
     transition: width 0.3s ease-in-out;
 }
 
+.upload-progress-modal .progress-bar.has-failures {
+    background-color: var(--text-error, var(--color-red));
+}
+
+.upload-progress-modal .status-indicator.has-failures .status-text {
+    color: var(--text-error, var(--color-red));
+}
+
+.upload-progress-modal .progress-summary {
+    font-size: var(--font-ui-small);
+    margin-top: 4px;
+}
+
+.upload-progress-modal .summary-success {
+    color: var(--interactive-success, var(--color-green));
+}
+
+.upload-progress-modal .summary-failed {
+    color: var(--text-error, var(--color-red));
+    font-weight: var(--font-semibold);
+}
+
+.upload-progress-modal .summary-sep {
+    color: var(--text-muted);
+}
+
 .upload-progress-modal .progress-text {
     font-size: var(--font-ui-small);
     color: var(--text-muted);
@@ -70,6 +96,10 @@
 
 .upload-progress-modal .image-status-icon.success {
     color: var(--interactive-success, var(--color-green));
+}
+
+.upload-progress-modal .image-status-icon.failed {
+    color: var(--text-error, var(--color-red));
 }
 
 .upload-progress-modal .image-status-icon.pending {
