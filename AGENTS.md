@@ -8,10 +8,11 @@ This is a TypeScript-based Obsidian plugin that processes markdown documents, de
 
 ## Tech Stack
 
-- **Language**: TypeScript 4.0.3
+- **Language**: TypeScript 4.x
 - **Target**: ES2021, CommonJS modules
-- **Framework**: Obsidian Plugin API (≥ 0.11.0)
-- **Build Tool**: obsidian-plugin-cli
+- **Framework**: Obsidian Plugin API (minAppVersion 0.12.16)
+- **Build Tool**: esbuild via custom `esbuild.config.mjs` (externals: `obsidian`, `electron`)
+- **Test Runner**: Vitest 4.x
 - **Platform**: Desktop only (Windows/macOS/Linux)
 
 ## Project Structure
@@ -108,7 +109,7 @@ Example: `/{year}/{mon}/{day}/{filename}` → `/2024/01/17/image.jpg`
 ## Code Style & Conventions
 
 ### TypeScript Guidelines
-- Use TypeScript strict mode (enabled in [`tsconfig.json`](tsconfig.json))
+- TypeScript strict mode is **not** currently enabled in [`tsconfig.json`](tsconfig.json); the lint suite covers most type-safety gaps via `typescript-eslint`. New code should still be written as if strict were on
 - Prefer interfaces over type aliases for public APIs
 - Use async/await over raw promises
 - Handle errors gracefully with try-catch blocks
@@ -198,6 +199,30 @@ Current test files:
 - `mermaidProcessor.test.ts` — Mermaid-to-PNG conversion
 - `mermaidRegex.test.ts` — Mermaid code block regex matching
 
+### End-to-End Testing via Chrome DevTools Protocol
+
+Unit tests can't catch Electron-specific runtime issues (e.g. Chromium rejecting an explicit `Host` header in `requestUrl`, which broke COS in the 1.6.2 release candidate). The repo ships a small suite of CDP-driven scripts under [`scripts/e2e/`](scripts/e2e/) that drive a **real Obsidian instance** to exercise the full publish flow against live cloud credentials.
+
+See [`scripts/e2e/README.md`](scripts/e2e/README.md) for the full workflow. Quick summary:
+
+1. Launch Obsidian with `--remote-debugging-port=9223` (e.g. `open -a Obsidian --args --remote-debugging-port=9223`).
+2. Install the built plugin into a test vault that has live credentials for the providers you want to exercise. macOS TCC blocks `~/Documents` for non-Obsidian processes; place the test vault under `~/iCloud Drive/` or another accessible location.
+3. Run a script via the helper:
+   ```bash
+   ./scripts/e2e/cdp.sh "$(cat scripts/e2e/cdp-e2e-all.js)"
+   ```
+
+The helper (`scripts/e2e/cdp.sh`) requires `websocat` and `python3` on `PATH`. The expression runs in the Obsidian renderer with full access to `app`, `app.plugins.plugins["image-upload-toolkit"]`, `app.vault`, `app.commands.executeCommandById(...)`, `navigator.clipboard`, and `activeDocument`.
+
+Footguns worth knowing without opening the README:
+
+- `require("obsidian")` and dynamic `import()` of the bundle don't work inside CDP — `obsidian` is an esbuild external and resolves to nothing at runtime in this context. Use the plugin instance.
+- `editor.setValue()` does NOT persist to disk. When asserting on `replaceOriginalDoc`, read `leaf.view.editor.getValue()`, not `app.vault.read(file)`.
+- Commands are `checkCallback`-based — use `app.commands.executeCommandById(...)`, not `.callback()`.
+- The progress modal opens asynchronously; poll `activeDocument.querySelector(".modal.upload-progress-modal")` for a few hundred ms.
+
+The scripts upload to **real buckets**. They prefix sentinel filenames (`iut-*`, `__iut-*`), snapshot/restore `plugin.settings`, and delete temp notes via `app.vault.delete(file)`.
+
 ### Manual Testing Checklist
 
 1. Test each storage provider with sample images
@@ -212,6 +237,9 @@ Current test files:
 10. Verify mermaid theme setting applies correctly (default/dark/forest/neutral/base)
 11. Confirm mermaid source blocks are preserved when "Update original document" is enabled
 12. Verify mermaid-generated images are not double-uploaded when "Upload web images" is enabled
+13. Verify wiki-link image syntax (`![[image.png]]`) is uploaded and rewritten
+14. Verify `ignoreProperties` strips YAML frontmatter from the clipboard output when enabled
+15. Verify `imageAltText` populates alt text from the original filename when enabled
 
 ## Common Issues & Solutions
 
@@ -299,21 +327,19 @@ Follow conventional commit format:
 ## Dependencies
 
 ### Runtime
-- `obsidian` - Obsidian Plugin API (also provides `loadMermaid()` for mermaid rendering)
-- `@octokit/rest` - GitHub API client
-- `ali-oss` - Aliyun OSS SDK
-- `aws-sdk` - AWS S3 SDK (also used by Cloudflare R2 and Backblaze B2)
-- `cos-nodejs-sdk-v5` - TencentCloud COS SDK
-- `qiniu` - Qiniu Kodo SDK
-- `proxy-agent` - HTTP/HTTPS proxy support
+- `obsidian` (external, provided by the host; also exposes `requestUrl` and `loadMermaid`)
+- `@aws-sdk/client-s3` — used by AWS S3, Cloudflare R2, and Backblaze B2 uploaders (v3 modular SDK)
+- `@octokit/rest` — GitHub API client
 
-> **Note**: ImageKit and Gyazo use Obsidian's built-in `requestUrl` API directly instead of external SDKs. Mermaid rendering uses Obsidian's built-in `loadMermaid()` API — no bundled mermaid dependency.
+> **Note**: Aliyun OSS, Tencent COS, Qiniu Kodo, ImageKit, Gyazo, and Imgur uploaders use Obsidian's built-in `requestUrl` API with inline request signing — no provider SDKs are bundled. Mermaid rendering uses Obsidian's built-in `loadMermaid()` API. Bundle size dropped from ~16 MB to ~644 KB (−96%) as a result of dropping `ali-oss`, `cos-nodejs-sdk-v5`, `qiniu`, `aws-sdk` v2, and `proxy-agent`.
 
 ### Development
-- `typescript` - TypeScript compiler
-- `obsidian-plugin-cli` - Build tooling
-- `esbuild` - JavaScript bundler
-- `@types/node` - Node.js type definitions
+- `typescript` — TypeScript compiler
+- `esbuild` — JavaScript bundler (config in `esbuild.config.mjs`)
+- `vitest` — Test runner
+- `eslint` + `typescript-eslint` + `eslint-plugin-obsidianmd` — Linting (Obsidian-specific rules)
+- `@types/node` — Node.js type definitions
+- `jsdom` — DOM environment for unit tests
 
 ## Plugin Configuration
 
@@ -378,4 +404,4 @@ Settings are stored in `.obsidian/plugins/image-upload-toolkit/data.json`:
 
 ## Current Version
 
-v1.6.0 - Added Gyazo uploader support (PR #52), `normalizeId()` for backward-compatible provider alias resolution, and refactored all switch cases to use `ImageStore` constants.
+1.6.2 — Refactored all SDK-heavy uploaders (OSS, COS, Qiniu, S3, R2, B2) to use Obsidian's `requestUrl` API with inline signing; migrated AWS-family uploaders to `@aws-sdk/client-s3` v3; reduced bundle size from ~16 MB to ~644 KB; fixed Imgur anonymous upload payload encoding; fixed COS upload regression caused by explicit `Host` header rejection in Electron's `requestUrl`.

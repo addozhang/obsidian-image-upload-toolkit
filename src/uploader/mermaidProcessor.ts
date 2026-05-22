@@ -1,5 +1,11 @@
 import {loadMermaid, Notice} from "obsidian";
 import ImageUploader from "./imageUploader";
+import {errorMessage} from "./errorUtils";
+
+interface MermaidInstance {
+    initialize(config: { startOnLoad?: boolean; theme?: string }): void;
+    render(id: string, code: string): Promise<{ svg: string }>;
+}
 
 // Matches ```mermaid or ~~~mermaid fenced blocks, tolerates \r\n and trailing whitespace
 export const MERMAID_REGEX = /(?:```|~~~)mermaid[^\S\r\n]*\r?\n([\s\S]*?)(?:```|~~~)/g;
@@ -17,7 +23,7 @@ const MAX_CANVAS_DIMENSION = 16384;
 
 export default class MermaidProcessor {
     private uploader: ImageUploader;
-    private mermaidInstance: any = null;
+    private mermaidInstance: MermaidInstance | null = null;
     private scale: number;
     private theme: string;
 
@@ -27,9 +33,9 @@ export default class MermaidProcessor {
         this.theme = VALID_THEMES.includes(theme) ? theme : "default";
     }
 
-    private async ensureMermaid(): Promise<any> {
+    private async ensureMermaid(): Promise<MermaidInstance> {
         if (!this.mermaidInstance) {
-            this.mermaidInstance = await loadMermaid();
+            this.mermaidInstance = (await loadMermaid()) as MermaidInstance;
             this.mermaidInstance.initialize({ startOnLoad: false, theme: this.theme });
         }
         return this.mermaidInstance;
@@ -42,11 +48,11 @@ export default class MermaidProcessor {
 
         new Notice(`Rendering ${matches.length} mermaid diagram(s)...`);
 
-        let mermaid;
+        let mermaid: MermaidInstance;
         try {
             mermaid = await this.ensureMermaid();
         } catch (e) {
-            const msg = `Mermaid initialization failed: ${e.message || e}`;
+            const msg = `Mermaid initialization failed: ${errorMessage(e)}`;
             console.error(`MermaidProcessor: ${msg}`);
             new Notice(msg, 8000);
             return { value, generatedUrls };
@@ -66,13 +72,13 @@ export default class MermaidProcessor {
                 generatedUrls.add(url);
                 value = value.replace(match[0], `![mermaid](${url})`);
             } catch (e) {
-                const msg = `Failed to render mermaid block ${i + 1}: ${e.message || e}`;
+                const msg = `Failed to render mermaid block ${i + 1}: ${errorMessage(e)}`;
                 console.warn(`MermaidProcessor: ${msg}`);
                 new Notice(msg, 8000);
                 value = value.replace(match[0], `<!-- mermaid render failed: block ${i + 1} -->`);
             } finally {
-                document.getElementById(id)?.remove();
-                document.getElementById(`d${id}`)?.remove();
+                activeDocument.getElementById(id)?.remove();
+                activeDocument.getElementById(`d${id}`)?.remove();
             }
         }
         return { value, generatedUrls };
@@ -97,10 +103,10 @@ export default class MermaidProcessor {
                     canvasHeight = Math.floor(canvasHeight * downscale);
                 }
 
-                const canvas = document.createElement("canvas");
+                const canvas = activeDocument.createElement("canvas");
                 canvas.width = canvasWidth;
                 canvas.height = canvasHeight;
-                const ctx = canvas.getContext("2d")!;
+                const ctx = canvas.getContext("2d");
                 ctx.fillStyle = "#ffffff";
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
                 ctx.scale(scale, scale);
@@ -110,7 +116,7 @@ export default class MermaidProcessor {
                     else reject(new Error("canvas.toBlob returned null"));
                 }, "image/png");
             };
-            img.onerror = (e) => reject(e);
+            img.onerror = () => reject(new Error("Failed to load SVG into image element"));
             img.src = dataUrl;
         });
     }
@@ -118,14 +124,14 @@ export default class MermaidProcessor {
     /**
      * Sanitize mermaid SVG for safe loading via <img> data URI.
      *
-     * Uses innerHTML (lenient HTML parser) instead of DOMParser (strict XML parser)
-     * because mermaid CSS contains unescaped quotes/selectors that break XML parsing.
-     * XMLSerializer then outputs valid XML with proper escaping.
+     * Parses via DOMParser in HTML mode (lenient like innerHTML) rather than
+     * XML mode, because mermaid CSS contains unescaped quotes/selectors that
+     * break the strict XML parser. The resulting SVG is then re-serialized
+     * as valid XML by XMLSerializer with proper escaping.
      */
     private sanitizeSvg(svgString: string): string {
-        const container = document.createElement("div");
-        container.innerHTML = svgString;
-        const svgEl = container.querySelector("svg");
+        const parsed = new DOMParser().parseFromString(svgString, "text/html");
+        const svgEl = parsed.querySelector("svg");
         if (!svgEl) return svgString;
 
         this.replaceForeignObjects(svgEl);
@@ -138,6 +144,7 @@ export default class MermaidProcessor {
 
     private replaceForeignObjects(svgEl: SVGSVGElement): void {
         const SVG_NS = "http://www.w3.org/2000/svg";
+        const ownerDoc = svgEl.ownerDocument;
         svgEl.querySelectorAll("foreignObject").forEach(fo => {
             const x = parseFloat(fo.getAttribute("x") || "0");
             const y = parseFloat(fo.getAttribute("y") || "0");
@@ -147,13 +154,13 @@ export default class MermaidProcessor {
             const lines = this.extractTextLines(fo);
             if (lines.length === 0) { fo.remove(); return; }
 
-            const styledEl = fo.querySelector("span, div, p") as HTMLElement | null;
-            const computed = styledEl ? window.getComputedStyle(styledEl) : null;
+            const styledEl = fo.querySelector("span, div, p");
+            const computed = styledEl ? activeWindow.getComputedStyle(styledEl) : null;
             const fontSize = parseFloat(computed?.fontSize || "14");
             const fontFamily = computed?.fontFamily || "sans-serif";
             const fill = computed?.color || "#333";
 
-            const textEl = document.createElementNS(SVG_NS, "text");
+            const textEl = ownerDoc.createElementNS(SVG_NS, "text");
             textEl.setAttribute("text-anchor", "middle");
             textEl.setAttribute("font-size", String(fontSize));
             textEl.setAttribute("font-family", fontFamily);
@@ -171,7 +178,7 @@ export default class MermaidProcessor {
                 const totalTextHeight = lineHeight * lines.length;
                 const startY = y + (height - totalTextHeight) / 2 + fontSize;
                 for (let i = 0; i < lines.length; i++) {
-                    const tspan = document.createElementNS(SVG_NS, "tspan");
+                    const tspan = ownerDoc.createElementNS(SVG_NS, "tspan");
                     tspan.setAttribute("x", String(centerX));
                     tspan.setAttribute("y", String(startY + i * lineHeight));
                     tspan.textContent = lines[i];
@@ -236,8 +243,8 @@ export default class MermaidProcessor {
             if (!el) return svgString;
 
             const viewBox = el.getAttribute("viewBox")?.split(/[\s,]+/).map(Number);
-            const hasWidth = el.hasAttribute("width") && parseFloat(el.getAttribute("width")!) > 0;
-            const hasHeight = el.hasAttribute("height") && parseFloat(el.getAttribute("height")!) > 0;
+            const hasWidth = el.hasAttribute("width") && parseFloat(el.getAttribute("width")) > 0;
+            const hasHeight = el.hasAttribute("height") && parseFloat(el.getAttribute("height")) > 0;
 
             if (!hasWidth || !hasHeight) {
                 if (viewBox?.length === 4) {

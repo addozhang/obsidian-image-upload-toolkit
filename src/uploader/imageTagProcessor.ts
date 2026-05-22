@@ -6,9 +6,10 @@ import UploadProgressModal from "../ui/uploadProgressModal";
 import {WebImageDownloader} from "./webImageDownloader";
 import MermaidProcessor from "./mermaidProcessor";
 import ImageStore from "../imageStore";
+import {errorMessage} from "./errorUtils";
 
-export const MD_REGEX = /\!\[([^\]]*)\]\(([^)]*)\)/g;
-export const WIKI_REGEX = /\!\[\[(.*?\.(png|jpg|jpeg|gif|svg|webp|excalidraw))(|.*)?\]\]/g;
+export const MD_REGEX = /!\[([^\]]*)\]\(([^)]*)\)/g;
+export const WIKI_REGEX = /!\[\[(.*?\.(png|jpg|jpeg|gif|svg|webp|excalidraw))(|.*)?\]\]/g;
 export const PROPERTIES_REGEX = /^---[\s\S]+?---\n/;
 
 export function isAlreadyHosted(url: string, settings: PublishSettings): boolean {
@@ -57,7 +58,7 @@ export function isAlreadyHosted(url: string, settings: PublishSettings): boolean
             default:
                 return false;
         }
-    } catch (error) {
+    } catch {
         return false;
     }
 }
@@ -120,7 +121,7 @@ export default class ImageTagProcessor {
         for (const image of images) {
             // Handle web images differently
             if (image.isWebImage) {
-                promises.push(new Promise<Image>(async (resolve, reject) => {
+                promises.push((async (): Promise<Image> => {
                     try {
                         // Download the web image
                         const downloadResult = await WebImageDownloader.download(image.path);
@@ -135,25 +136,25 @@ export default class ImageTagProcessor {
                         if (this.progressModal) {
                             this.progressModal.updateProgress(image.name, true);
                         }
-                        resolve(image);
+                        return image;
                     } catch (e) {
                         // Update progress on failed upload
                         if (this.progressModal) {
                             this.progressModal.updateProgress(image.name, false);
                         }
-                        const errorMessage = `Upload web image ${image.path} failed: ${e.error || e.message || e}`;
-                        new Notice(errorMessage, 10000);
+                        const errorMessageText = `Upload web image ${image.path} failed: ${errorMessage(e)}`;
+                        new Notice(errorMessageText, 10000);
                         console.error('Web image upload error:', e);
-                        reject(new Error(errorMessage));
+                        throw new Error(errorMessageText);
                     }
-                }));
+                })());
                 continue;
             }
             
             // Handle local images
             if (this.app.vault.getAbstractFileByPath(normalizePath(image.path)) == null) {
                 new Notice(`Can NOT locate ${image.name} with ${image.path}, please check image path or attachment option in plugin setting!`, 10000);
-                console.log(`${normalizePath(image.path)} not exist`);
+                console.warn(`${normalizePath(image.path)} not exist`);
                 // Update the progress modal with the failure
                 if (this.progressModal) {
                     this.progressModal.updateProgress(image.name, false);
@@ -178,9 +179,9 @@ export default class ImageTagProcessor {
                             if (this.progressModal) {
                                 this.progressModal.updateProgress(image.name, false);
                             }
-                            const errorMessage = `Upload ${image.path} failed, remote server returned an error: ${e.error || e.message || e}`;
-                            new Notice(errorMessage, 10000);
-                            reject(new Error(errorMessage));
+                            const errorMessageText = `Upload ${image.path} failed, remote server returned an error: ${errorMessage(e)}`;
+                            new Notice(errorMessageText, 10000);
+                            reject(new Error(errorMessageText));
                         });
                 }));
             } catch (error) {
@@ -247,7 +248,7 @@ export default class ImageTagProcessor {
 
         switch (action) {
             case ACTION_PUBLISH:
-                navigator.clipboard.writeText(value);
+                await navigator.clipboard.writeText(value);
                 new Notice("Copied to clipboard");
                 break;
             default:
@@ -344,9 +345,6 @@ export default class ImageTagProcessor {
     }
 
     private resolveImagePath(imageName: string): ResolvedImagePath {
-        let pathName = imageName.endsWith('.excalidraw') ?
-            imageName + '.png' :
-            imageName;
         // Obsidian attachment folder options:
         // 1. Vault folder: "/image.png"
         // 2. In the folder specified below: such as "Attachments", then "Attachments/image.png"

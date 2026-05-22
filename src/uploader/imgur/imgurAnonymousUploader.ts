@@ -12,18 +12,33 @@ export default class ImgurAnonymousUploader implements ImageUploader {
     }
 
     async upload(image: File, path: string): Promise<string> {
-        const requestData = new FormData();
-        requestData.append("image", image);
-        const resp = await requestUrl({
-            body: await image.arrayBuffer(),
-            headers: {Authorization: `Client-ID ${this.clientId}`},
-            method: "POST",
-            url: `${IMGUR_API_BASE}image`})
-
-        if ((await resp).status != 200) {
-            await handleImgurErrorResponse(resp);
+        // Imgur /3/image accepts base64-encoded image bytes when the request
+        // body is application/x-www-form-urlencoded with the `image` field.
+        // requestUrl() does not support multipart/form-data, so use base64.
+        const buf = await image.arrayBuffer();
+        const bytes = new Uint8Array(buf);
+        let binary = "";
+        for (let i = 0; i < bytes.length; i++) {
+            binary += String.fromCharCode(bytes[i]);
         }
-        return ((await resp.json) as ImgurPostData).data.link;
+        const b64 = btoa(binary);
+        const body = `image=${encodeURIComponent(b64)}&type=base64`;
+
+        const resp = await requestUrl({
+            body,
+            headers: {
+                Authorization: `Client-ID ${this.clientId}`,
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+            method: "POST",
+            throw: false,
+            url: `${IMGUR_API_BASE}image`,
+        });
+
+        if (resp.status != 200) {
+            handleImgurErrorResponse(resp);
+        }
+        return (resp.json as ImgurPostData).data.link;
     }
 }
 
@@ -31,9 +46,10 @@ export interface ImgurAnonymousSetting {
     clientId: string;
 }
 
-export async function handleImgurErrorResponse(resp: RequestUrlResponse): Promise<void> {
-    if ((await resp).headers["Content-Type"] === "application/json") {
-        throw new ApiError(((await resp.json) as ImgurErrorData).data.error);
+export function handleImgurErrorResponse(resp: RequestUrlResponse): void {
+    const contentType = resp.headers["Content-Type"] || resp.headers["content-type"];
+    if (contentType && contentType.startsWith("application/json")) {
+        throw new ApiError((resp.json as ImgurErrorData).data.error);
     }
-    throw new Error(resp.text);
+    throw new Error(resp.text || `Imgur upload failed: HTTP ${resp.status}`);
 }

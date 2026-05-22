@@ -1,7 +1,5 @@
-import path from "path";
-
 export class UploaderUtils {
-    static generateName(pathTmpl,imageName: string): string {
+    static generateName(pathTmpl: string | undefined, imageName: string): string {
         const date = new Date();
         const year = date.getFullYear().toString();
         const month = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -30,12 +28,12 @@ export class UploaderUtils {
         return result;
     }
 
-    static customizeDomainName(url, customDomainName) {
+    static customizeDomainName(url: string, customDomainName: string): string {
         const regex = /https?:\/\/([^/]+)/;
         customDomainName = customDomainName.replaceAll('https://', '')
         if (customDomainName && customDomainName.trim() !== "") {
             if (url.match(regex) != null) {
-                return url.replace(regex, (match, domain) => {
+                return url.replace(regex, (match, domain: string) => {
                     return match.replace(domain, customDomainName);
                 })
             } else {
@@ -43,5 +41,28 @@ export class UploaderUtils {
             }
         }
         return url;
+    }
+
+    /**
+     * Strip leading/trailing whitespace (including newlines) from a credential
+     * field. Returns an empty string for null/undefined input so downstream
+     * callers don't need to guard.
+     *
+     * Pasting credentials from the web frequently introduces trailing newlines
+     * or spaces. AWS-family SDKs reject these with cryptic signing errors, so
+     * we normalize at the boundary.
+     */
+    static trimCredential(value: string | undefined | null): string {
+        return (value ?? "").trim();
+    }
+
+    /**
+     * Normalize an S3/R2/B2 endpoint URL: trims whitespace and removes any
+     * trailing slash so the AWS SDK's URL composition does not produce a
+     * double-slashed path that hangs or 400s.
+     */
+    static normalizeEndpoint(endpoint: string | undefined | null): string {
+        const trimmed = (endpoint ?? "").trim();
+        return trimmed.replace(/\/+$/, "");
     }
 }

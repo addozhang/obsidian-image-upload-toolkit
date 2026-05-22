@@ -9,6 +9,7 @@ import type {ImgurAnonymousSetting} from "./uploader/imgur/imgurAnonymousUploade
 import {IMGUR_PLUGIN_CLIENT_ID} from "./uploader/imgur/constants";
 import ImageStore from "./imageStore";
 import buildUploader from "./uploader/imageUploaderBuilder";
+import {errorMessage} from "./uploader/errorUtils";
 import PublishSettingTab from "./ui/publishSettingTab";
 import type {OssSetting} from "./uploader/oss/ossUploader";
 import type {ImagekitSetting} from "./uploader/imagekit/imagekitUploader";
@@ -136,7 +137,7 @@ export default class ObsidianPublish extends Plugin {
         
         this.addCommand({
             id: "publish-page",
-            name: "Publish Page",
+            name: "Publish page",
             checkCallback: (checking: boolean) => {
                 if (!checking) {
                     this.publish()
@@ -167,7 +168,9 @@ export default class ObsidianPublish extends Plugin {
         if (!this.imageUploader) {
             new Notice("Image uploader setup failed, please check setting.")
         } else {
-            this.imageTagProcessor.process(ACTION_PUBLISH).then(() => {
+            this.imageTagProcessor.process(ACTION_PUBLISH).catch((err: unknown) => {
+                console.error("Image upload toolkit: publish failed", err);
+                new Notice(`Publish failed: ${errorMessage(err)}`, 8000);
             });
         }
     }
@@ -183,7 +186,7 @@ export default class ObsidianPublish extends Plugin {
                 this.settings.showProgressModal, // Use modal based on setting
             );
         } catch (e) {
-            console.log(`Failed to setup image uploader: ${e}`)
+            console.error(`Failed to setup image uploader: ${e}`)
         }
     }
 }

@@ -1,5 +1,6 @@
 import {requestUrl} from "obsidian";
 import ApiError from "./apiError";
+import {errorMessage} from "./errorUtils";
 
 export interface WebImageDownloadResult {
     buffer: ArrayBuffer;
@@ -34,7 +35,7 @@ export function extractFilename(url: string, contentType?: string): string {
         }
         const extension = getExtensionFromContentType(contentType);
         return `web-image-${timestamp}${extension}`;
-    } catch (error) {
+    } catch {
         const extension = getExtensionFromContentType(contentType);
         return `web-image-${timestamp}${extension}`;
     }
@@ -81,7 +82,7 @@ export class WebImageDownloader {
             if (error instanceof ApiError) {
                 throw error;
             }
-            throw new ApiError(`Failed to download image from ${url}: ${error.message || error}`);
+            throw new ApiError(`Failed to download image from ${url}: ${errorMessage(error)}`);
         }
     }
 
