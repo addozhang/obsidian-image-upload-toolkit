@@ -11,15 +11,17 @@ export default class AwsS3Uploader implements ImageUploader {
 
 
   constructor(setting: AwsS3Setting) {
-    const region = UploaderUtils.trimCredential(setting.region);
+    const region = UploaderUtils.trimCredential(setting.region) || (setting.endpoint?.trim() ? "us-east-1" : "");
     const endpoint = setting.endpoint?.trim();
     const s3Config: ConstructorParameters<typeof S3Client>[0] = {
       credentials: {
         accessKeyId: UploaderUtils.trimCredential(setting.accessKeyId),
         secretAccessKey: UploaderUtils.trimCredential(setting.secretAccessKey),
       },
-      region,
     };
+    if (region) {
+      s3Config.region = region;
+    }
     if (endpoint) {
       s3Config.endpoint = endpoint;
       s3Config.forcePathStyle = true;
@@ -41,7 +43,9 @@ export default class AwsS3Uploader implements ImageUploader {
       Key: path,
       Body: uint8Array,
     }));
-    const location = `https://${this.bucket}.s3.${this.region}.amazonaws.com/${path}`;
+    const location = this.region
+      ? `https://${this.bucket}.s3.${this.region}.amazonaws.com/${path}`
+      : path;
     return UploaderUtils.customizeDomainName(location, this.customDomainName);
   }
 }

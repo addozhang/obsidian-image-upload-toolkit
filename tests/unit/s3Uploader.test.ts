@@ -81,7 +81,7 @@ describe("AwsS3Uploader constructor", () => {
     expect(callArgs.forcePathStyle).toBeUndefined();
   });
 
-  it("should not apply default region - keep empty string as empty", () => {
+  it("should not set region when region is empty string", () => {
     const setting: AwsS3Setting = {
       accessKeyId: "test-key",
       secretAccessKey: "test-secret",
@@ -95,7 +95,26 @@ describe("AwsS3Uploader constructor", () => {
     new AwsS3Uploader(setting);
 
     const callArgs = mockS3Client.getLastCallArgs();
-    expect(callArgs.region).toBe("");
+    expect(callArgs.region).toBeUndefined();
+  });
+
+  it("should default to us-east-1 when custom endpoint is set and region is empty", () => {
+    const setting: AwsS3Setting = {
+      accessKeyId: "test-key",
+      secretAccessKey: "test-secret",
+      region: "",
+      bucketName: "test-bucket",
+      path: "/images/{filename}",
+      customDomainName: "",
+      endpoint: "https://minio.example.com",
+    };
+
+    new AwsS3Uploader(setting);
+
+    const callArgs = mockS3Client.getLastCallArgs();
+    expect(callArgs.endpoint).toBe("https://minio.example.com");
+    expect(callArgs.forcePathStyle).toBe(true);
+    expect(callArgs.region).toBe("us-east-1");
   });
 
   it("should use region value when provided", () => {
