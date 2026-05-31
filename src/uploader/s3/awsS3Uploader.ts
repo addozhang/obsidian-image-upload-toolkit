@@ -12,8 +12,8 @@ export default class AwsS3Uploader implements ImageUploader {
 
 
   constructor(setting: AwsS3Setting) {
-    const region = UploaderUtils.trimCredential(setting.region) || (setting.endpoint?.trim() ? "us-east-1" : "");
-    const endpoint = setting.endpoint?.trim();
+    const endpoint = UploaderUtils.normalizeEndpoint(setting.endpoint);
+    const region = UploaderUtils.trimCredential(setting.region) || (endpoint ? "us-east-1" : "");
     const s3Config: ConstructorParameters<typeof S3Client>[0] = {
       credentials: {
         accessKeyId: UploaderUtils.trimCredential(setting.accessKeyId),
@@ -30,7 +30,7 @@ export default class AwsS3Uploader implements ImageUploader {
     this.s3 = new S3Client(s3Config);
     this.bucket = UploaderUtils.trimCredential(setting.bucketName);
     this.region = region;
-    this.endpoint = endpoint ?? "";
+    this.endpoint = endpoint;
     this.pathTmpl = setting.path;
     this.customDomainName = setting.customDomainName;
   }

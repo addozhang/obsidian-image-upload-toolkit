@@ -48,6 +48,23 @@ describe("AwsS3Uploader constructor", () => {
     expect(callArgs.forcePathStyle).toBe(true);
   });
 
+  it("should strip trailing slash from endpoint", () => {
+    const setting: AwsS3Setting = {
+      accessKeyId: "test-key",
+      secretAccessKey: "test-secret",
+      region: "us-west-2",
+      bucketName: "test-bucket",
+      path: "{filename}",
+      customDomainName: "",
+      endpoint: "https://minio.example.com/",
+    };
+
+    new AwsS3Uploader(setting);
+
+    const callArgs = mockS3Client.getLastCallArgs();
+    expect(callArgs.endpoint).toBe("https://minio.example.com");
+  });
+
   it("should not set endpoint when endpoint is empty string", () => {
     const setting: AwsS3Setting = {
       accessKeyId: "test-key",
