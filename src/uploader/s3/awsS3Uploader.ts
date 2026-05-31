@@ -6,6 +6,7 @@ export default class AwsS3Uploader implements ImageUploader {
   private readonly s3!: S3Client;
   private readonly bucket!: string;
   private readonly region: string;
+  private readonly endpoint: string;
   private pathTmpl: string;
   private customDomainName: string;
 
@@ -29,6 +30,7 @@ export default class AwsS3Uploader implements ImageUploader {
     this.s3 = new S3Client(s3Config);
     this.bucket = UploaderUtils.trimCredential(setting.bucketName);
     this.region = region;
+    this.endpoint = endpoint ?? "";
     this.pathTmpl = setting.path;
     this.customDomainName = setting.customDomainName;
   }
@@ -43,9 +45,14 @@ export default class AwsS3Uploader implements ImageUploader {
       Key: path,
       Body: uint8Array,
     }));
-    const location = this.region
-      ? `https://${this.bucket}.s3.${this.region}.amazonaws.com/${path}`
-      : path;
+    let location: string;
+    if (this.customDomainName) {
+      location = `https://${this.bucket}.s3.amazonaws.com/${path}`;
+    } else if (this.endpoint) {
+      location = `${this.endpoint}/${this.bucket}/${path}`;
+    } else {
+      location = `https://${this.bucket}.s3.${this.region}.amazonaws.com/${path}`;
+    }
     return UploaderUtils.customizeDomainName(location, this.customDomainName);
   }
 }
