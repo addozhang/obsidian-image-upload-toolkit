@@ -10,7 +10,78 @@ import {errorMessage} from "./errorUtils";
 
 export const MD_REGEX = /!\[([^\]]*)\]\(([^)]*)\)/g;
 export const WIKI_REGEX = /!\[\[(.*?\.(png|jpg|jpeg|gif|svg|webp|excalidraw))(|.*)?\]\]/g;
+export const HTML_IMG_REGEX = /<img\b[^>]*\bsrc\s*=\s*(?:(['"])(.*?)\1|([^\s>]+))[^>]*>/gi;
 export const PROPERTIES_REGEX = /^---[\s\S]+?---\n/;
+const LOCAL_IMAGE_EXTENSION_REGEX = /\.(png|jpg|jpeg|gif|svg|webp|excalidraw)$/i;
+
+export interface HtmlImageReference {
+    source: string;
+    src: string;
+}
+
+export interface UploadedImageReference {
+    source: string;
+    url: string;
+    htmlSrc?: string;
+}
+
+/**
+ * Return HTML image references that can be processed by the uploader.
+ *
+ * @example
+ * getHtmlImageReferences('<img src="Anexos/files/a.png" alt="A">')
+ */
+export function getHtmlImageReferences(value: string): HtmlImageReference[] {
+    return [...value.matchAll(HTML_IMG_REGEX)]
+        .map(match => ({source: match[0], src: match[2] || match[3] || ""}))
+        .filter(image => image.src.length > 0);
+}
+
+/**
+ * Check whether a local path points to an image extension supported by Obsidian.
+ *
+ * @example
+ * isSupportedLocalImagePath("Anexos/files/Pasted image.png")
+ */
+export function isSupportedLocalImagePath(imagePath: string): boolean {
+    const localPath = imagePath.split("?")[0].split("#")[0];
+    return LOCAL_IMAGE_EXTENSION_REGEX.test(localPath);
+}
+
+/**
+ * Replace only the src attribute inside an HTML image tag.
+ *
+ * @example
+ * replaceHtmlImageTagSrc('<img src="a.png" alt="A">', 'https://cdn/a.png')
+ */
+export function replaceHtmlImageTagSrc(imageTag: string, remoteUrl: string): string {
+    const quotedSrc = imageTag.replace(/(\bsrc\s*=\s*)(["'])(.*?)\2/i, (_match, prefix, quote) => `${prefix}${quote}${remoteUrl}${quote}`);
+    if (quotedSrc !== imageTag) return quotedSrc;
+    return imageTag.replace(/(\bsrc\s*=\s*)([^\s>]+)/i, (_match, prefix) => `${prefix}${remoteUrl}`);
+}
+
+/**
+ * Format an uploaded image as Markdown or as the original HTML tag shape.
+ *
+ * @example
+ * formatUploadedImageReference({source: "![a](a.png)", url: "https://cdn/a.png"}, "a")
+ */
+export function formatUploadedImageReference(image: UploadedImageReference, altText: string): string {
+    if (image.htmlSrc) return replaceHtmlImageTagSrc(image.source, image.url);
+    return `![${altText}](${image.url})`;
+}
+
+/**
+ * Resolve a note-relative image path to a vault path when metadata misses.
+ *
+ * @example
+ * resolveRelativeVaultPath("files/a.png", "Notes/example.md")
+ */
+export function resolveRelativeVaultPath(imagePath: string, sourcePath: string): string {
+    if (!sourcePath || imagePath.startsWith("/")) return normalizePath(imagePath);
+    const sourceDir = sourcePath.split("/").slice(0, -1).join("/");
+    return normalizePath(path.posix.join(sourceDir, imagePath));
+}
 
 export function isAlreadyHosted(url: string, settings: PublishSettings): boolean {
     try {
@@ -63,11 +134,9 @@ export function isAlreadyHosted(url: string, settings: PublishSettings): boolean
     }
 }
 
-interface Image {
+interface Image extends UploadedImageReference {
     name: string;
     path: string;
-    url: string;
-    source: string;
     isWebImage?: boolean; // Flag to indicate if this is a web image
 }
 
@@ -206,24 +275,24 @@ export default class ImageTagProcessor {
             })));
             successfulImages = results.filter(img => img !== null) as Image[];
 
-            let altText;
+            let altText: string;
             for (const image of successfulImages) {
                 altText = this.settings.imageAltText ?
                     path.parse(image.name)?.name?.replaceAll("-", " ")?.replaceAll("_", " ") :
                     '';
-                value = value.replaceAll(image.source, `![${altText}](${image.url})`);
+                value = value.replaceAll(image.source, formatUploadedImageReference(image, altText));
             }
         }
 
         if (this.settings.replaceOriginalDoc) {
             if (successfulImages.length > 0 && this.getEditor()) {
                 let docValue = this.getValue();
-                let altText;
+                let altText: string;
                 for (const image of successfulImages) {
                     altText = this.settings.imageAltText ?
                         path.parse(image.name)?.name?.replaceAll("-", " ")?.replaceAll("_", " ") :
                         '';
-                    docValue = docValue.replaceAll(image.source, `![${altText}](${image.url})`);
+                    docValue = docValue.replaceAll(image.source, formatUploadedImageReference(image, altText));
                 }
                 this.getEditor()?.setValue(docValue);
             }
@@ -231,12 +300,12 @@ export default class ImageTagProcessor {
             const webImages = successfulImages.filter(img => img.isWebImage);
             if (webImages.length > 0 && this.getEditor()) {
                 let docValue = this.getValue();
-                let altText;
+                let altText: string;
                 for (const image of webImages) {
                     altText = this.settings.imageAltText ?
                         path.parse(image.name)?.name?.replaceAll("-", " ")?.replaceAll("_", " ") :
                         '';
-                    docValue = docValue.replaceAll(image.source, `![${altText}](${image.url})`);
+                    docValue = docValue.replaceAll(image.source, formatUploadedImageReference(image, altText));
                 }
                 this.getEditor()?.setValue(docValue);
             }
@@ -280,13 +349,19 @@ export default class ImageTagProcessor {
                 }
                 
                 // Skip non-image local files (e.g., .pdf, .txt) to prevent invalid uploads
-                const localPath = imageUrl.split('?')[0];
-                if (!/\.(png|jpg|jpeg|gif|svg|webp|excalidraw)$/i.test(localPath)) {
+                if (!isSupportedLocalImagePath(imageUrl)) {
                     continue;
                 }
 
                 const decodedName = decodeURI(imageUrl);
                 this.processMatched(decodedName, match[0], images);
+            }
+
+            if (this.settings.processHtmlImageTags) {
+                const htmlImages = getHtmlImageReferences(value);
+                for (const image of htmlImages) {
+                    this.processHtmlImage(image, images, mermaidUrls);
+                }
             }
         } catch (error) {
             console.error("Error processing image lists:", error);
@@ -295,7 +370,20 @@ export default class ImageTagProcessor {
         return images;
     }
 
-    private processMatched(path: string, src: string, images: Image[]){    
+    private processHtmlImage(image: HtmlImageReference, images: Image[], mermaidUrls: Set<string>) {
+        if (WebImageDownloader.isWebImage(image.src)) {
+            if (this.settings.uploadWebImages && !this.isAlreadyHosted(image.src) && !mermaidUrls.has(image.src)) {
+                this.processWebImage(image.src, image.source, images, image.src);
+            }
+            return;
+        }
+
+        if (isSupportedLocalImagePath(image.src)) {
+            this.processMatched(decodeURI(image.src), image.source, images, image.src);
+        }
+    }
+
+    private processMatched(path: string, src: string, images: Image[], htmlSrc?: string){    
         try {
             const {resolvedPath, name} = this.resolveImagePath(path);
             // check the item with same resolvedPath 
@@ -306,6 +394,7 @@ export default class ImageTagProcessor {
                     path: resolvedPath,
                     source: src,
                     url: '',
+                    htmlSrc,
                 });
             }
         } catch (error) {
@@ -316,7 +405,7 @@ export default class ImageTagProcessor {
     /**
      * Process web image URL
      */
-    private processWebImage(url: string, src: string, images: Image[]) {
+    private processWebImage(url: string, src: string, images: Image[], htmlSrc?: string) {
         try {
             // Extract a friendly name from URL
             const urlObj = new URL(url);
@@ -332,7 +421,8 @@ export default class ImageTagProcessor {
                     path: url, // Store the URL as path for web images
                     source: src,
                     url: '',
-                    isWebImage: true
+                    isWebImage: true,
+                    htmlSrc
                 });
             }
         } catch (error) {
@@ -355,7 +445,15 @@ export default class ImageTagProcessor {
         if (targetFile) {
             return {resolvedPath: targetFile.path, name: imageName};
         }
-        return {resolvedPath: imageName, name: imageName};
+        const normalizedImageName = normalizePath(imageName);
+        if (this.app.vault.getAbstractFileByPath(normalizedImageName)) {
+            return {resolvedPath: normalizedImageName, name: imageName};
+        }
+        const relativePath = resolveRelativeVaultPath(normalizedImageName, sourcePath);
+        if (this.app.vault.getAbstractFileByPath(relativePath)) {
+            return {resolvedPath: relativePath, name: imageName};
+        }
+        return {resolvedPath: normalizedImageName, name: imageName};
 
     }
 

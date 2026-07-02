@@ -69,6 +69,15 @@ export default class PublishSettingTab extends PluginSettingTab {
                     .onChange(value => this.plugin.settings.uploadWebImages = value)
             );
 
+        new Setting(containerEl)
+            .setName("Process HTML image tags")
+            .setDesc("Upload images referenced by HTML <img> tags and replace only the src attribute, preserving alt and other attributes.")
+            .addToggle(toggle =>
+                toggle
+                    .setValue(this.plugin.settings.processHtmlImageTags)
+                    .onChange(value => this.plugin.settings.processHtmlImageTags = value)
+            );
+
         // ── Mermaid ──
         new Setting(containerEl).setName("Mermaid").setHeading();
 
