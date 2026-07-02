@@ -1,5 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { MD_REGEX, PROPERTIES_REGEX, WIKI_REGEX } from "../../src/uploader/imageTagProcessor";
+import {
+  formatUploadedImageReference,
+  getHtmlImageReferences,
+  HTML_IMG_REGEX,
+  isSupportedLocalImagePath,
+  MD_REGEX,
+  PROPERTIES_REGEX,
+  replaceHtmlImageTagSrc,
+  resolveRelativeVaultPath,
+  WIKI_REGEX,
+} from "../../src/uploader/imageTagProcessor";
 
 const fresh = (regex: RegExp) => new RegExp(regex.source, regex.flags);
 
@@ -86,6 +96,64 @@ describe("WIKI_REGEX", () => {
     const match = regex.exec("![[path/to/file.jpeg|500]]");
 
     expect(match?.[1]).toBe("path/to/file.jpeg");
+  });
+});
+
+describe("HTML_IMG_REGEX", () => {
+  it("captures quoted and unquoted src values", () => {
+    const html = [
+      '<img src="Anexos/files/Pasted image 20260702143718.png" alt="Google Tag Manager">',
+      "<img alt='Waterfall' src='Anexos/files/Pasted image 20260702121353.png'>",
+      "<img src=Anexos/files/plain.webp loading=lazy>",
+    ].join("\n");
+    const matches = [...html.matchAll(fresh(HTML_IMG_REGEX))];
+
+    expect(matches.map(match => match[2] || match[3])).toEqual([
+      "Anexos/files/Pasted image 20260702143718.png",
+      "Anexos/files/Pasted image 20260702121353.png",
+      "Anexos/files/plain.webp",
+    ]);
+  });
+
+  it("returns HTML image references with original tags", () => {
+    const imageTag = '<img src="Anexos/files/Pasted image.png" alt="Existing alt">';
+
+    expect(getHtmlImageReferences(imageTag)).toEqual([
+      { source: imageTag, src: "Anexos/files/Pasted image.png" },
+    ]);
+  });
+});
+
+describe("HTML image replacement helpers", () => {
+  it("preserves HTML attributes and replaces only src", () => {
+    const imageTag = '<img alt="Anexos/files/Pasted image.png" src="Anexos/files/Pasted image.png" width="320">';
+
+    expect(replaceHtmlImageTagSrc(imageTag, "https://cdn.example.com/image.png"))
+      .toBe('<img alt="Anexos/files/Pasted image.png" src="https://cdn.example.com/image.png" width="320">');
+  });
+
+  it("formats HTML references as HTML and markdown references as markdown", () => {
+    const uploadedUrl = "https://cdn.example.com/image.png";
+
+    expect(formatUploadedImageReference({
+      source: '<img src="Anexos/files/image.png" alt="Existing alt">',
+      url: uploadedUrl,
+      htmlSrc: "Anexos/files/image.png",
+    }, "")).toBe('<img src="https://cdn.example.com/image.png" alt="Existing alt">');
+    expect(formatUploadedImageReference({
+      source: "![image](Anexos/files/image.png)",
+      url: uploadedUrl,
+    }, "image")).toBe("![image](https://cdn.example.com/image.png)");
+  });
+
+  it("recognizes image paths before query strings and anchors", () => {
+    expect(isSupportedLocalImagePath("Anexos/files/Pasted image.png?x=1#hash")).toBe(true);
+    expect(isSupportedLocalImagePath("Anexos/files/readme.md")).toBe(false);
+  });
+
+  it("resolves note-relative paths with Obsidian vault separators", () => {
+    expect(resolveRelativeVaultPath("Anexos/files/Pasted image.png", "Sansung/E-mails/Note.md"))
+      .toBe("Sansung/E-mails/Anexos/files/Pasted image.png");
   });
 });
 
