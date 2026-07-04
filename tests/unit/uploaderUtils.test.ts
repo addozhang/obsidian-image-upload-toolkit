@@ -90,6 +90,24 @@ describe("UploaderUtils.customizeDomainName", () => {
     expect(result).toBe("https://cdn.example.com/path/to/file.png");
   });
 
+  it("encodes key-like URL path segments when wrapping with custom domain", () => {
+    const result = UploaderUtils.customizeDomainName(
+      "2026-07-04/Pasted image 20260704164521.png",
+      "cdn.example.com",
+    );
+
+    expect(result).toBe("https://cdn.example.com/2026-07-04/Pasted%20image%2020260704164521.png");
+  });
+
+  it("does not double encode already encoded key-like URL path segments", () => {
+    const result = UploaderUtils.customizeDomainName(
+      "2026-07-04/Pasted%20image%2020260704164521.png",
+      "cdn.example.com",
+    );
+
+    expect(result).toBe("https://cdn.example.com/2026-07-04/Pasted%20image%2020260704164521.png");
+  });
+
   it("keeps trailing slash behavior of custom domain", () => {
     const result = UploaderUtils.customizeDomainName(
       "https://old.example.com/path/file.png",
