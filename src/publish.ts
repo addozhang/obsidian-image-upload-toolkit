@@ -28,6 +28,7 @@ export interface PublishSettings {
     imageStore: string;
     showProgressModal: boolean; // New setting to control progress modal display
     uploadWebImages: boolean; // New setting to enable web image upload
+    processHtmlImageTags: boolean; // Process HTML <img> tags in notes
     convertMermaid: boolean; // Convert mermaid code blocks to PNG images on publish
     mermaidScale: number; // Canvas scale factor for mermaid PNG export (1–4, default 2)
     mermaidTheme: string; // Mermaid render theme: default, dark, forest, neutral, base
@@ -51,6 +52,7 @@ const DEFAULT_SETTINGS: PublishSettings = {
     imageStore: ImageStore.IMGUR.id,
     showProgressModal: true, // Default to showing the modal
     uploadWebImages: false, // Default to disabled for backward compatibility
+    processHtmlImageTags: false, // Default to disabled for backward compatibility
     convertMermaid: false, // Default to disabled
     mermaidScale: 2, // 2x for crisp output on retina displays
     mermaidTheme: "default",

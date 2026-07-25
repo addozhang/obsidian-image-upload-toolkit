@@ -31,7 +31,7 @@
 ## ✨ Features
 
 ### Core Functionality
-- ✅ **Smart Image Detection** - Automatically recognizes Markdown and Wiki link formats
+- ✅ **Smart Image Detection** - Automatically recognizes Markdown, Wiki link, and optional HTML image tag formats
 - ✅ **Multi-Format Support** - PNG, JPG, JPEG, GIF, SVG, WebP, Excalidraw
 - ✅ **Batch Processing** - Upload multiple images simultaneously
 - ✅ **Real-Time Progress** - Optional progress modal with detailed feedback
@@ -68,6 +68,7 @@ Perfect for publishing to static sites like [GitHub Pages](https://pages.github.
 - **Ignore note properties**: ✅ Recommended (removes frontmatter when publishing)
 - **Show progress modal**: ✅ Recommended (better user experience)
 - **Upload web images**: ❌ Optional (downloads and re-uploads web images to prevent link rot)
+- **Process HTML image tags**: ❌ Optional (uploads images in `<img>` tags and preserves `alt` and other attributes)
 - **Convert mermaid diagrams**: ❌ Optional (converts mermaid code blocks to PNG images during publish)
 - **Mermaid scale**: 2 (image resolution multiplier, 1-4x)
 - **Mermaid theme**: default (options: default/dark/forest/neutral/base)
@@ -91,6 +92,7 @@ Select your preferred storage service from the dropdown. See [Storage Service Co
 - **Relative Paths**: Support for `./` and `../` relative path formats
 - **Dynamic Attachments**: Works with Obsidian's attachment folder settings
 - **Web Image Upload**: Enable in settings to automatically download and re-upload web images (http/https URLs) to your storage service. Images already hosted on your configured storage are automatically skipped.
+- **HTML Image Tags**: Enable in settings to upload images referenced by `<img src="...">`; only the `src` attribute is replaced, so `alt`, `width`, and other attributes stay intact.
 
 ## 🔧 Storage Service Configuration
 
