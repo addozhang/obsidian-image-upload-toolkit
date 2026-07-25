@@ -7,6 +7,7 @@ export default class GitHubUploader implements ImageUploader {
   private readonly repo: string;
   private readonly branch: string;
   private readonly path: string;
+  private uploadQueue: Promise<void> = Promise.resolve();
 
   constructor(setting: GitHubSetting) {
     this.octokit = new Octokit({ 
@@ -21,7 +22,18 @@ export default class GitHubUploader implements ImageUploader {
     this.path = setting.path;
   }
 
-  async upload(image: File, fullPath: string): Promise<string> {
+  upload(image: File, fullPath: string): Promise<string> {
+    const result: Promise<string> = this.uploadQueue.then(
+      async (): Promise<string> => await this.uploadFile(image, fullPath),
+    );
+    this.uploadQueue = result.then(
+      (): void => undefined,
+      (): void => undefined,
+    );
+    return result;
+  }
+
+  private async uploadFile(image: File, fullPath: string): Promise<string> {
     try {
       const arrayBuffer = await this.readFileAsArrayBuffer(image);
       const base64Content = this.arrayBufferToBase64(arrayBuffer);
