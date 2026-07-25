@@ -37,10 +37,20 @@ export class UploaderUtils {
                     return match.replace(domain, customDomainName);
                 })
             } else {
-                return `https://${customDomainName}/${url}`;
+                return `https://${customDomainName}/${this.encodePath(url)}`;
             }
         }
         return url;
+    }
+
+    private static encodePath(path: string): string {
+        return path.split('/').map((segment) => {
+            try {
+                return encodeURIComponent(decodeURIComponent(segment));
+            } catch {
+                return encodeURIComponent(segment);
+            }
+        }).join('/');
     }
 
     /**
