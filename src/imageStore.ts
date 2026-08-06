@@ -55,6 +55,11 @@ export default class ImageStore {
         "Backblaze B2"
     )
 
+    static readonly RUSTFS = new ImageStore(
+        "RUSTFS",
+        "RustFS"
+    )
+
     private static readonly aliases: Record<string, string> = {
         imgur: ImageStore.IMGUR.id,
         gyazo: ImageStore.GYAZO.id,
@@ -72,6 +77,7 @@ export default class ImageStore {
         cloudflare_r2: ImageStore.CLOUDFLARE_R2.id,
         b2: ImageStore.BACKBLAZE_B2.id,
         backblaze_b2: ImageStore.BACKBLAZE_B2.id,
+        rustfs: ImageStore.RUSTFS.id,
     };
 
     private constructor(readonly id: string, readonly description: string) {

@@ -11,6 +11,7 @@ import KodoUploader from "./qiniu/kodoUploader";
 import GitHubUploader from "./github/gitHubUploader";
 import R2Uploader from "./r2/r2Uploader";
 import B2Uploader from "./b2/b2Uploader";
+import RustfsUploader from "./rustfs/rustfsUploader";
 
 export default function buildUploader(settings: PublishSettings): ImageUploader {
     switch (ImageStore.normalizeId(settings.imageStore)) {
@@ -34,6 +35,8 @@ export default function buildUploader(settings: PublishSettings): ImageUploader 
             return new R2Uploader(settings.r2Setting);
         case ImageStore.BACKBLAZE_B2.id:
             return new B2Uploader(settings.b2Setting);
+        case ImageStore.RUSTFS.id:
+            return new RustfsUploader(settings.rustfsSetting);
         default:
             throw new Error('should not reach here!');
     }
