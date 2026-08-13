@@ -9,7 +9,7 @@ import ImageStore from "../imageStore";
 import {errorMessage} from "./errorUtils";
 
 export const MD_REGEX = /!\[([^\]]*)\]\(([^)]*)\)/g;
-export const WIKI_REGEX = /!\[\[(.*?\.(png|jpg|jpeg|gif|svg|webp|excalidraw))(|.*)?\]\]/g;
+export const WIKI_REGEX = /!\[\[([^\]|#]*\.(png|jpg|jpeg|gif|svg|webp|excalidraw))(#[^\]|]*)?(\|[^\]]*)?\]\]/gi;
 export const PROPERTIES_REGEX = /^---[\s\S]+?---\n/;
 
 export function isAlreadyHosted(url: string, settings: PublishSettings): boolean {

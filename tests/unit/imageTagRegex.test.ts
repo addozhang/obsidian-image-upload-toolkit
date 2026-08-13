@@ -87,6 +87,65 @@ describe("WIKI_REGEX", () => {
 
     expect(match?.[1]).toBe("path/to/file.jpeg");
   });
+
+  it("does not merge multiple wikilink images on the same line (issue #87)", () => {
+    const cases = [
+      "![[1000342477.jpg]]![[1000342476.png]]",
+      "![[1000342477.jpg]]       ![[1000342476.png]]",
+      "![[1000342477.jpg]] even with words here ![[1000342476.png]]",
+    ];
+
+    for (const input of cases) {
+      const regex = fresh(WIKI_REGEX);
+      const found = [...input.matchAll(regex)];
+
+      expect(found).toHaveLength(2);
+      expect(found[0][1]).toBe("1000342477.jpg");
+      expect(found[1][1]).toBe("1000342476.png");
+      // Neither match should swallow the other tag's closing brackets.
+      expect(found[0][0]).not.toContain("1000342476");
+      expect(found[1][0]).not.toContain("1000342477");
+    }
+  });
+
+  it("still supports alias/size suffix without swallowing a following image", () => {
+    const regex = fresh(WIKI_REGEX);
+    const found = [..."![[photo.jpg|500]]![[other.png]]".matchAll(regex)];
+
+    expect(found).toHaveLength(2);
+    expect(found[0][1]).toBe("photo.jpg");
+    expect(found[0][4]).toBe("|500");
+    expect(found[1][1]).toBe("other.png");
+  });
+
+  it("supports Obsidian's #fragment (CSS-class) suffix on embeds", () => {
+    const regex = fresh(WIKI_REGEX);
+    const match = regex.exec("![[Engelbart.jpg#outline]]");
+
+    expect(match?.[1]).toBe("Engelbart.jpg");
+  });
+
+  it("supports combined #fragment and |size suffix without swallowing a following image", () => {
+    const regex = fresh(WIKI_REGEX);
+    const found = [
+      ..."![[Engelbart.jpg#outline|100]]![[other.png]]".matchAll(regex),
+    ];
+
+    expect(found).toHaveLength(2);
+    expect(found[0][1]).toBe("Engelbart.jpg");
+    expect(found[0][3]).toBe("#outline");
+    expect(found[0][4]).toBe("|100");
+    expect(found[1][1]).toBe("other.png");
+  });
+
+  it("matches uppercase extensions case-insensitively", () => {
+    const regex = fresh(WIKI_REGEX);
+    const found = [..."![[IMAGE.PNG]]![[photo.JPG]]".matchAll(regex)];
+
+    expect(found).toHaveLength(2);
+    expect(found[0][1]).toBe("IMAGE.PNG");
+    expect(found[1][1]).toBe("photo.JPG");
+  });
 });
 
 describe("PROPERTIES_REGEX", () => {
