@@ -172,6 +172,9 @@ export default class PublishSettingTab extends PluginSettingTab {
             case ImageStore.BACKBLAZE_B2.id:
                 this.drawB2Setting(parentEL);
                 break;
+            case ImageStore.RUSTFS.id:
+                this.drawRustfsSetting(parentEL);
+                break;
             default:
                 throw new Error(
                     "Should not reach here!"
@@ -660,5 +663,47 @@ export default class PublishSettingTab extends PluginSettingTab {
                     .setPlaceholder("Enter custom domain (optional)")
                     .setValue(this.plugin.settings.b2Setting.customDomainName)
                     .onChange(value => this.plugin.settings.b2Setting.customDomainName = value));
+    }
+
+    private drawRustfsSetting(parentEL: HTMLDivElement) {
+        new Setting(parentEL)
+            .setName('RustFS endpoint')
+            .setDesc('Your RustFS server endpoint URL (e.g., http://localhost:9000).')
+            .addText(text => text
+                .setPlaceholder('http://localhost:9000')
+                .setValue(this.plugin.settings.rustfsSetting?.endpoint || '')
+                .onChange(value => this.plugin.settings.rustfsSetting.endpoint = value));
+
+        new Setting(parentEL)
+            .setName('RustFS access key')
+            .setDesc('Your RustFS access key (IAM user).')
+            .addText(text => text
+                .setPlaceholder('Enter access key')
+                .setValue(this.plugin.settings.rustfsSetting?.accessKeyId || '')
+                .onChange(value => this.plugin.settings.rustfsSetting.accessKeyId = value));
+
+        new Setting(parentEL)
+            .setName('RustFS secret key')
+            .setDesc('Your RustFS secret key.')
+            .addText(text => text
+                .setPlaceholder('Enter secret key')
+                .setValue(this.plugin.settings.rustfsSetting?.secretAccessKey || '')
+                .onChange(value => this.plugin.settings.rustfsSetting.secretAccessKey = value));
+
+        new Setting(parentEL)
+            .setName('Bucket name')
+            .setDesc('The bucket to store images in.')
+            .addText(text => text
+                .setPlaceholder('Enter bucket name')
+                .setValue(this.plugin.settings.rustfsSetting?.bucketName || '')
+                .onChange(value => this.plugin.settings.rustfsSetting.bucketName = value));
+
+        new Setting(parentEL)
+            .setName("Target path")
+            .setDesc("The path to store images. Supports {year} {mon} {day} {random} {filename} vars.")
+            .addText(text => text
+                .setPlaceholder("images/{year}/{mon}/{day}/{filename}")
+                .setValue(this.plugin.settings.rustfsSetting?.path || '')
+                .onChange(value => this.plugin.settings.rustfsSetting.path = value));
     }
 }

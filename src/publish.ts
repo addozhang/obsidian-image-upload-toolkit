@@ -20,6 +20,7 @@ import type {GitHubSetting} from "./uploader/github/gitHubUploader";
 import type {R2Setting} from "./uploader/r2/r2Uploader";
 import type {B2Setting} from "./uploader/b2/b2Uploader";
 import type {GyazoSetting} from "./uploader/gyazo/gyazoUploader";
+import type {RustfsSetting} from "./uploader/rustfs/rustfsUploader";
 
 export interface PublishSettings {
     imageAltText: boolean;
@@ -42,6 +43,7 @@ export interface PublishSettings {
     githubSetting: GitHubSetting;
     r2Setting: R2Setting;
     b2Setting: B2Setting;
+    rustfsSetting: RustfsSetting;
 }
 
 const DEFAULT_SETTINGS: PublishSettings = {
@@ -120,6 +122,13 @@ const DEFAULT_SETTINGS: PublishSettings = {
         bucketName: "",
         path: "",
         customDomainName: "",
+    },
+    rustfsSetting: {
+        accessKeyId: "",
+        secretAccessKey: "",
+        endpoint: "",
+        bucketName: "",
+        path: "",
     },
 };
 export default class ObsidianPublish extends Plugin {
