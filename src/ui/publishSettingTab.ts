@@ -354,7 +354,7 @@ export default class PublishSettingTab extends PluginSettingTab {
             .setDesc('Your AWS S3 access key ID.')
             .addText(text => text
                 .setPlaceholder('Enter your access key ID')
-                .setValue(this.plugin.settings.awsS3Setting?.accessKeyId || '')
+                .setValue(this.plugin.settings.awsS3Setting.accessKeyId || '')
                 .onChange(value => this.plugin.settings.awsS3Setting.accessKeyId = value
                 ));
 
@@ -363,7 +363,7 @@ export default class PublishSettingTab extends PluginSettingTab {
             .setDesc('Your AWS S3 secret access key.')
             .addText(text => text
                 .setPlaceholder('Enter your secret access key')
-                .setValue(this.plugin.settings.awsS3Setting?.secretAccessKey || '')
+                .setValue(this.plugin.settings.awsS3Setting.secretAccessKey || '')
                 .onChange(value => this.plugin.settings.awsS3Setting.secretAccessKey = value));
 
         new Setting(parentEL)
@@ -371,7 +371,7 @@ export default class PublishSettingTab extends PluginSettingTab {
             .setDesc('Your AWS S3 region.')
             .addText(text => text
                 .setPlaceholder('Enter your region')
-                .setValue(this.plugin.settings.awsS3Setting?.region || '')
+                .setValue(this.plugin.settings.awsS3Setting.region || '')
                 .onChange(value => this.plugin.settings.awsS3Setting.region = value));
 
         new Setting(parentEL)
@@ -379,7 +379,7 @@ export default class PublishSettingTab extends PluginSettingTab {
             .setDesc('Your AWS S3 bucket name.')
             .addText(text => text
                 .setPlaceholder('Enter your bucket name')
-                .setValue(this.plugin.settings.awsS3Setting?.bucketName || '')
+                .setValue(this.plugin.settings.awsS3Setting.bucketName || '')
                 .onChange(value => this.plugin.settings.awsS3Setting.bucketName = value));
         new Setting(parentEL)
             .setName("Target path")
@@ -389,6 +389,14 @@ export default class PublishSettingTab extends PluginSettingTab {
                     .setPlaceholder("Enter path")
                     .setValue(this.plugin.settings.awsS3Setting.path)
                     .onChange(value => this.plugin.settings.awsS3Setting.path = value))
+
+        new Setting(parentEL)
+            .setName("AWS S3 Endpoint")
+            .setDesc("Custom S3-compatible endpoint URL (e.g., https://s3.example.com). Leave empty to use default AWS S3.")
+            .addText(text => text
+                .setPlaceholder("Enter custom endpoint URL (optional)")
+                .setValue(this.plugin.settings.awsS3Setting.endpoint || '')
+                .onChange(value => this.plugin.settings.awsS3Setting.endpoint = value));
 
         //custom domain
         new Setting(parentEL)
