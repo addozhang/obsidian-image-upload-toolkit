@@ -39,7 +39,12 @@ export default class GitHubUploader implements ImageUploader {
       const arrayBuffer = await this.readFileAsArrayBuffer(image);
       const base64Content = this.arrayBufferToBase64(arrayBuffer);
 
-      const filePath = UploaderUtils.generateName(this.path, image.name).replace(/^\/+/, '');
+      // A path template without {filename} (e.g. "images") would otherwise
+      // collapse every upload onto the same repo path, overwriting each other
+      const template = this.path.trim().length > 0 && !this.path.includes('{filename}')
+        ? `${this.path}/{filename}`
+        : this.path;
+      const filePath = UploaderUtils.generateName(template, image.name).replace(/^\/+/, '');
       
       // Get the SHA of the file if it exists (needed for updating)
       let fileSha: string | undefined;

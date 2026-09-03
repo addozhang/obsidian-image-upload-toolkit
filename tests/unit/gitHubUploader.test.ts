@@ -97,6 +97,19 @@ describe("GitHubUploader", () => {
         );
     });
 
+    it("appends {filename} to a plain-folder path so uploads don't overwrite each other", async () => {
+        const folderUploader = createUploader("images");
+        const nestedUploader = createUploader("images/{year}/{mon}");
+
+        await folderUploader.upload(new File(["data"], "pic.png"), "/pic.png");
+        await nestedUploader.upload(new File(["data"], "pic.png"), "/pic.png");
+
+        expect(octokitMocks.createOrUpdateFileContents.mock.calls[0][0].path)
+            .toMatch(/^images\/pic\.png$/);
+        expect(octokitMocks.createOrUpdateFileContents.mock.calls[1][0].path)
+            .toMatch(/^images\/\d{4}\/\d{2}\/pic\.png$/);
+    });
+
     it("passes the existing file sha when updating", async () => {
         octokitMocks.getContent.mockResolvedValue({
             data: {sha: "abc123"},
