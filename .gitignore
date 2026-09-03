@@ -5,4 +5,4 @@ yarn.lock
 .npmrc
 data.json
 dist
-.idea
+.ideacoverage

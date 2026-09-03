@@ -1,5 +1,6 @@
 import ImageUploader from "../imageUploader";
 import { Octokit } from "@octokit/rest";
+import { UploaderUtils } from "../uploaderUtils";
 
 export default class GitHubUploader implements ImageUploader {
   private readonly octokit: Octokit;
@@ -37,8 +38,8 @@ export default class GitHubUploader implements ImageUploader {
     try {
       const arrayBuffer = await this.readFileAsArrayBuffer(image);
       const base64Content = this.arrayBufferToBase64(arrayBuffer);
-      
-      const filePath = image.name.replace(/^\/+/, ''); // Remove leading slashes
+
+      const filePath = UploaderUtils.generateName(this.path, image.name).replace(/^\/+/, '');
       
       // Get the SHA of the file if it exists (needed for updating)
       let fileSha: string | undefined;
@@ -70,7 +71,8 @@ export default class GitHubUploader implements ImageUploader {
       
       // Return the URL to the uploaded image
       // Format: https://raw.githubusercontent.com/{owner}/{repo}/{branch}/{path}
-      return `https://raw.githubusercontent.com/${this.owner}/${this.repo}/${this.branch}/${filePath}`;
+      const encodedPath = filePath.split('/').map(encodeURIComponent).join('/');
+      return `https://raw.githubusercontent.com/${this.owner}/${this.repo}/${this.branch}/${encodedPath}`;
     } catch (error) {
       console.error("Error uploading to GitHub:", error);
       throw error;

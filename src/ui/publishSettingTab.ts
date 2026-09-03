@@ -535,7 +535,7 @@ export default class PublishSettingTab extends PluginSettingTab {
                     .onChange(value => this.plugin.settings.githubSetting.token = value)
             );
 
-        /*new Setting(parentEL)
+        new Setting(parentEL)
             .setName("Target Path")
             .setDesc("The path to store images within the repository.\nSupport {year} {mon} {day} {random} {filename} vars. For example, images/{year}/{mon}/{day}/{filename} with uploading pic.jpg, it will store as images/2023/06/08/pic.jpg.")
             .addText(text =>
@@ -543,7 +543,7 @@ export default class PublishSettingTab extends PluginSettingTab {
                     .setPlaceholder("Enter path")
                     .setValue(this.plugin.settings.githubSetting.path)
                     .onChange(value => this.plugin.settings.githubSetting.path = value)
-            );*/
+            );
     }
 
     private static githubTokenDescription() {
