@@ -86,6 +86,7 @@ export default tseslint.config(
 		"main.js",
 		"eslint.config.mjs",
 		"vitest.config.ts",
+		"vitest.integration.config.ts",
 		"__mocks__/**",
 		"src/**/*.test.ts",
 		"tests/**",

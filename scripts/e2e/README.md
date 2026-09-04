@@ -1,5 +1,32 @@
 # CDP-based End-to-End Tests
 
+## Automated integration tests (`obsidian-integration-testing`)
+
+The repeatable, CI-friendly version of this workflow lives in [`tests/integration/`](../../tests/integration/). It uses the [`obsidian-integration-testing`](https://www.npmjs.com/package/obsidian-integration-testing) package to launch an **isolated** Obsidian instance (temporary `--user-data-dir` + temporary vault), install the built plugin, seed credentials, and run assertions inside the real renderer. Your running Obsidian is never touched.
+
+```bash
+# with GitHub credentials (sentinel + full publish flow tests run)
+IUT_E2E_GITHUB_TOKEN=$(gh auth token) npm run test:integration
+
+# without credentials — only the plugin-load smoke test runs, the rest skip
+npm run test:integration
+```
+
+| Env var | Purpose | Default |
+|---------|---------|---------|
+| `IUT_E2E_GITHUB_TOKEN` | GitHub PAT with `repo` scope for the target repo | unset (skips live tests) |
+| `IUT_E2E_GITHUB_REPO` | `owner/repo` receiving test uploads | `addozhang/image-repo` |
+
+Behavior notes:
+
+- The global setup mirrors `dist/` into `dist/dev/` (the layout the package expects) and seeds the temporary vault with a minimal `data.json` (`imageStore: GITHUB`, `replaceOriginalDoc: true`, the path template).
+- Tests upload `iut-it-*` sentinels and prune them from the repo via the GitHub API in `afterAll` (best-effort).
+- Requires Node 22+ and the Obsidian desktop app installed.
+
+The manual scripts below remain useful for ad-hoc debugging against a specific vault with live credentials.
+
+---
+
 These scripts drive a real Obsidian instance over the [Chrome DevTools Protocol](https://chromedevtools.github.io/devtools-protocol/) to validate the publish flow against live cloud credentials. Use them when:
 
 - You changed an uploader and want to confirm it still talks to the real bucket.
