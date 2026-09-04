@@ -1,8 +1,2 @@
-node_modules
-.env
-*-error.log
-yarn.lock
-.npmrc
-data.json
-dist
 .idea
+coverage

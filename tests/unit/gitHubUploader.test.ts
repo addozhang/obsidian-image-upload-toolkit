@@ -13,12 +13,12 @@ vi.mock("@octokit/rest", () => ({
 
 import GitHubUploader from "../../src/uploader/github/gitHubUploader";
 
-function createUploader(): GitHubUploader {
+function createUploader(path = ""): GitHubUploader {
     return new GitHubUploader({
         repositoryName: "owner/repo",
         branchName: "main",
         token: "token",
-        path: "",
+        path,
     });
 }
 
@@ -69,5 +69,57 @@ describe("GitHubUploader", () => {
             "https://raw.githubusercontent.com/owner/repo/main/second.png",
         );
         expect(octokitMocks.createOrUpdateFileContents).toHaveBeenCalledTimes(2);
+    });
+
+    it("uses the configured path template for the remote file path", async () => {
+        const uploader = createUploader("images/{year}/{filename}");
+
+        const url = await uploader.upload(new File(["data"], "pic v1.png"), "/pic v1.png");
+
+        const call = octokitMocks.createOrUpdateFileContents.mock.calls[0][0];
+        expect(call.path).toMatch(/^images\/\d{4}\/pic v1\.png$/);
+        expect(url).toBe(
+            `https://raw.githubusercontent.com/owner/repo/main/${call.path.split('/').map(encodeURIComponent).join('/')}`,
+        );
+        expect(url).not.toContain("pic v1.png");
+    });
+
+    it("encodes special characters in the returned raw URL", async () => {
+        const uploader = createUploader();
+
+        const url = await uploader.upload(new File(["data"], "图片 名.png"), "/图片 名.png");
+
+        expect(octokitMocks.createOrUpdateFileContents).toHaveBeenCalledWith(
+            expect.objectContaining({path: "图片 名.png"}),
+        );
+        expect(url).toBe(
+            "https://raw.githubusercontent.com/owner/repo/main/%E5%9B%BE%E7%89%87%20%E5%90%8D.png",
+        );
+    });
+
+    it("appends {filename} to a plain-folder path so uploads don't overwrite each other", async () => {
+        const folderUploader = createUploader("images");
+        const nestedUploader = createUploader("images/{year}/{mon}");
+
+        await folderUploader.upload(new File(["data"], "pic.png"), "/pic.png");
+        await nestedUploader.upload(new File(["data"], "pic.png"), "/pic.png");
+
+        expect(octokitMocks.createOrUpdateFileContents.mock.calls[0][0].path)
+            .toMatch(/^images\/pic\.png$/);
+        expect(octokitMocks.createOrUpdateFileContents.mock.calls[1][0].path)
+            .toMatch(/^images\/\d{4}\/\d{2}\/pic\.png$/);
+    });
+
+    it("passes the existing file sha when updating", async () => {
+        octokitMocks.getContent.mockResolvedValue({
+            data: {sha: "abc123"},
+        });
+
+        const uploader = createUploader();
+        await uploader.upload(new File(["data"], "first.png"), "/first.png");
+
+        expect(octokitMocks.createOrUpdateFileContents).toHaveBeenCalledWith(
+            expect.objectContaining({sha: "abc123"}),
+        );
     });
 });
