@@ -191,13 +191,32 @@ npm run test:coverage   # Coverage report
 
 Current test files:
 - `gyazoUploader.test.ts` — Gyazo uploader (upload success, error handling, field omission)
+- `gitHubUploader.test.ts` — GitHub uploader (upload queue serialization, path template, URL encoding)
 - `imageStore.test.ts` — Provider registry and `normalizeId()` alias resolution
 - `isAlreadyHosted.test.ts` — Hosted-URL detection for all providers
 - `imageTagRegex.test.ts` — Markdown/Wiki image tag regex matching
+- `r2Uploader.test.ts` — R2 uploader
+- `uploadProgressModal.test.ts` — Progress modal
 - `uploaderUtils.test.ts` — Path template generation and domain customization
 - `webImageDownloader.test.ts` — Web image download logic
 - `mermaidProcessor.test.ts` — Mermaid-to-PNG conversion
 - `mermaidRegex.test.ts` — Mermaid code block regex matching
+
+### Integration Tests (real Obsidian, automated)
+
+`tests/integration/` runs against a **real, isolated Obsidian instance** via [`obsidian-integration-testing`](https://www.npmjs.com/package/obsidian-integration-testing) (Vitest + CDP). The harness launches its own Obsidian with a temporary user-data-dir and temporary vault — your running Obsidian and vaults are never touched. Requires Node 22+ and the Obsidian desktop app.
+
+```bash
+npm run test:integration                                            # no credentials: plugin-load smoke test only
+IUT_E2E_GITHUB_TOKEN=$(gh auth token) npm run test:integration      # full suite (~8s + build)
+```
+
+| Env var | Purpose | Default |
+|---------|---------|---------|
+| `IUT_E2E_GITHUB_TOKEN` | GitHub PAT with `repo` scope for the target repo | unset (live tests skip) |
+| `IUT_E2E_GITHUB_REPO` | public `owner/repo` receiving test uploads | `addozhang/image-repo` |
+
+The global setup mirrors the production build into `dist/dev/` and seeds the temp vault's `data.json` (`imageStore: GITHUB`, path template, `replaceOriginalDoc: true` — so the publish-flow test asserts on the editor buffer instead of the clipboard, which is unreliable in off-screen windows). Live tests upload `iut-it-*` sentinels and prune them via the GitHub API in `afterAll`. Callbacks passed to `evalInObsidian` must be self-contained (no closures over test-file variables, no `require`); arguments and return values cross a JSON boundary.
 
 ### End-to-End Testing via Chrome DevTools Protocol
 
