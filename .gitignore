@@ -3,6 +3,7 @@ node_modules
 *-error.log
 yarn.lock
 .npmrc
+!/.npmrc
 data.json
 dist
 .idea
