@@ -235,30 +235,4 @@ export default class MermaidProcessor {
             }
         }
     }
-
-    private ensureSvgDimensions(svgString: string): string {
-        try {
-            const doc = new DOMParser().parseFromString(svgString, "image/svg+xml");
-            const el = doc.querySelector("svg");
-            if (!el) return svgString;
-
-            const viewBox = el.getAttribute("viewBox")?.split(/[\s,]+/).map(Number);
-            const hasWidth = el.hasAttribute("width") && parseFloat(el.getAttribute("width")) > 0;
-            const hasHeight = el.hasAttribute("height") && parseFloat(el.getAttribute("height")) > 0;
-
-            if (!hasWidth || !hasHeight) {
-                if (viewBox?.length === 4) {
-                    el.setAttribute("width", String(viewBox[2]));
-                    el.setAttribute("height", String(viewBox[3]));
-                } else {
-                    el.setAttribute("width", "1200");
-                    el.setAttribute("height", "800");
-                }
-            }
-
-            return new XMLSerializer().serializeToString(doc);
-        } catch {
-            return svgString;
-        }
-    }
 }
