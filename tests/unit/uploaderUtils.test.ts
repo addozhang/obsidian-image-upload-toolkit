@@ -11,7 +11,7 @@ describe("UploaderUtils.generateName", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2024-01-17T08:00:00.000Z"));
 
-    const result = UploaderUtils.generateName("/{year}/{mon}/{day}/image.png", "ignored.png");
+    const result = UploaderUtils.generateName("/{year}/{mon}/{day}/{filename}", "image.png");
 
     expect(result).toBe("/2024/01/17/image.png");
   });
@@ -38,6 +38,18 @@ describe("UploaderUtils.generateName", () => {
     const result = UploaderUtils.generateName("{year}/{mon}/{day}/{random}/{filename}", "image.webp");
 
     expect(result).toBe(`2024/01/17/${"A".repeat(20)}/image.webp`);
+  });
+
+  it("appends {filename} to a folder-only template so uploads don't overwrite each other", () => {
+    expect(UploaderUtils.generateName("images", "a.png")).toBe("images/a.png");
+    expect(UploaderUtils.generateName("images/", "a.png")).toBe("images/a.png");
+  });
+
+  it("appends {filename} to a partial template missing only the filename", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2024-01-17T08:00:00.000Z"));
+
+    expect(UploaderUtils.generateName("images/{year}/{mon}", "a.png")).toBe("images/2024/01/a.png");
   });
 
   it("returns image name when template is undefined", () => {
