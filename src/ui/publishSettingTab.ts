@@ -121,7 +121,7 @@ export default class PublishSettingTab extends PluginSettingTab {
                     dd.addOption(s.id, s.description);
                 });
                 dd.setValue(this.plugin.settings.imageStore);
-                dd.onChange(async (v) => {
+                dd.onChange((v) => {
                     this.plugin.settings.imageStore = v;
                     this.plugin.setupImageUploader();
                     this.drawImageStoreSettings(this.imageStoreDiv);
@@ -140,11 +140,10 @@ export default class PublishSettingTab extends PluginSettingTab {
 
     private drawImageStoreSettings(parentEL: HTMLDivElement) {
         parentEL.empty();
-        const provider = getProvider(ImageStore.normalizeId(this.plugin.settings.imageStore));
+        const storeId = ImageStore.normalizeId(this.plugin.settings.imageStore);
+        const provider = getProvider(storeId);
         if (!provider) {
-            throw new Error(
-                "Should not reach here!"
-            )
+            throw new Error(`No provider registered for image store: ${storeId}`);
         }
         provider.drawSettings(parentEL, this.plugin);
     }

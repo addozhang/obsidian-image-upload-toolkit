@@ -66,6 +66,10 @@ describe("isAlreadyHosted", () => {
     expect(isAlreadyHosted("https://bucket.s3.amazonaws.com/img.png", defaultSettings)).toBe(true);
     expect(isAlreadyHosted("https://images.s3.local/img.png", defaultSettings)).toBe(true);
     expect(isAlreadyHosted("https://cdn.s3.local/img.png", customSettings)).toBe(true);
+    // substring matches like "s3rver.example.com" must not count as hosted
+    expect(isAlreadyHosted("https://s3rver.example.com/img.png", defaultSettings)).toBe(false);
+    // custom domain matches exactly, not by substring
+    expect(isAlreadyHosted("https://evil-cdn.s3.local/img.png", customSettings)).toBe(false);
   });
 
   it("cos provider default and custom domain", () => {

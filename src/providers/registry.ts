@@ -41,9 +41,13 @@ export function requireProvider(storeId: string): ProviderDescriptor {
  * provider descriptor. Runs once at module load so a half-registered
  * provider fails fast instead of surfacing as a broken switch arm.
  */
-const registeredIds = new Set(PROVIDERS.map(provider => provider.store.id));
+const registeredIds = PROVIDERS.map(provider => provider.store.id);
+const duplicates = registeredIds.filter((id, index) => registeredIds.indexOf(id) !== index);
+if (duplicates.length > 0) {
+    throw new Error(`Duplicate provider descriptors registered for: ${[...new Set(duplicates)].join(", ")}`);
+}
 for (const store of ImageStore.lists) {
-    if (!registeredIds.has(store.id)) {
+    if (!registeredIds.includes(store.id)) {
         throw new Error(`ImageStore ${store.id} has no provider descriptor`);
     }
 }

@@ -64,9 +64,12 @@ export const AWS_S3_PROVIDER: ProviderDescriptor = {
     isHosted: (url, settings) => {
         const hostname = new URL(url).hostname;
         if (settings.awsS3Setting?.customDomainName) {
-            return hostname.includes(settings.awsS3Setting.customDomainName);
+            return hostname === settings.awsS3Setting.customDomainName;
         }
-        return hostname.includes("amazonaws.com") || hostname.includes("s3");
+        return hostname.endsWith(".amazonaws.com") ||
+               hostname === "s3.amazonaws.com" ||
+               hostname.startsWith("s3.") ||
+               hostname.includes(".s3.");
     },
     drawSettings,
 };
