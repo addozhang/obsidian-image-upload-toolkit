@@ -352,10 +352,14 @@ export default class ImageTagProcessor {
         // 4. In subfolder under current folder: such as "attachments", then "attachments/image.png"
         const sourcePath = this.app.workspace.getActiveFile()?.path || "";
         const targetFile = this.app.metadataCache.getFirstLinkpathDest(imageName, sourcePath);
+        // `name` must stay a bare filename: it is what feeds the {filename} path
+        // variable, so any directory part of the link text (notably the `../`
+        // segments Obsidian emits for relative links) would leak into the remote
+        // object key. See resolveImagePath callers and PathTemplateUtils.
         if (targetFile) {
-            return {resolvedPath: targetFile.path, name: imageName};
+            return {resolvedPath: targetFile.path, name: targetFile.name};
         }
-        return {resolvedPath: imageName, name: imageName};
+        return {resolvedPath: imageName, name: path.basename(imageName)};
 
     }
 
