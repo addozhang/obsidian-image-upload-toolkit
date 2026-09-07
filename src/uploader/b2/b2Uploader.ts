@@ -14,11 +14,13 @@ const EXTENSION_MIME_MAP: Record<string, string> = {
 export default class B2Uploader implements ImageUploader {
   private readonly s3!: S3Client;
   private readonly bucket!: string;
+  private readonly region: string;
   private pathTmpl: string;
   private customDomainName: string;
 
   constructor(setting: B2Setting) {
     const region = UploaderUtils.trimCredential(setting.region);
+    this.region = region;
     this.s3 = new S3Client({
       credentials: {
         accessKeyId: UploaderUtils.trimCredential(setting.accessKeyId),
@@ -46,7 +48,8 @@ export default class B2Uploader implements ImageUploader {
       Body: uint8Array,
       ContentType: contentType,
     }));
-    return UploaderUtils.customizeDomainName(path, this.customDomainName);
+    const url = `https://${this.bucket}.s3.${this.region}.backblazeb2.com/${path}`;
+    return UploaderUtils.customizeDomainName(url, this.customDomainName);
   }
 }
 

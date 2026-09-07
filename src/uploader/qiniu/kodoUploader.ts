@@ -44,7 +44,10 @@ export default class KodoUploader implements ImageUploader {
 
         const data = response.json as {key?: string};
         const returnedKey = data?.key ?? key;
-        return UploaderUtils.customizeDomainName(`${this.setting.customDomainName}/${returnedKey}`, "");
+        // users often enter the domain without a scheme; the markdown output
+        // needs a usable absolute URL
+        const domain = this.setting.customDomainName.replace(/^https?:\/\//, "");
+        return UploaderUtils.customizeDomainName(`https://${domain}/${returnedKey}`, "");
     }
 
     updateToken(): void {
