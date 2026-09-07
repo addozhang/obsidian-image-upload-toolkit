@@ -122,6 +122,10 @@ const DEFAULT_SETTINGS: PublishSettings = {
         customDomainName: "",
     },
 };
+// Assignment to these keys via bracket access would mutate the object's
+// prototype chain, so data.json content carrying them is dropped.
+const UNSAFE_KEYS = new Set(["__proto__", "constructor", "prototype"]);
+
 function isPlainObject(value: unknown): value is Record<string, unknown> {
     return typeof value === "object" && value !== null && !Array.isArray(value);
 }
@@ -130,15 +134,23 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
  * Deep-merge persisted settings over their defaults. Nested provider
  * settings are merged per-field so a data.json written by an older plugin
  * version (missing newly added fields) falls back to the defaults instead
- * of wiping them. Arrays and non-plain values are replaced wholesale;
- * explicit undefined values are ignored.
+ * of wiping them. Nested default objects are deep-cloned so in-place
+ * edits by the settings UI never leak into DEFAULT_SETTINGS. Arrays and
+ * non-plain values are replaced wholesale; explicit undefined values and
+ * prototype-polluting keys are ignored.
  */
 export function mergeSettings<D extends Record<string, unknown>>(defaults: D, loaded: Partial<D> | null | undefined): D {
-    const result = {...defaults};
+    const result = {} as D;
+    for (const [key, value] of Object.entries(defaults)) {
+        (result as Record<string, unknown>)[key] = isPlainObject(value) ? mergeSettings(value, null) : value;
+    }
     if (!loaded) {
         return result;
     }
     for (const [key, value] of Object.entries(loaded)) {
+        if (UNSAFE_KEYS.has(key)) {
+            continue;
+        }
         const defaultValue = (defaults as Record<string, unknown>)[key];
         if (isPlainObject(defaultValue) && isPlainObject(value)) {
             (result as Record<string, unknown>)[key] = mergeSettings(defaultValue, value);

@@ -13,6 +13,23 @@ describe("mergeSettings", () => {
         expect(mergeSettings(defaults, undefined)).toEqual(defaults);
     });
 
+    it("does not share nested object references with the defaults", () => {
+        const merged = mergeSettings(defaults, null);
+        merged.provider.token = "mutated-in-place-by-settings-ui";
+
+        expect(defaults.provider.token).toBe("");
+    });
+
+    it("drops prototype-polluting keys from persisted settings", () => {
+        const loaded = JSON.parse('{"flag": false, "__proto__": {"polluted": true}, "nested": {"constructor": {"x": 1}}}');
+        const merged = mergeSettings(defaults, loaded);
+
+        expect(merged.flag).toBe(false);
+        expect((merged as any).polluted).toBeUndefined();
+        expect(({} as any).polluted).toBeUndefined();
+        expect(merged.nested).toEqual(defaults.nested);
+    });
+
     it("merges nested objects per field so new fields fall back to defaults", () => {
         // data.json written by an older version missing the `path` field
         const loaded = {provider: {token: "t", region: "eu"}};
