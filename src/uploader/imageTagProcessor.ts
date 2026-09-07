@@ -71,6 +71,29 @@ interface Image {
     isWebImage?: boolean; // Flag to indicate if this is a web image
 }
 
+/** Minimal shape needed to rewrite a matched image tag with its remote URL. */
+export interface ReplacementImage {
+    name: string;
+    source: string;
+    url: string;
+}
+
+/**
+ * Replace every matched image tag with its uploaded remote URL, deriving the
+ * alt text from the original filename when enabled (dashes and underscores
+ * become spaces).
+ */
+export function applyReplacements(text: string, images: ReplacementImage[], imageAltText: boolean): string {
+    let result = text;
+    for (const image of images) {
+        const altText = imageAltText
+            ? path.parse(image.name)?.name?.replaceAll("-", " ")?.replaceAll("_", " ")
+            : '';
+        result = result.replaceAll(image.source, `![${altText}](${image.url})`);
+    }
+    return result;
+}
+
 // Return type for resolveImagePath method
 interface ResolvedImagePath {
     resolvedPath: string;
@@ -205,39 +228,15 @@ export default class ImageTagProcessor {
                 return null;
             })));
             successfulImages = results.filter(img => img !== null) as Image[];
-
-            let altText;
-            for (const image of successfulImages) {
-                altText = this.settings.imageAltText ?
-                    path.parse(image.name)?.name?.replaceAll("-", " ")?.replaceAll("_", " ") :
-                    '';
-                value = value.replaceAll(image.source, `![${altText}](${image.url})`);
-            }
+            value = applyReplacements(value, successfulImages, this.settings.imageAltText);
         }
 
-        if (this.settings.replaceOriginalDoc) {
-            if (successfulImages.length > 0 && this.getEditor()) {
-                let docValue = this.getValue();
-                let altText;
-                for (const image of successfulImages) {
-                    altText = this.settings.imageAltText ?
-                        path.parse(image.name)?.name?.replaceAll("-", " ")?.replaceAll("_", " ") :
-                        '';
-                    docValue = docValue.replaceAll(image.source, `![${altText}](${image.url})`);
-                }
-                this.getEditor()?.setValue(docValue);
-            }
-        } else {
-            const webImages = successfulImages.filter(img => img.isWebImage);
-            if (webImages.length > 0 && this.getEditor()) {
-                let docValue = this.getValue();
-                let altText;
-                for (const image of webImages) {
-                    altText = this.settings.imageAltText ?
-                        path.parse(image.name)?.name?.replaceAll("-", " ")?.replaceAll("_", " ") :
-                        '';
-                    docValue = docValue.replaceAll(image.source, `![${altText}](${image.url})`);
-                }
+        if (this.getEditor()) {
+            const replacementTargets = this.settings.replaceOriginalDoc
+                ? successfulImages
+                : successfulImages.filter(img => img.isWebImage);
+            if (replacementTargets.length > 0) {
+                const docValue = applyReplacements(this.getValue(), replacementTargets, this.settings.imageAltText);
                 this.getEditor()?.setValue(docValue);
             }
         }

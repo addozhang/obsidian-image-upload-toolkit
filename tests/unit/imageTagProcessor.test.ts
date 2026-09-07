@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "obsidian";
-import ImageTagProcessor, { ACTION_PUBLISH } from "../../src/uploader/imageTagProcessor";
+import ImageTagProcessor, { ACTION_PUBLISH, applyReplacements, ReplacementImage } from "../../src/uploader/imageTagProcessor";
 import type ImageUploader from "../../src/uploader/imageUploader";
 import type { PublishSettings } from "../../src/publish";
 import ImageStore from "../../src/imageStore";
@@ -97,5 +97,40 @@ describe("ImageTagProcessor object keys", () => {
     await processor.process(ACTION_PUBLISH);
 
     expect(uploadedNames).toEqual(["pic.png"]);
+  });
+});
+
+describe("applyReplacements", () => {
+  const image = (overrides: Partial<ReplacementImage> = {}): ReplacementImage => ({
+    name: "my-photo.png",
+    source: "![orig](attachments/my-photo.png)",
+    url: "https://cdn.example.com/2026/09/my-photo.png",
+    ...overrides,
+  });
+
+  it("rewrites the source tag with the remote url and filename-derived alt text", () => {
+    const result = applyReplacements("before ![orig](attachments/my-photo.png) after", [image()], true);
+    expect(result).toBe("before ![my photo](https://cdn.example.com/2026/09/my-photo.png) after");
+  });
+
+  it("replaces every occurrence of the same tag", () => {
+    const text = "![orig](a.png) middle ![orig](a.png)";
+    const result = applyReplacements(text, [image({name: "a.png", source: "![orig](a.png)", url: "https://cdn/a.png"})], true);
+    expect(result).toBe("![a](https://cdn/a.png) middle ![a](https://cdn/a.png)");
+  });
+
+  it("derives alt text from underscores as well", () => {
+    const result = applyReplacements("![orig](x.png)", [image({name: "some_long-name.png", source: "![orig](x.png)"})], true);
+    expect(result).toContain("![some long name]");
+  });
+
+  it("uses empty alt text when the setting is off", () => {
+    const result = applyReplacements("![orig](a.png)", [image({source: "![orig](a.png)", url: "https://cdn/a.png"})], false);
+    expect(result).toBe("![](https://cdn/a.png)");
+  });
+
+  it("leaves text without matches untouched", () => {
+    const text = "no images here";
+    expect(applyReplacements(text, [image()], true)).toBe(text);
   });
 });

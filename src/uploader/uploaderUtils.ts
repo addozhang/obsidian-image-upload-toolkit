@@ -6,13 +6,23 @@ export class UploaderUtils {
         const day = date.getDate().toString().padStart(2, '0');
         const random = this.generateRandomString(20);
 
-        return pathTmpl != undefined && pathTmpl.trim().length > 0 ? pathTmpl
+        if (pathTmpl == undefined || pathTmpl.trim().length === 0) {
+            return imageName;
+        }
+
+        // A template without {filename} (e.g. "images" or "images/{year}")
+        // would otherwise collapse every upload onto the same remote key,
+        // each upload overwriting the previous one.
+        const template = pathTmpl.includes('{filename}') || pathTmpl.includes('{random}')
+            ? pathTmpl
+            : `${pathTmpl.replace(/\/+$/, '')}/{filename}`;
+
+        return template
                 .replace('{year}', year)
                 .replace('{mon}', month)
                 .replace('{day}', day)
                 .replace('{random}', random)
                 .replace('{filename}', imageName)
-            : imageName
             ;
     }
 

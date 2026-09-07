@@ -66,7 +66,7 @@ npm run build           # Production build
 Each storage provider implements the [`ImageUploader`](src/uploader/imageUploader.ts) interface:
 ```typescript
 interface ImageUploader {
-    upload(imageFilePath: string, filename: string): Promise<string>;
+    upload(image: File, fullPath: string): Promise<string>;
 }
 ```
 
@@ -146,7 +146,7 @@ To add a new storage provider:
    export default class YourProviderUploader implements ImageUploader {
        constructor(private settings: YourProviderSetting) {}
        
-       async upload(imageFilePath: string, filename: string): Promise<string> {
+       async upload(image: File, fullPath: string): Promise<string> {
            // Implementation
            return remoteUrl;
        }
