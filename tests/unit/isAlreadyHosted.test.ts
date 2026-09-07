@@ -100,10 +100,13 @@ describe("isAlreadyHosted", () => {
     expect(isAlreadyHosted("https://cdn.r2.local/img.png", customSettings)).toBe(true);
   });
 
-  it("b2 provider falls through to false", () => {
+  it("b2 provider detects backblazeb2 hosts and custom domains", () => {
     const settings = makeSettings({ imageStore: "b2" });
+    const custom = makeSettings({ imageStore: "b2", b2Setting: { accessKeyId: "", secretAccessKey: "", region: "", bucketName: "", path: "", customDomainName: "cdn.b2.local" } });
 
-    expect(isAlreadyHosted("https://f004.backblazeb2.com/file/bucket/img.png", settings)).toBe(false);
+    expect(isAlreadyHosted("https://f004.backblazeb2.com/file/bucket/img.png", settings)).toBe(true);
+    expect(isAlreadyHosted("https://cdn.b2.local/img.png", custom)).toBe(true);
+    expect(isAlreadyHosted("https://example.com/img.png", settings)).toBe(false);
   });
 
   it("unknown provider returns false", () => {
