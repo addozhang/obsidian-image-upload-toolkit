@@ -36,10 +36,13 @@ describe("isAlreadyHosted", () => {
   it("github provider with repository name", () => {
     const settings = makeSettings({
       imageStore: "github",
-      githubSetting: { repositoryName: "my-images" },
+      githubSetting: { repositoryName: "user/my-images" },
     });
 
     expect(isAlreadyHosted("https://github.com/user/my-images/blob/main/img.png", settings)).toBe(true);
+    // the raw host the uploader actually returns — no "github.com" substring
+    expect(isAlreadyHosted("https://raw.githubusercontent.com/user/my-images/main/img.png", settings)).toBe(true);
+    expect(isAlreadyHosted("https://raw.githubusercontent.com/other/repo/main/img.png", settings)).toBe(false);
   });
 
   it("github provider without repository name", () => {
@@ -63,9 +66,15 @@ describe("isAlreadyHosted", () => {
     const defaultSettings = makeSettings({ imageStore: "s3" });
     const customSettings = makeSettings({ imageStore: "s3", awsS3Setting: { customDomainName: "cdn.s3.local" } });
 
-    expect(isAlreadyHosted("https://bucket.s3.amazonaws.com/img.png", defaultSettings)).toBe(true);
-    expect(isAlreadyHosted("https://images.s3.local/img.png", defaultSettings)).toBe(true);
+    expect(isAlreadyHosted("https://bucket.s3.us-east-1.amazonaws.com/img.png", defaultSettings)).toBe(true);
+    expect(isAlreadyHosted("https://s3.amazonaws.com/bucket/img.png", defaultSettings)).toBe(true);
     expect(isAlreadyHosted("https://cdn.s3.local/img.png", customSettings)).toBe(true);
+    // the uploader only ever returns amazonaws hosts or the configured
+    // custom domain — unrelated ".s3." hosts are not ours
+    expect(isAlreadyHosted("https://images.s3.local/img.png", defaultSettings)).toBe(false);
+    expect(isAlreadyHosted("https://s3rver.example.com/img.png", defaultSettings)).toBe(false);
+    // custom domain matches exactly, not by substring
+    expect(isAlreadyHosted("https://evil-cdn.s3.local/img.png", customSettings)).toBe(false);
   });
 
   it("cos provider default and custom domain", () => {
@@ -100,10 +109,13 @@ describe("isAlreadyHosted", () => {
     expect(isAlreadyHosted("https://cdn.r2.local/img.png", customSettings)).toBe(true);
   });
 
-  it("b2 provider falls through to false", () => {
+  it("b2 provider detects backblazeb2 hosts and custom domains", () => {
     const settings = makeSettings({ imageStore: "b2" });
+    const custom = makeSettings({ imageStore: "b2", b2Setting: { accessKeyId: "", secretAccessKey: "", region: "", bucketName: "", path: "", customDomainName: "cdn.b2.local" } });
 
-    expect(isAlreadyHosted("https://f004.backblazeb2.com/file/bucket/img.png", settings)).toBe(false);
+    expect(isAlreadyHosted("https://f004.backblazeb2.com/file/bucket/img.png", settings)).toBe(true);
+    expect(isAlreadyHosted("https://cdn.b2.local/img.png", custom)).toBe(true);
+    expect(isAlreadyHosted("https://example.com/img.png", settings)).toBe(false);
   });
 
   it("unknown provider returns false", () => {

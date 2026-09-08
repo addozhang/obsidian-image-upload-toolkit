@@ -7,6 +7,7 @@ import {WebImageDownloader} from "./webImageDownloader";
 import MermaidProcessor from "./mermaidProcessor";
 import ImageStore from "../imageStore";
 import {errorMessage} from "./errorUtils";
+import {getProvider} from "../providers/registry";
 
 export const MD_REGEX = /!\[([^\]]*)\]\(([^)]*)\)/g;
 export const WIKI_REGEX = /!\[\[([^\]|#]*\.(png|jpg|jpeg|gif|svg|webp|excalidraw))(#[^\]|]*)?(\|[^\]]*)?\]\]/gi;
@@ -14,50 +15,8 @@ export const PROPERTIES_REGEX = /^---[\s\S]+?---\n/;
 
 export function isAlreadyHosted(url: string, settings: PublishSettings): boolean {
     try {
-        const urlObj = new URL(url);
-        const hostname = urlObj.hostname;
-
-        switch (ImageStore.normalizeId(settings.imageStore)) {
-            case ImageStore.IMGUR.id:
-                return hostname.includes('imgur.com') || hostname.includes('i.imgur.com');
-            case ImageStore.GYAZO.id:
-                return hostname.includes('gyazo.com') || hostname.includes('i.gyazo.com') || hostname.includes('thumb.gyazo.com');
-            case ImageStore.GITHUB.id:
-                if (settings.githubSetting?.repositoryName) {
-                    return url.includes('github.com') &&
-                           url.includes(settings.githubSetting.repositoryName);
-                }
-                return hostname.includes('github.com') || hostname.includes('githubusercontent.com');
-            case ImageStore.ALIYUN_OSS.id:
-                if (settings.ossSetting?.customDomainName) {
-                    return hostname.includes(settings.ossSetting.customDomainName);
-                }
-                return hostname.includes('aliyuncs.com');
-            case ImageStore.AWS_S3.id:
-                if (settings.awsS3Setting?.customDomainName) {
-                    return hostname.includes(settings.awsS3Setting.customDomainName);
-                }
-                return hostname.includes('amazonaws.com') || hostname.includes('s3');
-            case ImageStore.TENCENTCLOUD_COS.id:
-                if (settings.cosSetting?.customDomainName) {
-                    return hostname.includes(settings.cosSetting.customDomainName);
-                }
-                return hostname.includes('myqcloud.com');
-            case ImageStore.QINIU_KUDO.id:
-                if (settings.kodoSetting?.customDomainName) {
-                    return hostname.includes(settings.kodoSetting.customDomainName);
-                }
-                return hostname.includes('qiniudn.com') || hostname.includes('clouddn.com');
-            case ImageStore.ImageKit.id:
-                return hostname.includes('imagekit.io');
-            case ImageStore.CLOUDFLARE_R2.id:
-                if (settings.r2Setting?.customDomainName) {
-                    return hostname.includes(settings.r2Setting.customDomainName);
-                }
-                return hostname.includes('r2.dev') || hostname.includes('r2.cloudflarestorage.com');
-            default:
-                return false;
-        }
+        new URL(url);
+        return getProvider(ImageStore.normalizeId(settings.imageStore))?.isHosted(url, settings) ?? false;
     } catch {
         return false;
     }
