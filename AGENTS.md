@@ -20,20 +20,23 @@ This is a TypeScript-based Obsidian plugin that processes markdown documents, de
 ```
 src/
 ├── publish.ts                      # Main plugin entry point
-├── imageStore.ts                   # Storage provider registry (with normalizeId() for legacy alias support)
+├── imageStore.ts                   # ImageStore ids + legacy alias normalization (see providers/registry.ts)
+├── providers/                      # Provider descriptor registry (single registration point)
+│   ├── types.ts                    # ProviderDescriptor interface
+│   └── registry.ts                 # PROVIDERS list + lookups + load-time completeness check
 ├── styles.css                      # Plugin styles
 ├── ui/
 │   ├── publishSettingTab.ts        # Settings UI
 │   └── uploadProgressModal.ts      # Progress display modal
 └── uploader/
     ├── imageUploader.ts            # Base uploader interface
-    ├── imageUploaderBuilder.ts     # Factory for uploader instances
+    ├── imageUploaderBuilder.ts     # Thin registry-backed factory (providers/registry.ts)
     ├── imageTagProcessor.ts        # Markdown image parser & processor
     ├── mermaidProcessor.ts         # Mermaid-to-PNG conversion (v1.3.0)
     ├── webImageDownloader.ts       # Web image download utility (v1.2.0)
     ├── uploaderUtils.ts            # Shared utilities
     ├── apiError.ts                 # Error handling
-    ├── imgur/                      # Imgur implementation
+    ├── imgur/                      # Imgur implementation (each dir: uploader + provider.ts descriptor)
     ├── gyazo/                      # Gyazo implementation (v1.6.0)
     ├── github/                     # GitHub implementation
     ├── s3/                         # AWS S3 implementation
@@ -70,7 +73,7 @@ interface ImageUploader {
 }
 ```
 
-New providers are registered in [`ImageStore`](src/imageStore.ts) and instantiated via [`buildUploader()`](src/uploader/imageUploaderBuilder.ts).
+Each provider also ships a descriptor (`src/uploader/<provider>/provider.ts`) bundling its `ImageStore` entry, uploader construction, hosted-URL detection (`isHosted`) and settings-UI section (`drawSettings`). Descriptors are registered in the single list at [`src/providers/registry.ts`](src/providers/registry.ts), which validates at load time that every `ImageStore` entry has exactly one descriptor; [`buildUploader()`](src/uploader/imageUploaderBuilder.ts) and `isAlreadyHosted()` are thin lookups over it.
 
 ### Image Processing Flow
 
@@ -136,16 +139,16 @@ To add a new storage provider:
    ```typescript
    // src/uploader/your-provider/yourProviderUploader.ts
    import ImageUploader from "../imageUploader";
-   
+
    export interface YourProviderSetting {
        apiKey: string;
        bucket: string;
        // ... other settings
    }
-   
+
    export default class YourProviderUploader implements ImageUploader {
        constructor(private settings: YourProviderSetting) {}
-       
+
        async upload(image: File, fullPath: string): Promise<string> {
            // Implementation
            return remoteUrl;
@@ -153,17 +156,32 @@ To add a new storage provider:
    }
    ```
 
-3. **Register in ImageStore** ([`src/imageStore.ts`](src/imageStore.ts)):
+3. **Add the provider descriptor** (`src/uploader/your-provider/provider.ts`):
    ```typescript
-   static YOUR_PROVIDER = {id: "your-provider", description: "Your Provider"};
-   static lists = [/* ... */, ImageStore.YOUR_PROVIDER];
+   import {Setting} from "obsidian";
+   import type ObsidianPublish from "../../publish";
+   import ImageStore from "../../imageStore";
+   import type {ProviderDescriptor} from "../../providers/types";
+   import YourProviderUploader from "./yourProviderUploader";
+
+   function drawSettings(parentEl: HTMLElement, plugin: ObsidianPublish): void {
+       new Setting(parentEl)
+           .setName("API key")
+           .addText(text => text
+               .setPlaceholder("Enter API key")
+               .setValue(plugin.settings.yourProviderSetting.apiKey)
+               .onChange(value => plugin.settings.yourProviderSetting.apiKey = value));
+   }
+
+   export const YOUR_PROVIDER_DESCRIPTOR: ProviderDescriptor = {
+       store: ImageStore.YOUR_PROVIDER,
+       build: settings => new YourProviderUploader(settings.yourProviderSetting),
+       isHosted: url => new URL(url).hostname.endsWith("your-provider.example.com"),
+       drawSettings,
+   };
    ```
 
-4. **Add to builder** ([`src/uploader/imageUploaderBuilder.ts`](src/uploader/imageUploaderBuilder.ts)):
-   ```typescript
-   case ImageStore.YOUR_PROVIDER.id:
-       return new YourProviderUploader(settings.yourProviderSetting);
-   ```
+4. **Register the ImageStore entry** ([`src/imageStore.ts`](src/imageStore.ts)) — add the `static readonly YOUR_PROVIDER = new ImageStore("YOUR_PROVIDER", "Your Provider")` constant (and any legacy aliases). The registry validation fails fast if a descriptor is missing.
 
 5. **Update settings interface** ([`src/publish.ts`](src/publish.ts)):
    ```typescript
@@ -172,10 +190,9 @@ To add a new storage provider:
        yourProviderSetting: YourProviderSetting;
    }
    ```
+   and add its defaults to `DEFAULT_SETTINGS` (the deep merge keeps older data.json files compatible).
 
-6. **Add UI settings** ([`src/ui/publishSettingTab.ts`](src/ui/publishSettingTab.ts)):
-   - Create `drawYourProviderSetting(parentEL)` method
-   - Add case to `drawImageStoreSettings()` switch
+6. **Register the descriptor** ([`src/providers/registry.ts`](src/providers/registry.ts)) — append `YOUR_PROVIDER_DESCRIPTOR` to `PROVIDERS`. That is the only registration list; builder and settings-UI dispatch are registry lookups.
 
 ## Testing
 
@@ -423,4 +440,4 @@ Settings are stored in `.obsidian/plugins/image-upload-toolkit/data.json`:
 
 ## Current Version
 
-1.6.2 — Refactored all SDK-heavy uploaders (OSS, COS, Qiniu, S3, R2, B2) to use Obsidian's `requestUrl` API with inline signing; migrated AWS-family uploaders to `@aws-sdk/client-s3` v3; reduced bundle size from ~16 MB to ~644 KB; fixed Imgur anonymous upload payload encoding; fixed COS upload regression caused by explicit `Host` header rejection in Electron's `requestUrl`.
+1.8.0 — Provider descriptor registry: each provider ships one descriptor (uploader construction, hosted-URL detection, settings UI) registered in a single list with load-time validation; B2 gained the hosted-URL detection it was missing; GitHub/S3 hosted detection aligned with what the uploaders actually emit; path templates without `{filename}` no longer collapse uploads onto one key; settings load deep-merges persisted values over defaults; `process()` replacement logic extracted into the testable `applyReplacements()` helper.
