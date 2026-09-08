@@ -36,10 +36,13 @@ describe("isAlreadyHosted", () => {
   it("github provider with repository name", () => {
     const settings = makeSettings({
       imageStore: "github",
-      githubSetting: { repositoryName: "my-images" },
+      githubSetting: { repositoryName: "user/my-images" },
     });
 
     expect(isAlreadyHosted("https://github.com/user/my-images/blob/main/img.png", settings)).toBe(true);
+    // the raw host the uploader actually returns — no "github.com" substring
+    expect(isAlreadyHosted("https://raw.githubusercontent.com/user/my-images/main/img.png", settings)).toBe(true);
+    expect(isAlreadyHosted("https://raw.githubusercontent.com/other/repo/main/img.png", settings)).toBe(false);
   });
 
   it("github provider without repository name", () => {
@@ -63,10 +66,12 @@ describe("isAlreadyHosted", () => {
     const defaultSettings = makeSettings({ imageStore: "s3" });
     const customSettings = makeSettings({ imageStore: "s3", awsS3Setting: { customDomainName: "cdn.s3.local" } });
 
-    expect(isAlreadyHosted("https://bucket.s3.amazonaws.com/img.png", defaultSettings)).toBe(true);
-    expect(isAlreadyHosted("https://images.s3.local/img.png", defaultSettings)).toBe(true);
+    expect(isAlreadyHosted("https://bucket.s3.us-east-1.amazonaws.com/img.png", defaultSettings)).toBe(true);
+    expect(isAlreadyHosted("https://s3.amazonaws.com/bucket/img.png", defaultSettings)).toBe(true);
     expect(isAlreadyHosted("https://cdn.s3.local/img.png", customSettings)).toBe(true);
-    // substring matches like "s3rver.example.com" must not count as hosted
+    // the uploader only ever returns amazonaws hosts or the configured
+    // custom domain — unrelated ".s3." hosts are not ours
+    expect(isAlreadyHosted("https://images.s3.local/img.png", defaultSettings)).toBe(false);
     expect(isAlreadyHosted("https://s3rver.example.com/img.png", defaultSettings)).toBe(false);
     // custom domain matches exactly, not by substring
     expect(isAlreadyHosted("https://evil-cdn.s3.local/img.png", customSettings)).toBe(false);

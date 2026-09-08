@@ -59,11 +59,14 @@ export const GITHUB_PROVIDER: ProviderDescriptor = {
     build: settings => new GitHubUploader(settings.githubSetting),
     isHosted: (url, settings) => {
         const hostname = new URL(url).hostname;
+        const isGitHubHost = hostname.includes("github.com") || hostname.includes("githubusercontent.com");
         if (settings.githubSetting?.repositoryName) {
-            return url.includes("github.com") &&
-                   url.includes(settings.githubSetting.repositoryName);
+            // GitHubUploader returns raw.githubusercontent.com/{owner}/{repo}/...
+            // which does not contain "github.com", so the host check must
+            // accept githubusercontent hosts too
+            return isGitHubHost && url.includes(settings.githubSetting.repositoryName);
         }
-        return hostname.includes("github.com") || hostname.includes("githubusercontent.com");
+        return isGitHubHost;
     },
     drawSettings,
 };

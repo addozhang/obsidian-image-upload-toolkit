@@ -66,10 +66,10 @@ export const AWS_S3_PROVIDER: ProviderDescriptor = {
         if (settings.awsS3Setting?.customDomainName) {
             return hostname === settings.awsS3Setting.customDomainName;
         }
-        return hostname.endsWith(".amazonaws.com") ||
-               hostname === "s3.amazonaws.com" ||
-               hostname.startsWith("s3.") ||
-               hostname.includes(".s3.");
+        // AwsS3Uploader only ever returns *.amazonaws.com hosts or the
+        // configured custom domain — don't treat third-party ".s3." hosts
+        // as ours
+        return hostname.endsWith(".amazonaws.com");
     },
     drawSettings,
 };
