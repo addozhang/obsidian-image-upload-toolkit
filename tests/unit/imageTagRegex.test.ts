@@ -146,6 +146,32 @@ describe("WIKI_REGEX", () => {
     expect(found[0][1]).toBe("IMAGE.PNG");
     expect(found[1][1]).toBe("photo.JPG");
   });
+
+  it("matches escaped pipe size suffix inside tables (issue #92)", () => {
+    const regex = fresh(WIKI_REGEX);
+    const match = regex.exec("![[raw/assets/038d7ad8d82f912a328c140a9380d3f8_MD5.png\\|236]]");
+
+    expect(match?.[1]).toBe("raw/assets/038d7ad8d82f912a328c140a9380d3f8_MD5.png");
+    expect(match?.[4]).toBe("\\|236");
+  });
+
+  it("matches table row containing an escaped-pipe embed", () => {
+    const input = "| 1 | ![[raw/assets/img.png\\|236]] |";
+    const regex = fresh(WIKI_REGEX);
+    const found = [...input.matchAll(regex)];
+
+    expect(found).toHaveLength(1);
+    expect(found[0][1]).toBe("raw/assets/img.png");
+  });
+
+  it("does not merge escaped-pipe embed with a following image", () => {
+    const regex = fresh(WIKI_REGEX);
+    const found = [..."![[photo.jpg\\|500]]![[other.png]]".matchAll(regex)];
+
+    expect(found).toHaveLength(2);
+    expect(found[0][1]).toBe("photo.jpg");
+    expect(found[1][1]).toBe("other.png");
+  });
 });
 
 describe("PROPERTIES_REGEX", () => {

@@ -10,7 +10,9 @@ import {errorMessage} from "./errorUtils";
 import {getProvider} from "../providers/registry";
 
 export const MD_REGEX = /!\[([^\]]*)\]\(([^)]*)\)/g;
-export const WIKI_REGEX = /!\[\[([^\]|#]*\.(png|jpg|jpeg|gif|svg|webp|excalidraw))(#[^\]|]*)?(\|[^\]]*)?\]\]/gi;
+// The size suffix `|NNN` may be escaped as `\|NNN` when the embed sits inside
+// a table (unescaped `|` would break the table row), so both forms are accepted.
+export const WIKI_REGEX = /!\[\[([^\]|#]*\.(png|jpg|jpeg|gif|svg|webp|excalidraw))(#[^\]|]*)?(\\?\|[^\]]*)?\]\]/gi;
 export const PROPERTIES_REGEX = /^---[\s\S]+?---\n/;
 
 export function isAlreadyHosted(url: string, settings: PublishSettings): boolean {

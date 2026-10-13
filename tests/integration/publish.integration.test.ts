@@ -183,4 +183,84 @@ describe("image-upload-toolkit (integration)", () => {
             vaultPath: vault.path,
         });
     });
+
+    it.skipIf(!hasCreds)("publish flow uploads table embeds with escaped pipe size suffix (issue #92)", async () => {
+        const stamp = Date.now();
+        const imageName = `iut-it-92-${stamp}.png`;
+        const noteName = `iut-it-92-note-${stamp}.md`;
+
+        const editorValue = await pollInObsidian({
+            vaultPath: vault.path,
+            input: {pluginId: PLUGIN_ID, b64: ONE_BY_ONE_PNG_BASE64, imageName, noteName},
+            start: async ({app, pluginId, imageName, noteName, b64}) => {
+                const a = app as any;
+                const bin = atob(b64);
+                const bytes = new Uint8Array(bin.length);
+                for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+                await a.vault.adapter.writeBinary(imageName, bytes.buffer.slice(0));
+
+                // Inside a table Obsidian requires the size separator to be
+                // escaped as `\|`, so the note contains a literal backslash.
+                const embed = `![[${imageName}\\|236]]`;
+
+                await a.vault.create(noteName, "");
+                const note = a.vault.getAbstractFileByPath(noteName);
+                const leaf = a.workspace.getLeaf(true);
+                await leaf.openFile(note);
+                leaf.view.editor.setValue(`| # | group |\n| --- | --- |\n| 1 | ${embed} |\n`);
+
+                // wait for the metadata index so the embed resolves to a vault file
+                for (let i = 0; i < 20; i++) {
+                    const resolved = a.metadataCache.getFirstLinkpathDest(imageName, noteName);
+                    if (resolved) break;
+                    await new Promise((r: (v: void) => void) => setTimeout(r, 250));
+                }
+
+                await a.commands.executeCommandById(`${pluginId}:publish-page`);
+            },
+            poll: async ({app, noteName}) => {
+                const a = app as any;
+                for (const leaf of a.workspace.getLeavesOfType("markdown")) {
+                    const file = leaf.view?.getFile?.();
+                    if (file?.path === noteName) {
+                        return leaf.view.editor.getValue() as string;
+                    }
+                }
+                return "";
+            },
+            until: (value) => typeof value === "string" && value.includes("raw.githubusercontent.com"),
+            timeoutInMilliseconds: 90_000,
+            timeoutMessage: "table embed with escaped pipe was not uploaded/rewritten in time",
+        });
+
+        const match = editorValue.match(/!\[[^\]]*\]\((https:[^)]+)\)/);
+        expect(match).not.toBeNull();
+        const remoteUrl = match![1];
+        sentinelPaths.push(repoPathFromRawUrl(remoteUrl));
+
+        // the embed (backslash-size suffix included) is fully replaced
+        expect(editorValue).not.toContain("\\|236");
+        expect(editorValue).not.toContain("]]");
+        // the surrounding table structure survives
+        expect(editorValue).toContain("| 1 |");
+        expect(editorValue).toContain("| # | group |");
+
+        const remote = await fetch(remoteUrl);
+        expect(remote.status).toBe(200);
+
+        await evalInObsidian({
+            input: {imageName, noteName},
+            callback: async ({app, imageName, noteName}) => {
+                const a = app as any;
+                for (const leaf of a.workspace.getLeavesOfType("markdown")) {
+                    if (leaf.view?.getFile?.()?.path === noteName) leaf.detach();
+                }
+                const note = a.vault.getAbstractFileByPath(noteName);
+                if (note) await a.vault.delete(note, true);
+                const image = a.vault.getAbstractFileByPath(imageName);
+                if (image) await a.vault.delete(image, true);
+            },
+            vaultPath: vault.path,
+        });
+    });
 });
