@@ -7,8 +7,9 @@ import ImgurAnonymousUploader from "./imgurAnonymousUploader";
 function clientIdSettingDescription() {
     const url = "https://api.imgur.com/oauth2/addclient";
     return createFragment(frag => {
-        frag.append("Generate your own Client ID at ");
+        frag.append("Required. Register your own Client ID at ");
         frag.createEl("a", { text: url, href: url });
+        frag.append(" — the plugin no longer bundles a shared one (Imgur rate-limits them).");
     });
 }
 
@@ -18,7 +19,7 @@ function drawSettings(parentEl: HTMLElement, plugin: ObsidianPublish): void {
         .setDesc(clientIdSettingDescription())
         .addText(text =>
             text
-                .setPlaceholder("Enter client ID")
+                .setPlaceholder("Paste your registered Client ID")
                 .setValue(plugin.settings.imgurAnonymousSetting.clientId)
                 .onChange(value => plugin.settings.imgurAnonymousSetting.clientId = value)
         )

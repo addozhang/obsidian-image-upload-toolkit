@@ -19,7 +19,7 @@
 
 ### 5-Minute Setup
 1. **Install Plugin** - Search for "Image Upload Toolkit" in Obsidian Community Plugins
-2. **Basic Configuration** - Select Imgur and set up your Client ID
+2. **Basic Configuration** - Select Imgur and register your own Client ID (required, see [Imgur setup](#-imgur-recommended-for-beginners))
 3. **Start Using** - Run the "Publish Page" command in any note
 4. **View Results** - Images are automatically uploaded and URLs are copied to clipboard
 
@@ -112,6 +112,7 @@ Select your preferred storage service from the dropdown. See [Storage Service Co
 3. Copy Client ID to plugin settings
 4. No additional keys required
 ```
+> **Note**: A self-registered Client ID is **required** — the plugin no longer bundles a shared anonymous client_id. Imgur rate-limits widely-shared ids, which caused intermittent 403 errors for all users of a shared id (#75).
 
 #### GitHub (Recommended for Developers)
 ```markdown
@@ -267,7 +268,8 @@ The plugin will contact one of the following hostnames depending on which storag
 **Solution**:
 1. Verify Client ID is correct
 2. Wait a few minutes and retry (Imgur has rate limits)
-3. Consider alternative storage services
+3. HTTP 403 usually means the Client ID is rate-limited or revoked — register a fresh one at https://api.imgur.com/oauth2/addclient
+4. Consider alternative storage services
 
 #### Relative Paths Not Working
 **Cause**: Plugin version or path resolution issues

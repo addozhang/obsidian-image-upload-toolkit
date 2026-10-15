@@ -6,7 +6,6 @@ import {
 import ImageTagProcessor, {ACTION_PUBLISH} from "./uploader/imageTagProcessor";
 import ImageUploader from "./uploader/imageUploader";
 import type {ImgurAnonymousSetting} from "./uploader/imgur/imgurAnonymousUploader";
-import {IMGUR_PLUGIN_CLIENT_ID} from "./uploader/imgur/constants";
 import ImageStore from "./imageStore";
 import buildUploader from "./uploader/imageUploaderBuilder";
 import {errorMessage} from "./uploader/errorUtils";
@@ -54,7 +53,9 @@ const DEFAULT_SETTINGS: PublishSettings = {
     convertMermaid: false, // Default to disabled
     mermaidScale: 2, // 2x for crisp output on retina displays
     mermaidTheme: "default",
-    imgurAnonymousSetting: {clientId: IMGUR_PLUGIN_CLIENT_ID},
+    // Imgur no longer bundles a shared anonymous client_id: Imgur rate-limits
+    // widely-shared ids (see issue #75), so each user must register their own.
+    imgurAnonymousSetting: {clientId: ""},
     gyazoSetting: {
         accessToken: "",
         accessPolicy: "anyone",
